@@ -1,0 +1,585 @@
+import {
+	App,
+	Plugin,
+	PluginSettingTab,
+	Setting,
+	Modal,
+	Notice,
+	requestUrl,
+	RequestUrlParam,
+	MarkdownView
+} from 'obsidian';
+
+// Interface for plugin settings
+interface Md2WeChatSettings {
+	appId: string;
+	appSecret: string;
+	defaultStyle: string;
+	customCss: string;
+	enableImgUpload: boolean;
+	imageHostingType: 'wechat' | 'none';
+	defaultThumbMediaId: string;
+	cachedMaterials: Array<{ mediaId: string; name: string }>;
+}
+
+const DEFAULT_SETTINGS: Md2WeChatSettings = {
+	appId: '',
+	appSecret: '',
+	defaultStyle: 'elegant',
+	customCss: '',
+	enableImgUpload: true,
+	imageHostingType: 'wechat',
+	defaultThumbMediaId: '',
+	cachedMaterials: []
+};
+
+// Preset WeChat CSS styles (as template strings for easy embedding as inline styles)
+interface ThemeStyle {
+	name: string;
+	container: string;
+	h1: string;
+	h2: string;
+	h3: string;
+	p: string;
+	code: string;
+	blockquote: string;
+	ul: string;
+	ol: string;
+	li: string;
+	strong: string;
+	link: string;
+}
+
+const THEMES: Record<string, ThemeStyle> = {
+	elegant: {
+		name: "Elegant Green (雅绿)",
+		container: "font-family: -apple-system-font, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei UI', Arial, sans-serif; font-size: 15px; color: #353535; line-height: 1.75; letter-spacing: 0.5px; word-wrap: break-word; text-align: justify;",
+		h1: "font-size: 1.35em; color: #2e6851; border-bottom: 2px solid #2e6851; padding-bottom: 5px; margin-top: 1.8em; margin-bottom: 0.8em; font-weight: bold;",
+		h2: "font-size: 1.2em; color: #2e6851; margin-top: 1.6em; margin-bottom: 0.8em; font-weight: bold; padding-left: 6px; border-left: 3px solid #2e6851;",
+		h3: "font-size: 1.1em; color: #3e8868; margin-top: 1.4em; margin-bottom: 0.6em; font-weight: bold;",
+		p: "margin-top: 0px; margin-bottom: 1.4em; color: #3e3e3e; line-height: 1.8;",
+		code: "font-family: Consolas, Monaco, monospace; font-size: 14px; background-color: #f8f8f8; color: #c7254e; padding: 2px 4px; border-radius: 4px; border: 1px solid #e1e1e8; word-break: break-all;",
+		blockquote: "margin: 1.5em 0; padding: 10px 15px; background: #f4f9f6; border-left: 4px solid #2e6851; color: #555555; font-size: 0.95em; border-radius: 0 4px 4px 0;",
+		ul: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px; list-style-type: disc;",
+		ol: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px; list-style-type: decimal;",
+		li: "margin-bottom: 6px; line-height: 1.7; color: #444444;",
+		strong: "color: #2e6851; font-weight: bold;",
+		link: "color: #2e6851; text-decoration: none; border-bottom: 1px dashed #2e6851;"
+	},
+	warm: {
+		name: "Warm Gold (温暖暖金)",
+		container: "font-family: -apple-system-font, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', sans-serif; font-size: 15px; color: #3e3a35; line-height: 1.8; letter-spacing: 0.5px;",
+		h1: "font-size: 1.4em; color: #b25829; text-align: center; border-bottom: 1px dashed #b25829; padding-bottom: 8px; margin-top: 2em; margin-bottom: 1em; font-weight: bold;",
+		h2: "font-size: 1.2em; color: #b25829; margin-top: 1.6em; margin-bottom: 0.8em; font-weight: bold; background: #faf4ee; padding: 4px 10px; border-radius: 4px;",
+		h3: "font-size: 1.1em; color: #c67144; margin-top: 1.4em; margin-bottom: 0.6em; font-weight: bold;",
+		p: "margin-top: 0px; margin-bottom: 1.4em; color: #4a453f; line-height: 1.8; text-align: justify;",
+		code: "font-family: monospace; font-size: 14px; background-color: #faf4ee; color: #b25829; padding: 2px 4px; border-radius: 3px;",
+		blockquote: "margin: 1.5em 0; padding: 12px 18px; background: #faf4ee; border-left: 4px solid #b25829; color: #6e655b; font-size: 0.95em;",
+		ul: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px; list-style-type: circle;",
+		ol: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px; list-style-type: decimal;",
+		li: "margin-bottom: 6px; line-height: 1.7;",
+		strong: "color: #b25829; font-weight: bold;",
+		link: "color: #b25829; text-decoration: underline;"
+	},
+	minimal: {
+		name: "Minimalist Black (极简黑色)",
+		container: "font-family: -apple-system-font, BlinkMacSystemFont, sans-serif; font-size: 15px; color: #222222; line-height: 1.7; letter-spacing: 0.2px;",
+		h1: "font-size: 1.5em; color: #000000; font-weight: bold; margin-top: 1.8em; margin-bottom: 0.8em; border-bottom: 1px solid #000000; padding-bottom: 5px;",
+		h2: "font-size: 1.25em; color: #000000; font-weight: bold; margin-top: 1.6em; margin-bottom: 0.8em;",
+		h3: "font-size: 1.1em; color: #444444; font-weight: bold; margin-top: 1.4em; margin-bottom: 0.6em;",
+		p: "margin-top: 0px; margin-bottom: 1.4em; color: #222222; text-align: justify;",
+		code: "font-family: monospace; font-size: 14px; background-color: #f3f3f3; color: #000000; padding: 2px 4px; border-radius: 2px;",
+		blockquote: "margin: 1.5em 0; padding: 10px 15px; background: #f9f9f9; border-left: 3px solid #000000; color: #666666; font-style: italic;",
+		ul: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px; list-style-type: square;",
+		ol: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px; list-style-type: decimal;",
+		li: "margin-bottom: 6px; color: #333333;",
+		strong: "color: #000000; font-weight: bold;",
+		link: "color: #1a0dab; text-decoration: underline;"
+	}
+};
+
+export default class Md2WeChatPlugin extends Plugin {
+	settings!: Md2WeChatSettings;
+
+	async onload() {
+		await this.loadSettings();
+
+		// Add Ribbon icon for preview
+		this.addRibbonIcon('share-2', 'WeChat Format & Sync', () => {
+			this.openPreviewModal();
+		});
+
+		// Add Command Palette Command
+		this.addCommand({
+			id: 'preview-wechat-format',
+			name: 'Open WeChat format preview and sync panel',
+			callback: () => {
+				this.openPreviewModal();
+			}
+		});
+
+		this.addSettingTab(new Md2WeChatSettingTab(this.app, this));
+	}
+
+	async loadSettings() {
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+	}
+
+	async saveSettings() {
+		await this.saveData(this.settings);
+	}
+
+	openPreviewModal() {
+		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+		if (!activeView) {
+			new Notice('Please open a markdown note first!');
+			return;
+		}
+		new PreviewModal(this.app, this, activeView).open();
+	}
+}
+
+// Convert Obsidian Markdown to WeChat-ready inline HTML
+function convertToWeChatHtml(markdownText: string, theme: ThemeStyle): string {
+	// Simple renderer for Demo. Standard Markdown contains blocks: Headers, blockquotes, lists, links, bold, code, images
+	let lines = markdownText.split('\n');
+	let html = '';
+	let inList = false;
+	let listType: 'ul' | 'ol' | null = null;
+	let inBlockquote = false;
+
+	const escapeHtml = (text: string) => {
+		return text
+			.replace(/&/g, "&")
+			.replace(/</g, "<")
+			.replace(/>/g, ">");
+	};
+
+	const inlineRender = (text: string): string => {
+		let rendered = escapeHtml(text);
+		// bold
+		rendered = rendered.replace(/\*\*(.*?)\*\*/g, `<strong style="${theme.strong}">$1</strong>`);
+		rendered = rendered.replace(/__(.*?)__/g, `<strong style="${theme.strong}">$1</strong>`);
+		// inline code
+		rendered = rendered.replace(/`(.*?)`/g, `<code style="${theme.code}">$1</code>`);
+		// links
+		rendered = rendered.replace(/\[(.*?)\]\((.*?)\)/g, `<a href="$2" style="${theme.link}">$1</a>`);
+		return rendered;
+	};
+
+	for (let i = 0; i < lines.length; i++) {
+		let line = lines[i].trim();
+
+		// Handle empty lines (closes lists and blockquotes)
+		if (line === '') {
+			if (inList) {
+				html += `</${listType}>`;
+				inList = false;
+				listType = null;
+			}
+			if (inBlockquote) {
+				html += `</blockquote>`;
+				inBlockquote = false;
+			}
+			continue;
+		}
+
+		// Blockquote
+		if (line.startsWith('>')) {
+			if (!inBlockquote) {
+				if (inList) {
+					html += `</${listType}>`;
+					inList = false;
+					listType = null;
+				}
+				html += `<blockquote style="${theme.blockquote}">`;
+				inBlockquote = true;
+			}
+			let content = line.substring(1).trim();
+			html += `<p style="${theme.p}">${inlineRender(content)}</p>`;
+			continue;
+		} else if (inBlockquote) {
+			html += `</blockquote>`;
+			inBlockquote = false;
+		}
+
+		// Headers
+		if (line.startsWith('# ')) {
+			html += `<h1 style="${theme.h1}">${inlineRender(line.substring(2))}</h1>`;
+		} else if (line.startsWith('## ')) {
+			html += `<h2 style="${theme.h2}">${inlineRender(line.substring(3))}</h2>`;
+		} else if (line.startsWith('### ')) {
+			html += `<h3 style="${theme.h3}">${inlineRender(line.substring(4))}</h3>`;
+		} else if (line.startsWith('- ') || line.startsWith('* ')) {
+			// Unordered List
+			if (!inList || listType !== 'ul') {
+				if (inList) html += `</${listType}>`;
+				html += `<ul style="${theme.ul}">`;
+				inList = true;
+				listType = 'ul';
+			}
+			html += `<li style="${theme.li}">${inlineRender(line.substring(2))}</li>`;
+		} else if (/^\d+\.\s/.test(line)) {
+			// Ordered List
+			if (!inList || listType !== 'ol') {
+				if (inList) html += `</${listType}>`;
+				html += `<ol style="${theme.ol}">`;
+				inList = true;
+				listType = 'ol';
+			}
+			let content = line.replace(/^\d+\.\s/, '');
+			html += `<li style="${theme.li}">${inlineRender(content)}</li>`;
+		} else {
+			// Normal Paragraph
+			if (inList) {
+				html += `</${listType}>`;
+				inList = false;
+				listType = null;
+			}
+			html += `<p style="${theme.p}">${inlineRender(line)}</p>`;
+		}
+	}
+
+	// Clean up lists or blockquotes at EOF
+	if (inList) {
+		html += `</${listType}>`;
+	}
+	if (inBlockquote) {
+		html += `</blockquote>`;
+	}
+
+	return `<div style="${theme.container}">${html}</div>`;
+}
+
+// Modal popup for Preview and Sync
+class PreviewModal extends Modal {
+	plugin: Md2WeChatPlugin;
+	activeView: MarkdownView;
+	currentHtml: string = '';
+
+	constructor(app: App, plugin: Md2WeChatPlugin, activeView: MarkdownView) {
+		super(app);
+		this.plugin = plugin;
+		this.activeView = activeView;
+	}
+
+	async onOpen() {
+		const { contentEl } = this;
+		contentEl.empty();
+		this.titleEl.setText('WeChat Styling Preview & Sync');
+
+		const markdownText = typeof this.activeView.setViewData === 'function' ? this.activeView.data : this.activeView.editor.getValue();
+		let selectedThemeKey = this.plugin.settings.defaultStyle;
+		let theme = THEMES[selectedThemeKey] || THEMES.elegant;
+
+		// Create HTML layout
+		const container = contentEl.createDiv({ cls: 'md2wechat-preview-container' });
+
+		// Toolbar
+		const toolbar = container.createDiv({ cls: 'md2wechat-preview-toolbar' });
+
+		// Theme selector
+		const selector = toolbar.createEl('select', { cls: 'md2wechat-style-select' });
+		Object.keys(THEMES).forEach(key => {
+			const option = selector.createEl('option');
+			option.value = key;
+			option.text = THEMES[key].name;
+			if (key === selectedThemeKey) option.selected = true;
+		});
+
+		// Buttons
+		const copyBtn = toolbar.createEl('button', { text: 'Copy Rich Text' });
+		const syncBtn = toolbar.createEl('button', { text: 'Sync to Draft' });
+		syncBtn.addClass('mod-cta');
+
+		// Preview Wrapper
+		const previewWrapper = container.createDiv({ cls: 'md2wechat-preview-content-wrapper' });
+		const previewArea = previewWrapper.createDiv({ cls: 'md2wechat-preview-content' });
+
+		// Render function
+		const render = () => {
+			theme = THEMES[selector.value] || THEMES.elegant;
+			this.currentHtml = convertToWeChatHtml(markdownText, theme);
+			previewArea.innerHTML = this.currentHtml;
+		};
+
+		// Initial Render
+		render();
+
+		// Selector change event
+		selector.addEventListener('change', () => {
+			render();
+		});
+
+		// Copy button handler (Using Clipboard Item to paste as Rich Text/HTML)
+		copyBtn.addEventListener('click', async () => {
+			try {
+				const blob = new Blob([this.currentHtml], { type: 'text/html' });
+				const data = [new ClipboardItem({ 'text/html': blob, 'text/plain': new Blob([markdownText], { type: 'text/plain' }) })];
+				await navigator.clipboard.write(data);
+				new Notice('Rich text copied successfully! Ready to paste into WeChat editor.');
+			} catch (err) {
+				console.error(err);
+				new Notice('Failed to copy to clipboard automatically. Trying fallback...');
+				// Fallback to text copy
+				const el = document.createElement('div');
+				el.innerHTML = this.currentHtml;
+				el.style.position = 'fixed';
+				el.style.pointerEvents = 'none';
+				el.style.opacity = '0';
+				document.body.appendChild(el);
+				window.getSelection()?.removeAllRanges();
+				const range = document.createRange();
+				range.selectNode(el);
+				window.getSelection()?.addRange(range);
+				document.execCommand('copy');
+				document.body.removeChild(el);
+				new Notice('Copied as HTML successfully via fallback!');
+			}
+		});
+
+		// Sync button handler (WeChat API integration)
+		syncBtn.addEventListener('click', async () => {
+			const { appId, appSecret } = this.plugin.settings;
+			if (!appId || !appSecret) {
+				new Notice('Please configure WeChat AppID and AppSecret in the plugin settings first!');
+				return;
+			}
+
+			syncBtn.disabled = true;
+			syncBtn.setText('Syncing...');
+			new Notice('Acquiring WeChat access token...');
+
+			try {
+				// 1. Get Access Token
+				const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
+				const tokenRes = await requestUrl({ url: tokenUrl, method: 'GET' });
+				
+				if (tokenRes.status !== 200) {
+					throw new Error(`Token request failed with status ${tokenRes.status}`);
+				}
+				
+				const tokenData = JSON.parse(tokenRes.text);
+				if (tokenData.errcode) {
+					throw new Error(`WeChat Token Error: [${tokenData.errcode}] ${tokenData.errmsg}`);
+				}
+
+				const accessToken = tokenData.access_token;
+				new Notice('Token acquired! Creating Draft...');
+
+				// 2. Extract title (from note filename or first header)
+				let title = this.activeView.file ? this.activeView.file.basename : 'Untitled Note';
+				const firstHeaderMatch = markdownText.match(/^#\s+(.+)$/m);
+				if (firstHeaderMatch) {
+					title = firstHeaderMatch[1].trim();
+				}
+
+				// 3. For WeChat drafts, we need a thumb_media_id (cover image)
+				const thumbMediaId = this.plugin.settings.defaultThumbMediaId.trim();
+				if (!thumbMediaId) {
+					throw new Error("WeChat requires a cover image (thumb_media_id) to create draft. Please configure the 'Default Cover Media ID' in plugin settings first! You can find this ID in your WeChat Official Account Admin Platform under 'Material Management' (素材管理).");
+				}
+
+				new Notice('Uploading draft content to WeChat...');
+				
+				// Create a draft article object
+				const article = {
+					title: title,
+					author: '',
+					digest: markdownText.substring(0, 120).replace(/[#*`>]/g, '').trim(),
+					content: this.currentHtml,
+					content_source_url: '',
+					thumb_media_id: thumbMediaId,
+					need_open_comment: 0,
+					only_fans_can_comment: 0
+				};
+
+				const draftUrl = `https://api.weixin.qq.com/cgi-bin/draft/add?access_token=${accessToken}`;
+				const draftRes = await requestUrl({
+					url: draftUrl,
+					method: 'POST',
+					contentType: 'application/json',
+					body: JSON.stringify({
+						articles: [article]
+					})
+				});
+
+				const draftData = JSON.parse(draftRes.text);
+				if (draftData.errcode) {
+					if (draftData.errcode === 40007 || draftData.errcode === 40009) {
+						throw new Error(`WeChat Draft Error: Invalid cover image (thumb_media_id). Please make sure you have set up a valid media ID or created an article with a cover first.`);
+					}
+					throw new Error(`WeChat Sync Error: [${draftData.errcode}] ${draftData.errmsg}`);
+				}
+
+				new Notice('Successfully synchronized draft to WeChat Official Account!');
+				this.close();
+
+			} catch (err: any) {
+				console.error(err);
+				new Notice(`Sync failed: ${err.message || err}`);
+			} finally {
+				syncBtn.disabled = false;
+				syncBtn.setText('Sync to Draft');
+			}
+		});
+	}
+
+	onClose() {
+		const { contentEl } = this;
+		contentEl.empty();
+	}
+}
+
+// Settings tab UI
+class Md2WeChatSettingTab extends PluginSettingTab {
+	plugin: Md2WeChatPlugin;
+
+	constructor(app: App, plugin: Md2WeChatPlugin) {
+		super(app, plugin);
+		this.plugin = plugin;
+	}
+
+	display(): void {
+		const { containerEl } = this;
+		containerEl.empty();
+
+		containerEl.createEl('h2', { text: 'Markdown to WeChat Settings' });
+
+		new Setting(containerEl)
+			.setName('WeChat AppID')
+			.setDesc('Your WeChat Official Account Developer AppID')
+			.addText(text => text
+				.setPlaceholder('wx...')
+				.setValue(this.plugin.settings.appId)
+				.onChange(async (value) => {
+					this.plugin.settings.appId = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('WeChat AppSecret')
+			.setDesc('Your WeChat Official Account Developer AppSecret')
+			.addText(text => text
+				.setPlaceholder('Enter app secret')
+				.setValue(this.plugin.settings.appSecret)
+				.onChange(async (value) => {
+					this.plugin.settings.appSecret = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Default Theme')
+			.setDesc('Default style template used for renders')
+			.addDropdown(dropdown => dropdown
+				.addOption('elegant', 'Elegant Green (雅绿)')
+				.addOption('warm', 'Warm Gold (暖金)')
+				.addOption('minimal', 'Minimalist Black (极简)')
+				.setValue(this.plugin.settings.defaultStyle)
+				.onChange(async (value) => {
+					this.plugin.settings.defaultStyle = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('WeChat Image Uploads')
+			.setDesc('Enable automatic image upload directly to WeChat CDN')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.enableImgUpload)
+				.onChange(async (value) => {
+					this.plugin.settings.enableImgUpload = value;
+					await this.plugin.saveSettings();
+				}));
+
+		// Fetch & Select Materials Setting
+		const materialsSetting = new Setting(containerEl)
+			.setName('Select Cover from WeChat')
+			.setDesc('Click "Fetch" to load images from your WeChat library, then choose one.')
+			.addButton(btn => btn
+				.setButtonText('Fetch Materials')
+				.onClick(async () => {
+					const { appId, appSecret } = this.plugin.settings;
+					if (!appId || !appSecret) {
+						new Notice('Please enter AppID and AppSecret first!');
+						return;
+					}
+					btn.setDisabled(true);
+					btn.setButtonText('Fetching...');
+					new Notice('Fetching permanent images from WeChat...');
+
+					try {
+						// Get Access Token
+						const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
+						const tokenRes = await requestUrl({ url: tokenUrl, method: 'GET' });
+						const tokenData = JSON.parse(tokenRes.text);
+						if (tokenData.errcode) {
+							throw new Error(tokenData.errmsg);
+						}
+						const token = tokenData.access_token;
+
+						// Fetch Materials list
+						const matUrl = `https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token=${token}`;
+						const matRes = await requestUrl({
+							url: matUrl,
+							method: 'POST',
+							contentType: 'application/json',
+							body: JSON.stringify({
+								type: 'image',
+								offset: 0,
+								count: 20
+							})
+						});
+						const matData = JSON.parse(matRes.text);
+						if (matData.errcode) {
+							throw new Error(matData.errmsg);
+						}
+
+						const items = matData.item || [];
+						if (items.length === 0) {
+							new Notice('No permanent images found in your WeChat material library!');
+							return;
+						}
+
+						this.plugin.settings.cachedMaterials = items.map((item: any) => ({
+							mediaId: item.media_id,
+							name: item.name
+						}));
+						await this.plugin.saveSettings();
+						new Notice(`Successfully loaded ${items.length} materials!`);
+						this.display(); // Redraw settings tab to populate dropdown
+					} catch (err: any) {
+						console.error(err);
+						new Notice(`Failed to fetch: ${err.message || err}`);
+					} finally {
+						btn.setDisabled(false);
+						btn.setButtonText('Fetch Materials');
+					}
+				}));
+
+		if (this.plugin.settings.cachedMaterials && this.plugin.settings.cachedMaterials.length > 0) {
+			materialsSetting.addDropdown(dropdown => {
+				dropdown.addOption('', '-- Select an Image --');
+				this.plugin.settings.cachedMaterials.forEach(m => {
+					dropdown.addOption(m.mediaId, m.name.substring(0, 30));
+				});
+				dropdown.setValue(this.plugin.settings.defaultThumbMediaId);
+				dropdown.onChange(async (val) => {
+					this.plugin.settings.defaultThumbMediaId = val;
+					await this.plugin.saveSettings();
+					this.display(); // Refresh to update text input
+				});
+			});
+		}
+
+		new Setting(containerEl)
+			.setName('Default Cover Media ID')
+			.setDesc('Manually paste a WeChat Media ID, or select it from the dropdown helper above.')
+			.addText(text => text
+				.setPlaceholder('wx_media_id_...')
+				.setValue(this.plugin.settings.defaultThumbMediaId)
+				.onChange(async (value) => {
+					this.plugin.settings.defaultThumbMediaId = value.trim();
+					await this.plugin.saveSettings();
+				}));
+	}
+}

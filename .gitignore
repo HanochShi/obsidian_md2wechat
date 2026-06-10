@@ -1,0 +1,25 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# IDEs and editors
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Build outputs
+# Note: For Obsidian plugins, main.js and styles.css are often tracked in Git for easy releases,
+# but we can configure gitignore or exclude temporary build maps.
+.typescript-declarations/
+*.map

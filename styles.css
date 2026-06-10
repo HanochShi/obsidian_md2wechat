@@ -1,0 +1,45 @@
+/* CSS styles for md2wechat preview */
+.md2wechat-preview-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.md2wechat-preview-toolbar {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    align-items: center;
+}
+
+.md2wechat-preview-content-wrapper {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background-color: #f6f6f6; /* WeChat-like background */
+    display: flex;
+    justify-content: center;
+}
+
+.md2wechat-preview-content {
+    background-color: #ffffff;
+    padding: 20px 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    max-width: 677px; /* WeChat content column width */
+    width: 100%;
+    box-sizing: border-box;
+    font-family: -apple-system-font, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", Arial, sans-serif;
+    color: #333333;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.md2wechat-style-select {
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: var(--background-interface);
+    color: var(--text-normal);
+    border: 1px solid var(--background-modifier-border);
+}
