@@ -29,6 +29,7 @@ __export(main_exports, {
 });
 module.exports = __toCommonJS(main_exports);
 var import_obsidian = require("obsidian");
+var VIEW_TYPE_WECHAT_PREVIEW = "wechat-preview-view";
 var DEFAULT_SETTINGS = {
   appId: "",
   appSecret: "",
@@ -89,14 +90,18 @@ var THEMES = {
 var Md2WeChatPlugin = class extends import_obsidian.Plugin {
   async onload() {
     await this.loadSettings();
+    this.registerView(
+      VIEW_TYPE_WECHAT_PREVIEW,
+      (leaf) => new WeChatPreviewView(leaf, this)
+    );
     this.addRibbonIcon("share-2", "WeChat Format & Sync", () => {
-      this.openPreviewModal();
+      this.activateView();
     });
     this.addCommand({
       id: "preview-wechat-format",
       name: "Open WeChat format preview and sync panel",
       callback: () => {
-        this.openPreviewModal();
+        this.activateView();
       }
     });
     this.addSettingTab(new Md2WeChatSettingTab(this.app, this));
@@ -107,13 +112,24 @@ var Md2WeChatPlugin = class extends import_obsidian.Plugin {
   async saveSettings() {
     await this.saveData(this.settings);
   }
-  openPreviewModal() {
-    const activeView = this.app.workspace.getActiveViewOfType(import_obsidian.MarkdownView);
-    if (!activeView) {
-      new import_obsidian.Notice("Please open a markdown note first!");
-      return;
+  async activateView() {
+    const { workspace } = this.app;
+    let leaf = null;
+    const leaves = workspace.getLeavesOfType(VIEW_TYPE_WECHAT_PREVIEW);
+    if (leaves.length > 0) {
+      leaf = leaves[0];
+    } else {
+      leaf = workspace.getRightLeaf(false);
+      if (leaf) {
+        await leaf.setViewState({
+          type: VIEW_TYPE_WECHAT_PREVIEW,
+          active: true
+        });
+      }
     }
-    new PreviewModal(this.app, this, activeView).open();
+    if (leaf) {
+      workspace.revealLeaf(leaf);
+    }
   }
 };
 function convertToWeChatHtml(markdownText, theme) {
@@ -206,20 +222,27 @@ function convertToWeChatHtml(markdownText, theme) {
   }
   return `<div style="${theme.container}">${html}</div>`;
 }
-var PreviewModal = class extends import_obsidian.Modal {
-  constructor(app, plugin, activeView) {
-    super(app);
+var WeChatPreviewView = class extends import_obsidian.ItemView {
+  constructor(leaf, plugin) {
+    super(leaf);
     this.currentHtml = "";
+    this.lastTitle = "Untitled Note";
+    this.lastDigest = "";
+    this.lastMarkdown = "";
     this.plugin = plugin;
-    this.activeView = activeView;
+  }
+  getViewType() {
+    return VIEW_TYPE_WECHAT_PREVIEW;
+  }
+  getDisplayText() {
+    return "WeChat Format Sync";
+  }
+  getIcon() {
+    return "share-2";
   }
   async onOpen() {
     const { contentEl } = this;
     contentEl.empty();
-    this.titleEl.setText("WeChat Styling Preview & Sync");
-    const markdownText = typeof this.activeView.setViewData === "function" ? this.activeView.data : this.activeView.editor.getValue();
-    let selectedThemeKey = this.plugin.settings.defaultStyle;
-    let theme = THEMES[selectedThemeKey] || THEMES.elegant;
     const container = contentEl.createDiv({ cls: "md2wechat-preview-container" });
     const toolbar = container.createDiv({ cls: "md2wechat-preview-toolbar" });
     const selector = toolbar.createEl("select", { cls: "md2wechat-style-select" });
@@ -227,28 +250,58 @@ var PreviewModal = class extends import_obsidian.Modal {
       const option = selector.createEl("option");
       option.value = key;
       option.text = THEMES[key].name;
-      if (key === selectedThemeKey)
+      if (key === this.plugin.settings.defaultStyle)
         option.selected = true;
     });
+    const refreshBtn = toolbar.createEl("button", { text: "\u{1F504}" });
+    refreshBtn.title = "Refresh Preview";
     const copyBtn = toolbar.createEl("button", { text: "Copy Rich Text" });
     const syncBtn = toolbar.createEl("button", { text: "Sync to Draft" });
     syncBtn.addClass("mod-cta");
     const previewWrapper = container.createDiv({ cls: "md2wechat-preview-content-wrapper" });
     const previewArea = previewWrapper.createDiv({ cls: "md2wechat-preview-content" });
-    const render = () => {
-      theme = THEMES[selector.value] || THEMES.elegant;
+    const render = (onlyIfMarkdown = false) => {
+      const activeView = this.app.workspace.getActiveViewOfType(import_obsidian.MarkdownView);
+      if (!activeView) {
+        if (!onlyIfMarkdown) {
+          previewArea.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--text-muted);">Please open and select a markdown note first!</div>`;
+        }
+        return;
+      }
+      const markdownText = typeof activeView.setViewData === "function" ? activeView.data : activeView.editor.getValue();
+      const theme = THEMES[selector.value] || THEMES.elegant;
       this.currentHtml = convertToWeChatHtml(markdownText, theme);
       previewArea.innerHTML = this.currentHtml;
+      this.lastMarkdown = markdownText;
+      this.lastTitle = activeView.file ? activeView.file.basename : "Untitled Note";
+      const firstHeaderMatch = markdownText.match(/^#\s+(.+)$/m);
+      if (firstHeaderMatch) {
+        this.lastTitle = firstHeaderMatch[1].trim();
+      }
+      this.lastDigest = markdownText.substring(0, 120).replace(/[#*`>]/g, "").trim();
     };
-    render();
+    render(false);
     selector.addEventListener("change", () => {
-      render();
+      render(false);
     });
+    refreshBtn.addEventListener("click", () => {
+      render(false);
+      new import_obsidian.Notice("Preview refreshed!");
+    });
+    this.registerEvent(
+      this.app.workspace.on("active-leaf-change", () => {
+        render(true);
+      })
+    );
     copyBtn.addEventListener("click", async () => {
       var _a, _b;
+      if (!this.currentHtml) {
+        new import_obsidian.Notice("No rendered content to copy! Please open and select a markdown note first.");
+        return;
+      }
       try {
         const blob = new Blob([this.currentHtml], { type: "text/html" });
-        const data = [new ClipboardItem({ "text/html": blob, "text/plain": new Blob([markdownText], { type: "text/plain" }) })];
+        const data = [new ClipboardItem({ "text/html": blob, "text/plain": new Blob([this.lastMarkdown], { type: "text/plain" }) })];
         await navigator.clipboard.write(data);
         new import_obsidian.Notice("Rich text copied successfully! Ready to paste into WeChat editor.");
       } catch (err) {
@@ -270,6 +323,10 @@ var PreviewModal = class extends import_obsidian.Modal {
       }
     });
     syncBtn.addEventListener("click", async () => {
+      if (!this.currentHtml) {
+        new import_obsidian.Notice("No rendered content to sync! Please open and select a markdown note first.");
+        return;
+      }
       const { appId, appSecret } = this.plugin.settings;
       if (!appId || !appSecret) {
         new import_obsidian.Notice("Please configure WeChat AppID and AppSecret in the plugin settings first!");
@@ -279,31 +336,35 @@ var PreviewModal = class extends import_obsidian.Modal {
       syncBtn.setText("Syncing...");
       new import_obsidian.Notice("Acquiring WeChat access token...");
       try {
+        console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u5F00\u59CB\u540C\u6B65\u6D41\u7A0B...");
+        console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u914D\u7F6E\u53C2\u6570 - AppID:", appId, "AppSecret:", appSecret ? "****** (\u5DF2\u586B\u5199)" : "(\u672A\u586B\u5199)");
         const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
+        console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u6B63\u5728\u83B7\u53D6 Access Token, \u8BF7\u6C42URL:", tokenUrl);
         const tokenRes = await (0, import_obsidian.requestUrl)({ url: tokenUrl, method: "GET" });
+        console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u83B7\u53D6 Token \u54CD\u5E94\u72B6\u6001\u7801:", tokenRes.status);
         if (tokenRes.status !== 200) {
+          console.error("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u83B7\u53D6 Token \u5931\u8D25\uFF0C\u539F\u59CB\u54CD\u5E94:", tokenRes.text);
           throw new Error(`Token request failed with status ${tokenRes.status}`);
         }
         const tokenData = JSON.parse(tokenRes.text);
+        console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011Token \u63A5\u53E3\u8FD4\u56DE\u6570\u636E:", tokenData);
         if (tokenData.errcode) {
           throw new Error(`WeChat Token Error: [${tokenData.errcode}] ${tokenData.errmsg}`);
         }
         const accessToken = tokenData.access_token;
         new import_obsidian.Notice("Token acquired! Creating Draft...");
-        let title = this.activeView.file ? this.activeView.file.basename : "Untitled Note";
-        const firstHeaderMatch = markdownText.match(/^#\s+(.+)$/m);
-        if (firstHeaderMatch) {
-          title = firstHeaderMatch[1].trim();
-        }
+        const title = this.lastTitle || "Untitled Note";
+        const digest = this.lastDigest || "";
         const thumbMediaId = this.plugin.settings.defaultThumbMediaId.trim();
+        console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u5C01\u9762\u56FE thumb_media_id:", thumbMediaId);
         if (!thumbMediaId) {
-          throw new Error("WeChat requires a cover image (thumb_media_id) to create draft. Please configure the 'Default Cover Media ID' in plugin settings first! You can find this ID in your WeChat Official Account Admin Platform under 'Material Management' (\u7D20\u6750\u7BA1\u7406).");
+          throw new Error("WeChat requires a cover image (thumb_media_id) to create draft. Please configure the 'Default Cover Media ID' in plugin settings first!");
         }
         new import_obsidian.Notice("Uploading draft content to WeChat...");
         const article = {
           title,
           author: "",
-          digest: markdownText.substring(0, 120).replace(/[#*`>]/g, "").trim(),
+          digest,
           content: this.currentHtml,
           content_source_url: "",
           thumb_media_id: thumbMediaId,
@@ -311,14 +372,17 @@ var PreviewModal = class extends import_obsidian.Modal {
           only_fans_can_comment: 0
         };
         const draftUrl = `https://api.weixin.qq.com/cgi-bin/draft/add?access_token=${accessToken}`;
+        const requestPayload = { articles: [article] };
+        console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u6B63\u5728\u5411\u5FAE\u4FE1\u65B0\u5EFA\u8349\u7A3F, \u76EE\u6807\u63A5\u53E3:", draftUrl);
+        console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u53D1\u9001\u7684\u6570\u636E payload:", requestPayload);
         const draftRes = await (0, import_obsidian.requestUrl)({
           url: draftUrl,
           method: "POST",
           contentType: "application/json",
-          body: JSON.stringify({
-            articles: [article]
-          })
+          body: JSON.stringify(requestPayload)
         });
+        console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u65B0\u5EFA\u8349\u7A3F \u54CD\u5E94\u72B6\u6001\u7801:", draftRes.status);
+        console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u65B0\u5EFA\u8349\u7A3F \u5FAE\u4FE1\u8FD4\u56DE\u6570\u636E:", draftRes.text);
         const draftData = JSON.parse(draftRes.text);
         if (draftData.errcode) {
           if (draftData.errcode === 40007 || draftData.errcode === 40009) {
@@ -327,8 +391,8 @@ var PreviewModal = class extends import_obsidian.Modal {
           throw new Error(`WeChat Sync Error: [${draftData.errcode}] ${draftData.errmsg}`);
         }
         new import_obsidian.Notice("Successfully synchronized draft to WeChat Official Account!");
-        this.close();
       } catch (err) {
+        console.error("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u53D1\u751F\u5F02\u5E38\uFF0C\u8BE6\u7EC6\u5806\u6808\u5982\u4E0B\uFF1A");
         console.error(err);
         new import_obsidian.Notice(`Sync failed: ${err.message || err}`);
       } finally {
@@ -337,9 +401,7 @@ var PreviewModal = class extends import_obsidian.Modal {
       }
     });
   }
-  onClose() {
-    const { contentEl } = this;
-    contentEl.empty();
+  async onClose() {
   }
 };
 var Md2WeChatSettingTab = class extends import_obsidian.PluginSettingTab {

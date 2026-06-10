@@ -20,6 +20,7 @@
     background-color: #f6f6f6; /* WeChat-like background */
     display: flex;
     justify-content: center;
+    align-items: flex-start; /* Ensure items align from top so they stretch naturally */
 }
 
 .md2wechat-preview-content {
@@ -29,11 +30,14 @@
     border-radius: 8px;
     max-width: 677px; /* WeChat content column width */
     width: 100%;
+    min-height: 100%; /* Guarantee white card background goes all the way to the bottom */
     box-sizing: border-box;
     font-family: -apple-system-font, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", Arial, sans-serif;
     color: #333333;
     font-size: 16px;
     line-height: 1.6;
+    user-select: text; /* Allow normal selection of preview text */
+    -webkit-user-select: text; /* Safari/iOS support */
 }
 
 .md2wechat-style-select {

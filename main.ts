@@ -7,8 +7,13 @@ import {
 	Notice,
 	requestUrl,
 	RequestUrlParam,
-	MarkdownView
+	MarkdownView,
+	ItemView,
+	WorkspaceLeaf
 } from 'obsidian';
+
+// View type identifier for the sidebar view
+const VIEW_TYPE_WECHAT_PREVIEW = "wechat-preview-view";
 
 // Interface for plugin settings
 interface Md2WeChatSettings {
@@ -104,9 +109,15 @@ export default class Md2WeChatPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
+		// Register Sidebar View
+		this.registerView(
+			VIEW_TYPE_WECHAT_PREVIEW,
+			(leaf) => new WeChatPreviewView(leaf, this)
+		);
+
 		// Add Ribbon icon for preview
 		this.addRibbonIcon('share-2', 'WeChat Format & Sync', () => {
-			this.openPreviewModal();
+			this.activateView();
 		});
 
 		// Add Command Palette Command
@@ -114,7 +125,7 @@ export default class Md2WeChatPlugin extends Plugin {
 			id: 'preview-wechat-format',
 			name: 'Open WeChat format preview and sync panel',
 			callback: () => {
-				this.openPreviewModal();
+				this.activateView();
 			}
 		});
 
@@ -129,13 +140,29 @@ export default class Md2WeChatPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
-	openPreviewModal() {
-		const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-		if (!activeView) {
-			new Notice('Please open a markdown note first!');
-			return;
+	async activateView() {
+		const { workspace } = this.app;
+		
+		let leaf: WorkspaceLeaf | null = null;
+		const leaves = workspace.getLeavesOfType(VIEW_TYPE_WECHAT_PREVIEW);
+
+		if (leaves.length > 0) {
+			// Already exists, just make active
+			leaf = leaves[0];
+		} else {
+			// Create a new leaf in the right sidebar
+			leaf = workspace.getRightLeaf(false);
+			if (leaf) {
+				await leaf.setViewState({
+					type: VIEW_TYPE_WECHAT_PREVIEW,
+					active: true,
+				});
+			}
 		}
-		new PreviewModal(this.app, this, activeView).open();
+
+		if (leaf) {
+			workspace.revealLeaf(leaf);
+		}
 	}
 }
 
@@ -251,26 +278,34 @@ function convertToWeChatHtml(markdownText: string, theme: ThemeStyle): string {
 	return `<div style="${theme.container}">${html}</div>`;
 }
 
-// Modal popup for Preview and Sync
-class PreviewModal extends Modal {
+// Permanent Sidebar View for Preview and Sync
+class WeChatPreviewView extends ItemView {
 	plugin: Md2WeChatPlugin;
-	activeView: MarkdownView;
 	currentHtml: string = '';
+	lastTitle: string = 'Untitled Note';
+	lastDigest: string = '';
+	lastMarkdown: string = '';
 
-	constructor(app: App, plugin: Md2WeChatPlugin, activeView: MarkdownView) {
-		super(app);
+	constructor(leaf: WorkspaceLeaf, plugin: Md2WeChatPlugin) {
+		super(leaf);
 		this.plugin = plugin;
-		this.activeView = activeView;
+	}
+
+	getViewType(): string {
+		return VIEW_TYPE_WECHAT_PREVIEW;
+	}
+
+	getDisplayText(): string {
+		return "WeChat Format Sync";
+	}
+
+	getIcon(): string {
+		return "share-2";
 	}
 
 	async onOpen() {
 		const { contentEl } = this;
 		contentEl.empty();
-		this.titleEl.setText('WeChat Styling Preview & Sync');
-
-		const markdownText = typeof this.activeView.setViewData === 'function' ? this.activeView.data : this.activeView.editor.getValue();
-		let selectedThemeKey = this.plugin.settings.defaultStyle;
-		let theme = THEMES[selectedThemeKey] || THEMES.elegant;
 
 		// Create HTML layout
 		const container = contentEl.createDiv({ cls: 'md2wechat-preview-container' });
@@ -284,10 +319,12 @@ class PreviewModal extends Modal {
 			const option = selector.createEl('option');
 			option.value = key;
 			option.text = THEMES[key].name;
-			if (key === selectedThemeKey) option.selected = true;
+			if (key === this.plugin.settings.defaultStyle) option.selected = true;
 		});
 
 		// Buttons
+		const refreshBtn = toolbar.createEl('button', { text: '🔄' });
+		refreshBtn.title = "Refresh Preview";
 		const copyBtn = toolbar.createEl('button', { text: 'Copy Rich Text' });
 		const syncBtn = toolbar.createEl('button', { text: 'Sync to Draft' });
 		syncBtn.addClass('mod-cta');
@@ -297,31 +334,66 @@ class PreviewModal extends Modal {
 		const previewArea = previewWrapper.createDiv({ cls: 'md2wechat-preview-content' });
 
 		// Render function
-		const render = () => {
-			theme = THEMES[selector.value] || THEMES.elegant;
+		const render = (onlyIfMarkdown = false) => {
+			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+			if (!activeView) {
+				if (!onlyIfMarkdown) {
+					previewArea.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--text-muted);">Please open and select a markdown note first!</div>`;
+				}
+				return;
+			}
+			const markdownText = typeof activeView.setViewData === 'function' ? activeView.data : activeView.editor.getValue();
+			const theme = THEMES[selector.value] || THEMES.elegant;
 			this.currentHtml = convertToWeChatHtml(markdownText, theme);
 			previewArea.innerHTML = this.currentHtml;
+
+			// Store metadata of the last successfully rendered article
+			this.lastMarkdown = markdownText;
+			this.lastTitle = activeView.file ? activeView.file.basename : 'Untitled Note';
+			const firstHeaderMatch = markdownText.match(/^#\s+(.+)$/m);
+			if (firstHeaderMatch) {
+				this.lastTitle = firstHeaderMatch[1].trim();
+			}
+			this.lastDigest = markdownText.substring(0, 120).replace(/[#*`>]/g, '').trim();
 		};
 
-		// Initial Render
-		render();
+		// Initial Render (force show placeholder if no markdown view is active)
+		render(false);
 
-		// Selector change event
+		// Listeners
 		selector.addEventListener('change', () => {
-			render();
+			render(false);
 		});
 
-		// Copy button handler (Using Clipboard Item to paste as Rich Text/HTML)
+		refreshBtn.addEventListener('click', () => {
+			render(false);
+			new Notice('Preview refreshed!');
+		});
+
+		// Automatically refresh preview when user switches file or edits
+		this.registerEvent(
+			this.app.workspace.on('active-leaf-change', () => {
+				// Only update/render if a Markdown file is active. 
+				// This prevents the preview from clearing when the user clicks/focuses on the preview sidebar itself.
+				render(true);
+			})
+		);
+
+		// Copy button handler
 		copyBtn.addEventListener('click', async () => {
+			if (!this.currentHtml) {
+				new Notice('No rendered content to copy! Please open and select a markdown note first.');
+				return;
+			}
+
 			try {
 				const blob = new Blob([this.currentHtml], { type: 'text/html' });
-				const data = [new ClipboardItem({ 'text/html': blob, 'text/plain': new Blob([markdownText], { type: 'text/plain' }) })];
+				const data = [new ClipboardItem({ 'text/html': blob, 'text/plain': new Blob([this.lastMarkdown], { type: 'text/plain' }) })];
 				await navigator.clipboard.write(data);
 				new Notice('Rich text copied successfully! Ready to paste into WeChat editor.');
 			} catch (err) {
 				console.error(err);
 				new Notice('Failed to copy to clipboard automatically. Trying fallback...');
-				// Fallback to text copy
 				const el = document.createElement('div');
 				el.innerHTML = this.currentHtml;
 				el.style.position = 'fixed';
@@ -338,8 +410,13 @@ class PreviewModal extends Modal {
 			}
 		});
 
-		// Sync button handler (WeChat API integration)
+		// Sync button handler
 		syncBtn.addEventListener('click', async () => {
+			if (!this.currentHtml) {
+				new Notice('No rendered content to sync! Please open and select a markdown note first.');
+				return;
+			}
+
 			const { appId, appSecret } = this.plugin.settings;
 			if (!appId || !appSecret) {
 				new Notice('Please configure WeChat AppID and AppSecret in the plugin settings first!');
@@ -351,15 +428,24 @@ class PreviewModal extends Modal {
 			new Notice('Acquiring WeChat access token...');
 
 			try {
+				console.log("【微信同步】开始同步流程...");
+				console.log("【微信同步】配置参数 - AppID:", appId, "AppSecret:", appSecret ? "****** (已填写)" : "(未填写)");
+
 				// 1. Get Access Token
 				const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
+				console.log("【微信同步】正在获取 Access Token, 请求URL:", tokenUrl);
+				
 				const tokenRes = await requestUrl({ url: tokenUrl, method: 'GET' });
+				console.log("【微信同步】获取 Token 响应状态码:", tokenRes.status);
 				
 				if (tokenRes.status !== 200) {
+					console.error("【微信同步】获取 Token 失败，原始响应:", tokenRes.text);
 					throw new Error(`Token request failed with status ${tokenRes.status}`);
 				}
 				
 				const tokenData = JSON.parse(tokenRes.text);
+				console.log("【微信同步】Token 接口返回数据:", tokenData);
+
 				if (tokenData.errcode) {
 					throw new Error(`WeChat Token Error: [${tokenData.errcode}] ${tokenData.errmsg}`);
 				}
@@ -367,17 +453,15 @@ class PreviewModal extends Modal {
 				const accessToken = tokenData.access_token;
 				new Notice('Token acquired! Creating Draft...');
 
-				// 2. Extract title (from note filename or first header)
-				let title = this.activeView.file ? this.activeView.file.basename : 'Untitled Note';
-				const firstHeaderMatch = markdownText.match(/^#\s+(.+)$/m);
-				if (firstHeaderMatch) {
-					title = firstHeaderMatch[1].trim();
-				}
+				// 2. Use stored metadata
+				const title = this.lastTitle || 'Untitled Note';
+				const digest = this.lastDigest || '';
 
 				// 3. For WeChat drafts, we need a thumb_media_id (cover image)
 				const thumbMediaId = this.plugin.settings.defaultThumbMediaId.trim();
+				console.log("【微信同步】封面图 thumb_media_id:", thumbMediaId);
 				if (!thumbMediaId) {
-					throw new Error("WeChat requires a cover image (thumb_media_id) to create draft. Please configure the 'Default Cover Media ID' in plugin settings first! You can find this ID in your WeChat Official Account Admin Platform under 'Material Management' (素材管理).");
+					throw new Error("WeChat requires a cover image (thumb_media_id) to create draft. Please configure the 'Default Cover Media ID' in plugin settings first!");
 				}
 
 				new Notice('Uploading draft content to WeChat...');
@@ -386,7 +470,7 @@ class PreviewModal extends Modal {
 				const article = {
 					title: title,
 					author: '',
-					digest: markdownText.substring(0, 120).replace(/[#*`>]/g, '').trim(),
+					digest: digest,
 					content: this.currentHtml,
 					content_source_url: '',
 					thumb_media_id: thumbMediaId,
@@ -395,14 +479,20 @@ class PreviewModal extends Modal {
 				};
 
 				const draftUrl = `https://api.weixin.qq.com/cgi-bin/draft/add?access_token=${accessToken}`;
+				const requestPayload = { articles: [article] };
+				
+				console.log("【微信同步】正在向微信新建草稿, 目标接口:", draftUrl);
+				console.log("【微信同步】发送的数据 payload:", requestPayload);
+
 				const draftRes = await requestUrl({
 					url: draftUrl,
 					method: 'POST',
 					contentType: 'application/json',
-					body: JSON.stringify({
-						articles: [article]
-					})
+					body: JSON.stringify(requestPayload)
 				});
+
+				console.log("【微信同步】新建草稿 响应状态码:", draftRes.status);
+				console.log("【微信同步】新建草稿 微信返回数据:", draftRes.text);
 
 				const draftData = JSON.parse(draftRes.text);
 				if (draftData.errcode) {
@@ -413,9 +503,9 @@ class PreviewModal extends Modal {
 				}
 
 				new Notice('Successfully synchronized draft to WeChat Official Account!');
-				this.close();
 
 			} catch (err: any) {
+				console.error("【微信同步】发生异常，详细堆栈如下：");
 				console.error(err);
 				new Notice(`Sync failed: ${err.message || err}`);
 			} finally {
@@ -425,9 +515,8 @@ class PreviewModal extends Modal {
 		});
 	}
 
-	onClose() {
-		const { contentEl } = this;
-		contentEl.empty();
+	async onClose() {
+		// Nothing major to clean up
 	}
 }
 
