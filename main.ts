@@ -11,6 +11,8 @@ import {
 	ItemView,
 	WorkspaceLeaf
 } from 'obsidian';
+import { marked } from 'marked';
+import hljs from 'highlight.js';
 
 // View type identifier for the sidebar view
 const VIEW_TYPE_WECHAT_PREVIEW = "wechat-preview-view";
@@ -47,6 +49,9 @@ interface ThemeStyle {
 	h1: string;
 	h2: string;
 	h3: string;
+	h4?: string;
+	h5?: string;
+	h6?: string;
 	p: string;
 	code: string;
 	blockquote: string;
@@ -55,6 +60,14 @@ interface ThemeStyle {
 	li: string;
 	strong: string;
 	link: string;
+	em?: string;
+	del?: string;
+	hr?: string;
+	table?: string;
+	th?: string;
+	td?: string;
+	pre?: string;
+	pre_code?: string;
 }
 
 const THEMES: Record<string, ThemeStyle> = {
@@ -64,6 +77,9 @@ const THEMES: Record<string, ThemeStyle> = {
 		h1: "font-size: 1.35em; color: #2e6851; border-bottom: 2px solid #2e6851; padding-bottom: 5px; margin-top: 1.8em; margin-bottom: 0.8em; font-weight: bold;",
 		h2: "font-size: 1.2em; color: #2e6851; margin-top: 1.6em; margin-bottom: 0.8em; font-weight: bold; padding-left: 6px; border-left: 3px solid #2e6851;",
 		h3: "font-size: 1.1em; color: #3e8868; margin-top: 1.4em; margin-bottom: 0.6em; font-weight: bold;",
+		h4: "font-size: 1.0em; color: #3e8868; margin-top: 1.2em; margin-bottom: 0.6em; font-weight: bold;",
+		h5: "font-size: 1.0em; color: #444444; margin-top: 1.2em; margin-bottom: 0.6em; font-weight: bold;",
+		h6: "font-size: 0.9em; color: #666666; margin-top: 1.2em; margin-bottom: 0.6em; font-weight: bold;",
 		p: "margin-top: 0px; margin-bottom: 1.4em; color: #3e3e3e; line-height: 1.8;",
 		code: "font-family: Consolas, Monaco, monospace; font-size: 14px; background-color: #f8f8f8; color: #c7254e; padding: 2px 4px; border-radius: 4px; border: 1px solid #e1e1e8; word-break: break-all;",
 		blockquote: "margin: 1.5em 0; padding: 10px 15px; background: #f4f9f6; border-left: 4px solid #2e6851; color: #555555; font-size: 0.95em; border-radius: 0 4px 4px 0;",
@@ -71,7 +87,15 @@ const THEMES: Record<string, ThemeStyle> = {
 		ol: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px; list-style-type: decimal;",
 		li: "margin-bottom: 6px; line-height: 1.7; color: #444444;",
 		strong: "color: #2e6851; font-weight: bold;",
-		link: "color: #2e6851; text-decoration: none; border-bottom: 1px dashed #2e6851;"
+		link: "color: #2e6851; text-decoration: none; border-bottom: 1px dashed #2e6851;",
+		em: "font-style: italic; color: #555555;",
+		del: "text-decoration: line-through; color: #888888;",
+		hr: "border: 0; border-top: 1px solid #2e6851; margin: 2em 0; opacity: 0.7;",
+		table: "border-collapse: collapse; width: 100%; margin: 1.5em 0; font-size: 0.9em;",
+		th: "border: 1px solid #dfdfdf; background-color: #f2fcf7; color: #2e6851; padding: 8px 12px; font-weight: bold; text-align: left;",
+		td: "border: 1px solid #dfdfdf; padding: 8px 12px; color: #444444;",
+		pre: "background-color: #1a1a1a; padding: 12px 16px; border-radius: 6px; overflow-x: auto; margin: 1.5em 0; line-height: 1.6; color: #abb2bf; font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; tab-size: 4; -moz-tab-size: 4; -o-tab-size: 4;",
+		pre_code: "font-family: inherit; font-size: 13px; background-color: transparent; border: 0; padding: 0; color: inherit; line-height: inherit; word-wrap: normal;"
 	},
 	warm: {
 		name: "Warm Gold (温暖暖金)",
@@ -79,6 +103,9 @@ const THEMES: Record<string, ThemeStyle> = {
 		h1: "font-size: 1.4em; color: #b25829; text-align: center; border-bottom: 1px dashed #b25829; padding-bottom: 8px; margin-top: 2em; margin-bottom: 1em; font-weight: bold;",
 		h2: "font-size: 1.2em; color: #b25829; margin-top: 1.6em; margin-bottom: 0.8em; font-weight: bold; background: #faf4ee; padding: 4px 10px; border-radius: 4px;",
 		h3: "font-size: 1.1em; color: #c67144; margin-top: 1.4em; margin-bottom: 0.6em; font-weight: bold;",
+		h4: "font-size: 1.0em; color: #c67144; margin-top: 1.2em; margin-bottom: 0.6em; font-weight: bold;",
+		h5: "font-size: 1.0em; color: #4a453f; margin-top: 1.2em; margin-bottom: 0.6em; font-weight: bold;",
+		h6: "font-size: 0.9em; color: #7e756b; margin-top: 1.2em; margin-bottom: 0.6em; font-weight: bold;",
 		p: "margin-top: 0px; margin-bottom: 1.4em; color: #4a453f; line-height: 1.8; text-align: justify;",
 		code: "font-family: monospace; font-size: 14px; background-color: #faf4ee; color: #b25829; padding: 2px 4px; border-radius: 3px;",
 		blockquote: "margin: 1.5em 0; padding: 12px 18px; background: #faf4ee; border-left: 4px solid #b25829; color: #6e655b; font-size: 0.95em;",
@@ -86,7 +113,15 @@ const THEMES: Record<string, ThemeStyle> = {
 		ol: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px; list-style-type: decimal;",
 		li: "margin-bottom: 6px; line-height: 1.7;",
 		strong: "color: #b25829; font-weight: bold;",
-		link: "color: #b25829; text-decoration: underline;"
+		link: "color: #b25829; text-decoration: underline;",
+		em: "font-style: italic; color: #6e655b;",
+		del: "text-decoration: line-through; color: #9c9287;",
+		hr: "border: 0; border-top: 1px dashed #b25829; margin: 2em 0; opacity: 0.8;",
+		table: "border-collapse: collapse; width: 100%; margin: 1.5em 0; font-size: 0.9em;",
+		th: "border: 1px solid #e9dfd6; background-color: #faf4ee; color: #b25829; padding: 8px 12px; font-weight: bold; text-align: left;",
+		td: "border: 1px solid #e9dfd6; padding: 8px 12px; color: #4a453f;",
+		pre: "background-color: #1a1a1a; border: 1px solid #e9dfd6; padding: 12px 16px; border-radius: 6px; overflow-x: auto; margin: 1.5em 0; line-height: 1.6; color: #abb2bf; font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; tab-size: 4; -moz-tab-size: 4; -o-tab-size: 4;",
+		pre_code: "font-family: inherit; font-size: 13px; background-color: transparent; border: 0; padding: 0; color: inherit; line-height: inherit; word-wrap: normal;"
 	},
 	minimal: {
 		name: "Minimalist Black (极简黑色)",
@@ -94,6 +129,9 @@ const THEMES: Record<string, ThemeStyle> = {
 		h1: "font-size: 1.5em; color: #000000; font-weight: bold; margin-top: 1.8em; margin-bottom: 0.8em; border-bottom: 1px solid #000000; padding-bottom: 5px;",
 		h2: "font-size: 1.25em; color: #000000; font-weight: bold; margin-top: 1.6em; margin-bottom: 0.8em;",
 		h3: "font-size: 1.1em; color: #444444; font-weight: bold; margin-top: 1.4em; margin-bottom: 0.6em;",
+		h4: "font-size: 1.0em; color: #444444; font-weight: bold; margin-top: 1.2em; margin-bottom: 0.6em;",
+		h5: "font-size: 1.0em; color: #666666; font-weight: bold; margin-top: 1.2em; margin-bottom: 0.6em;",
+		h6: "font-size: 0.9em; color: #888888; font-style: italic; margin-top: 1.2em; margin-bottom: 0.6em;",
 		p: "margin-top: 0px; margin-bottom: 1.4em; color: #222222; text-align: justify;",
 		code: "font-family: monospace; font-size: 14px; background-color: #f3f3f3; color: #000000; padding: 2px 4px; border-radius: 2px;",
 		blockquote: "margin: 1.5em 0; padding: 10px 15px; background: #f9f9f9; border-left: 3px solid #000000; color: #666666; font-style: italic;",
@@ -101,7 +139,15 @@ const THEMES: Record<string, ThemeStyle> = {
 		ol: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px; list-style-type: decimal;",
 		li: "margin-bottom: 6px; color: #333333;",
 		strong: "color: #000000; font-weight: bold;",
-		link: "color: #1a0dab; text-decoration: underline;"
+		link: "color: #1a0dab; text-decoration: underline;",
+		em: "font-style: italic;",
+		del: "text-decoration: line-through; color: #999999;",
+		hr: "border: 0; border-top: 1px solid #000000; margin: 2em 0;",
+		table: "border-collapse: collapse; width: 100%; margin: 1.5em 0; font-size: 0.9em;",
+		th: "border: 1px solid #dddddd; background-color: #f9f9f9; color: #000000; padding: 8px 12px; font-weight: bold; text-align: left;",
+		td: "border: 1px solid #dddddd; padding: 8px 12px; color: #222222;",
+		pre: "background-color: #1a1a1a; padding: 12px 16px; border-radius: 6px; overflow-x: auto; margin: 1.5em 0; line-height: 1.6; color: #abb2bf; font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; tab-size: 4; -moz-tab-size: 4; -o-tab-size: 4;",
+		pre_code: "font-family: inherit; font-size: 13px; background-color: transparent; border: 0; padding: 0; color: inherit; line-height: inherit; word-wrap: normal;"
 	}
 };
 
@@ -186,17 +232,20 @@ export default class Md2WeChatPlugin extends Plugin {
 
 支持的选择器说明 (Supported Selectors):
 - .container  : 外部大包裹容器样式 (字体、行高、对齐方式)
-- h1          : 一级标题
-- h2          : 二级标题
-- h3          : 三级标题
+- h1, h2, h3, h4, h5, h6 : 各级标题
 - p           : 普通段落
 - code        : 行内代码
 - blockquote  : 引用块
-- ul          : 无序列表容器
-- ol          : 有序列表容器
+- ul, ol      : 无序/有序列表容器
 - li          : 列表项
 - strong      : 加粗文本
 - a           : 链接
+- em          : 斜体文本
+- del         : 删除线
+- hr          : 分割线
+- table, th, td : 表格和单元格样式
+- pre         : 多行代码块背景框
+- pre code    : 多行代码文本样式
 */
 
 .container {
@@ -291,6 +340,59 @@ a {
     text-decoration: none;
     border-bottom: 1px dashed #e74c3c;
 }
+
+em {
+    font-style: italic;
+    color: #555555;
+}
+
+del {
+    text-decoration: line-through;
+    color: #888888;
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid #e74c3c;
+    margin: 2.5em 0;
+    opacity: 0.8;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 2em 0;
+    font-size: 0.9em;
+}
+
+th {
+    border: 1px solid #fadbd8;
+    background-color: #fdf2e9;
+    color: #e74c3c;
+    padding: 10px 14px;
+    font-weight: bold;
+}
+
+td {
+    border: 1px solid #fadbd8;
+    padding: 10px 14px;
+    color: #444444;
+}
+
+pre {
+    background-color: #2d3748;
+    padding: 14px 18px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 1.8em 0;
+    line-height: 1.5;
+}
+
+pre_code {
+    font-family: Consolas, Monaco, monospace;
+    font-size: 13px;
+    color: #f7fafc;
+}
 `;
 				await adapter.write(`${folderPath}/红色热情 (示例).css`, templateCss);
 			}
@@ -328,13 +430,16 @@ a {
 
 	// Simple and robust parser for CSS selectors and rules
 	parseCssToTheme(themeName: string, cssText: string): ThemeStyle | null {
-		// Create a baseline default layout structure (based on elegant green)
+		// Create a baseline default layout structure
 		const baseline: ThemeStyle = {
 			name: `${themeName} (自定义)`,
 			container: "font-family: -apple-system-font, BlinkMacSystemFont, sans-serif; font-size: 15px; color: #353535; line-height: 1.75; text-align: justify;",
 			h1: "font-size: 1.35em; font-weight: bold;",
 			h2: "font-size: 1.2em; font-weight: bold;",
 			h3: "font-size: 1.1em; font-weight: bold;",
+			h4: "font-size: 1.0em; font-weight: bold;",
+			h5: "font-size: 1.0em; font-weight: bold;",
+			h6: "font-size: 0.9em; font-weight: bold;",
 			p: "margin-top: 0px; margin-bottom: 1.4em;",
 			code: "font-family: monospace; font-size: 14px;",
 			blockquote: "margin: 1.5em 0; padding: 10px 15px;",
@@ -342,7 +447,15 @@ a {
 			ol: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px;",
 			li: "margin-bottom: 6px;",
 			strong: "font-weight: bold;",
-			link: "text-decoration: none;"
+			link: "text-decoration: none;",
+			em: "font-style: italic;",
+			del: "text-decoration: line-through;",
+			hr: "border: 0; border-top: 1px solid #cccccc; margin: 2em 0;",
+			table: "border-collapse: collapse; width: 100%; margin: 1.5em 0;",
+			th: "border: 1px solid #cccccc; padding: 8px 12px; font-weight: bold; text-align: left;",
+			td: "border: 1px solid #cccccc; padding: 8px 12px;",
+			pre: "padding: 12px 16px; border-radius: 6px; overflow-x: auto; margin: 1.5em 0; font-family: monospace;",
+			pre_code: "font-family: inherit; font-size: 13px;"
 		};
 
 		try {
@@ -373,6 +486,12 @@ a {
 					baseline.h2 = rules;
 				} else if (selector === 'h3') {
 					baseline.h3 = rules;
+				} else if (selector === 'h4') {
+					baseline.h4 = rules;
+				} else if (selector === 'h5') {
+					baseline.h5 = rules;
+				} else if (selector === 'h6') {
+					baseline.h6 = rules;
 				} else if (selector === 'p') {
 					baseline.p = rules;
 				} else if (selector === 'code') {
@@ -389,6 +508,22 @@ a {
 					baseline.strong = rules;
 				} else if (selector === 'a') {
 					baseline.link = rules;
+				} else if (selector === 'em' || selector === 'i') {
+					baseline.em = rules;
+				} else if (selector === 'del' || selector === 's') {
+					baseline.del = rules;
+				} else if (selector === 'hr') {
+					baseline.hr = rules;
+				} else if (selector === 'table') {
+					baseline.table = rules;
+				} else if (selector === 'th') {
+					baseline.th = rules;
+				} else if (selector === 'td') {
+					baseline.td = rules;
+				} else if (selector === 'pre') {
+					baseline.pre = rules;
+				} else if (selector === 'pre code' || selector === 'pre_code') {
+					baseline.pre_code = rules;
 				}
 			}
 			return baseline;
@@ -399,116 +534,208 @@ a {
 	}
 }
 
-// Convert Obsidian Markdown to WeChat-ready inline HTML
+// Parse and rewrite standard Markdown footnote definitions to WeChat compatible layout
+function preprocessWeChatFootnotes(markdown: string): { markdown: string; footnotes: Array<{ index: number; label: string; content: string }> } {
+	const footnotes: Array<{ index: number; label: string; content: string }> = [];
+	
+	// 1. High tolerance regex to match footnote definitions: e.g., [^1]: https://google.com
+	// Allows leading spaces/tabs and matches multiline or single line definitions.
+	const definitionRegex = /^\s*\[\^([^\]]+)\]:\s*([^\n]+(?:\n(?!\s*\[\^|\s*\n)[^\n]+)*)/gm;
+	
+	const refMap: Record<string, { index: number; content: string }> = {};
+	let counter = 1;
+
+	let processedMarkdown = markdown;
+	const definitions: Array<{ raw: string; label: string; content: string }> = [];
+	
+	let defMatch;
+	// Use a copy to find matches without losing regex state on replace
+	while ((defMatch = definitionRegex.exec(markdown)) !== null) {
+		definitions.push({
+			raw: defMatch[0],
+			label: defMatch[1].trim(),
+			content: defMatch[2].trim()
+		});
+	}
+
+	// Safely peel off all definitions from the original text body
+	definitions.forEach(def => {
+		processedMarkdown = processedMarkdown.replace(def.raw, '');
+		if (!refMap[def.label]) {
+			refMap[def.label] = { index: counter++, content: def.content };
+		}
+	});
+
+	// 2. Inline replacement, replacing [^1] or [^ref] inside body text with superscript HTML tags
+	// We avoid matching footnote definition itself by using a label boundary check
+	const inlineRefRegex = /\[\^([^\]]+)\](?!\s*:)/g;
+	processedMarkdown = processedMarkdown.replace(inlineRefRegex, (match, label) => {
+		const cleanLabel = label.trim();
+		const ref = refMap[cleanLabel];
+		if (ref) {
+			// Save active footnote reference
+			if (!footnotes.some(f => f.label === cleanLabel)) {
+				footnotes.push({ index: ref.index, label: cleanLabel, content: ref.content });
+			}
+			// Replace with stylized superscript HTML tags to bypass markdown render and go straight to HTML
+			// Using deep green or theme colored text for footnote index
+			return `<sup class="wechat-footnote-ref" style="font-size: 0.75em; line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; margin-left: 2px; margin-right: 2px; font-weight: bold; color: #2e6851;">[${ref.index}]</sup>`;
+		}
+		return match;
+	});
+
+	// Sort footnotes to ensure correct order
+	footnotes.sort((a, b) => a.index - b.index);
+
+	return { markdown: processedMarkdown, footnotes };
+}
+
+// Convert Obsidian Markdown to WeChat-ready inline HTML using Marked and DOM-based Inliner
 function convertToWeChatHtml(markdownText: string, theme: ThemeStyle): string {
-	// Simple renderer for Demo. Standard Markdown contains blocks: Headers, blockquotes, lists, links, bold, code, images
-	let lines = markdownText.split('\n');
-	let html = '';
-	let inList = false;
-	let listType: 'ul' | 'ol' | null = null;
-	let inBlockquote = false;
+	// 1. Preprocess WeChat compatible footnotes
+	const { markdown: preparedMarkdown, footnotes } = preprocessWeChatFootnotes(markdownText);
 
-	const escapeHtml = (text: string) => {
-		return text
-			.replace(/&/g, "&")
-			.replace(/</g, "<")
-			.replace(/>/g, ">");
+	// 2. Configure marked parser to highlight code using highlight.js
+	// Use marked's renderer custom code hook to parse syntax highlights synchronously
+	const renderer = new marked.Renderer();
+	renderer.code = function({ text, lang, escaped }: { text: string; lang?: string; escaped?: boolean }): string {
+		const validLang = lang && hljs.getLanguage(lang) ? lang : 'plaintext';
+		const highlighted = hljs.highlight(text, { language: validLang }).value;
+		return `<pre><code class="hljs language-${validLang}">${highlighted}</code></pre>`;
 	};
 
-	const inlineRender = (text: string): string => {
-		let rendered = escapeHtml(text);
-		// bold
-		rendered = rendered.replace(/\*\*(.*?)\*\*/g, `<strong style="${theme.strong}">$1</strong>`);
-		rendered = rendered.replace(/__(.*?)__/g, `<strong style="${theme.strong}">$1</strong>`);
-		// inline code
-		rendered = rendered.replace(/`(.*?)`/g, `<code style="${theme.code}">$1</code>`);
-		// links
-		rendered = rendered.replace(/\[(.*?)\]\((.*?)\)/g, `<a href="$2" style="${theme.link}">$1</a>`);
-		return rendered;
+	// Generate standard HTML from markdown with custom renderer
+	let rawHtml = marked.parse(preparedMarkdown, { renderer, async: false }) as string;
+
+	// 3. Append standard WeChat Footnotes list at the bottom if references exist
+	if (footnotes.length > 0) {
+		let footnoteListHtml = `<div class="wechat-footnotes-section" style="margin-top: 3em; border-top: 1px solid #e1e1e8; padding-top: 1.5em; font-size: 13px; color: #666666;">`;
+		// Subheader for reference section
+		footnoteListHtml += `<h4 style="font-size: 14px; font-weight: bold; margin-bottom: 1em; color: #444444;">参考资料:</h4>`;
+		footnoteListHtml += `<ol style="padding-left: 18px; margin: 0; list-style-type: decimal; line-height: 1.65;">`;
+		
+		footnotes.forEach(fn => {
+			// Convert links inside footnote content to pure text with styling since WeChat strips external a tags
+			let content = fn.content;
+			// Convert markdown [Google](https://google.com) to plain text with bracketed URL
+			content = content.replace(/\[(.*?)\]\((.*?)\)/g, '$1: $2');
+			footnoteListHtml += `<li style="margin-bottom: 6px; text-align: justify; word-break: break-all;"><span style="font-weight: bold; margin-right: 4px;">[${fn.index}]</span> ${content}</li>`;
+		});
+
+		footnoteListHtml += `</ol></div>`;
+		rawHtml += footnoteListHtml;
+	}
+
+	// 4. Parse HTML string to a DOM structure using parser (supported natively in Obsidian's electron browser env)
+	const parser = new DOMParser();
+	const doc = parser.parseFromString(`<div>${rawHtml}</div>`, 'text/html');
+	const container = doc.body.firstElementChild as HTMLElement;
+
+	if (!container) return '';
+
+	// 5. Inject global container style
+	container.setAttribute('style', theme.container || '');
+
+	// Helper to apply css to selectors inside our container
+	const applyStyle = (selector: string, styleText: string | undefined) => {
+		if (!styleText) return;
+		const elements = container.querySelectorAll(selector);
+		elements.forEach(el => {
+			const existingStyle = el.getAttribute('style') || '';
+			// Merge styles gracefully
+			el.setAttribute('style', existingStyle ? `${existingStyle} ${styleText}` : styleText);
+		});
 	};
 
-	for (let i = 0; i < lines.length; i++) {
-		let line = lines[i].trim();
+	// 6. Inject styles block-by-block and inline them cleanly
+	applyStyle('h1', theme.h1);
+	applyStyle('h2', theme.h2);
+	applyStyle('h3', theme.h3);
+	applyStyle('h4', theme.h4);
+	applyStyle('h5', theme.h5);
+	applyStyle('h6', theme.h6);
+	applyStyle('p', theme.p);
+	applyStyle('code', theme.code);
+	applyStyle('blockquote', theme.blockquote);
+	applyStyle('ul', theme.ul);
+	applyStyle('ol', theme.ol);
+	applyStyle('li', theme.li);
+	applyStyle('strong', theme.strong);
+	applyStyle('a', theme.link);
+	applyStyle('em', theme.em);
+	applyStyle('del', theme.del);
+	applyStyle('hr', theme.hr);
+	applyStyle('table', theme.table);
+	applyStyle('th', theme.th);
+	applyStyle('td', theme.td);
+	applyStyle('pre', theme.pre);
 
-		// Handle empty lines (closes lists and blockquotes)
-		if (line === '') {
-			if (inList) {
-				html += `</${listType}>`;
-				inList = false;
-				listType = null;
-			}
-			if (inBlockquote) {
-				html += `</blockquote>`;
-				inBlockquote = false;
-			}
-			continue;
-		}
+	// 7. Map highlight.js classes directly to inline styles for code highlighting
+	// We map the main class tokens used by highlight.js to WeChat compatible colored styles
+	const syntaxColors: Record<string, string> = {
+		'hljs-keyword': 'color: #f92672; font-weight: bold;',
+		'hljs-string': 'color: #a6e22e;',
+		'hljs-comment': 'color: #75715e; font-style: italic;',
+		'hljs-number': 'color: #ae81ff;',
+		'hljs-function': 'color: #a6e22e;',
+		'hljs-title': 'color: #66d9ef;',
+		'hljs-params': 'color: #f8f8f2;',
+		'hljs-built_in': 'color: #66d9ef;',
+		'hljs-type': 'color: #66d9ef; font-style: italic;',
+		'hljs-class': 'color: #a6e22e;',
+		'hljs-attr': 'color: #f92672;',
+		'hljs-attribute': 'color: #e6db74;',
+		'hljs-variable': 'color: #f8f8f2;',
+		'hljs-meta': 'color: #75715e;',
+		'hljs-literal': 'color: #ae81ff;'
+	};
 
-		// Blockquote
-		if (line.startsWith('>')) {
-			if (!inBlockquote) {
-				if (inList) {
-					html += `</${listType}>`;
-					inList = false;
-					listType = null;
-				}
-				html += `<blockquote style="${theme.blockquote}">`;
-				inBlockquote = true;
-			}
-			let content = line.substring(1).trim();
-			html += `<p style="${theme.p}">${inlineRender(content)}</p>`;
-			continue;
-		} else if (inBlockquote) {
-			html += `</blockquote>`;
-			inBlockquote = false;
-		}
+	Object.keys(syntaxColors).forEach(className => {
+		const elements = container.querySelectorAll(`.${className}`);
+		elements.forEach(el => {
+			const existing = el.getAttribute('style') || '';
+			el.setAttribute('style', existing ? `${existing} ${syntaxColors[className]}` : syntaxColors[className]);
+		});
+	});
 
-		// Headers
-		if (line.startsWith('# ')) {
-			html += `<h1 style="${theme.h1}">${inlineRender(line.substring(2))}</h1>`;
-		} else if (line.startsWith('## ')) {
-			html += `<h2 style="${theme.h2}">${inlineRender(line.substring(3))}</h2>`;
-		} else if (line.startsWith('### ')) {
-			html += `<h3 style="${theme.h3}">${inlineRender(line.substring(4))}</h3>`;
-		} else if (line.startsWith('- ') || line.startsWith('* ')) {
-			// Unordered List
-			if (!inList || listType !== 'ul') {
-				if (inList) html += `</${listType}>`;
-				html += `<ul style="${theme.ul}">`;
-				inList = true;
-				listType = 'ul';
-			}
-			html += `<li style="${theme.li}">${inlineRender(line.substring(2))}</li>`;
-		} else if (/^\d+\.\s/.test(line)) {
-			// Ordered List
-			if (!inList || listType !== 'ol') {
-				if (inList) html += `</${listType}>`;
-				html += `<ol style="${theme.ol}">`;
-				inList = true;
-				listType = 'ol';
-			}
-			let content = line.replace(/^\d+\.\s/, '');
-			html += `<li style="${theme.li}">${inlineRender(content)}</li>`;
-		} else {
-			// Normal Paragraph
-			if (inList) {
-				html += `</${listType}>`;
-				inList = false;
-				listType = null;
-			}
-			html += `<p style="${theme.p}">${inlineRender(line)}</p>`;
+	// Special treatment for multi-line pre code blocks to override code rules and style them properly
+	// Force tab-size, remove letter-spacing and word-spacing to fix super wide spaces and tabs
+	const preBlocks = container.querySelectorAll('pre');
+	preBlocks.forEach(el => {
+		const existingStyle = el.getAttribute('style') || '';
+		el.setAttribute('style', `${existingStyle} letter-spacing: 0px !important; word-spacing: normal !important; tab-size: 4 !important; -moz-tab-size: 4 !important; -o-tab-size: 4 !important;`);
+	});
+
+	const preCodeBlocks = container.querySelectorAll('pre code');
+	preCodeBlocks.forEach(el => {
+		const baseStyle = theme.pre_code || '';
+		el.setAttribute('style', `${baseStyle} letter-spacing: 0px !important; word-spacing: normal !important; tab-size: 4 !important; -moz-tab-size: 4 !important; -o-tab-size: 4 !important;`);
+	});
+
+	// For elements inside blockquotes, make sure standard paragraph margin/styles are overridden gracefully or aligned
+	const blockquoteParagraphs = container.querySelectorAll('blockquote p');
+	blockquoteParagraphs.forEach(p => {
+		const style = p.getAttribute('style') || '';
+		p.setAttribute('style', `${style} margin: 0.5em 0; color: inherit; line-height: inherit;`);
+	});
+
+	// Set color of wechat-footnote-ref matching the theme's default strong/link colors dynamically
+	// We extract color attribute from theme's strong style
+	let themeColor = '#2e6851'; // elegant green baseline
+	if (theme.strong) {
+		const colorMatch = theme.strong.match(/color:\s*(#[0-9a-fA-F]+)/);
+		if (colorMatch) {
+			themeColor = colorMatch[1];
 		}
 	}
+	const footnoteRefs = container.querySelectorAll('.wechat-footnote-ref');
+	footnoteRefs.forEach(ref => {
+		const style = ref.getAttribute('style') || '';
+		ref.setAttribute('style', style.replace('color: #2e6851;', `color: ${themeColor};`));
+	});
 
-	// Clean up lists or blockquotes at EOF
-	if (inList) {
-		html += `</${listType}>`;
-	}
-	if (inBlockquote) {
-		html += `</blockquote>`;
-	}
-
-	return `<div style="${theme.container}">${html}</div>`;
+	// 8. Serialize back to high compatibility inline HTML string
+	return container.outerHTML;
 }
 
 // Permanent Sidebar View for Preview and Sync
