@@ -25,6 +25,7 @@ interface Md2WeChatSettings {
 	imageHostingType: 'wechat' | 'none';
 	defaultThumbMediaId: string;
 	cachedMaterials: Array<{ mediaId: string; name: string }>;
+	themeFolder: string;
 }
 
 const DEFAULT_SETTINGS: Md2WeChatSettings = {
@@ -35,7 +36,8 @@ const DEFAULT_SETTINGS: Md2WeChatSettings = {
 	enableImgUpload: true,
 	imageHostingType: 'wechat',
 	defaultThumbMediaId: '',
-	cachedMaterials: []
+	cachedMaterials: [],
+	themeFolder: 'wechat-format-themes'
 };
 
 // Preset WeChat CSS styles (as template strings for easy embedding as inline styles)
@@ -105,9 +107,12 @@ const THEMES: Record<string, ThemeStyle> = {
 
 export default class Md2WeChatPlugin extends Plugin {
 	settings!: Md2WeChatSettings;
+	customThemes: Record<string, ThemeStyle> = {};
 
 	async onload() {
 		await this.loadSettings();
+		await this.initThemeDirectory();
+		await this.loadCustomThemes();
 
 		// Register Sidebar View
 		this.registerView(
@@ -162,6 +167,234 @@ export default class Md2WeChatPlugin extends Plugin {
 
 		if (leaf) {
 			workspace.revealLeaf(leaf);
+		}
+	}
+
+	// Initialize theme directory and write custom CSS template
+	async initThemeDirectory() {
+		const folderPath = this.settings.themeFolder;
+		try {
+			const adapter = this.app.vault.adapter;
+			const exists = await adapter.exists(folderPath);
+			if (!exists) {
+				await this.app.vault.createFolder(folderPath);
+				
+				// Create a default theme template file with comments and guide
+				const templateCss = `/* 
+微信自定义主题模板 (Custom WeChat Theme Template)
+文件名将作为主题名称显示在下拉列表中 (e.g. "酷炫黑.css" => "酷炫黑")
+
+支持的选择器说明 (Supported Selectors):
+- .container  : 外部大包裹容器样式 (字体、行高、对齐方式)
+- h1          : 一级标题
+- h2          : 二级标题
+- h3          : 三级标题
+- p           : 普通段落
+- code        : 行内代码
+- blockquote  : 引用块
+- ul          : 无序列表容器
+- ol          : 有序列表容器
+- li          : 列表项
+- strong      : 加粗文本
+- a           : 链接
+*/
+
+.container {
+    font-family: -apple-system-font, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', sans-serif;
+    font-size: 15px;
+    color: #2b2b2b;
+    line-height: 1.8;
+    letter-spacing: 0.5px;
+    text-align: justify;
+}
+
+h1 {
+    font-size: 1.4em;
+    color: #e74c3c;
+    border-bottom: 2px solid #e74c3c;
+    padding-bottom: 6px;
+    margin-top: 1.8em;
+    margin-bottom: 0.8em;
+    font-weight: bold;
+}
+
+h2 {
+    font-size: 1.25em;
+    color: #e74c3c;
+    margin-top: 1.6em;
+    margin-bottom: 0.8em;
+    font-weight: bold;
+    border-left: 4px solid #e74c3c;
+    padding-left: 8px;
+}
+
+h3 {
+    font-size: 1.1em;
+    color: #c0392b;
+    margin-top: 1.4em;
+    margin-bottom: 0.6em;
+    font-weight: bold;
+}
+
+p {
+    margin-top: 0px;
+    margin-bottom: 1.4em;
+    color: #333333;
+}
+
+code {
+    font-family: Consolas, Monaco, monospace;
+    font-size: 14px;
+    background-color: #fadbd8;
+    color: #c0392b;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+blockquote {
+    margin: 1.5em 0;
+    padding: 12px 18px;
+    background: #fdf2e9;
+    border-left: 4px solid #e74c3c;
+    color: #5d4037;
+    font-size: 0.95em;
+    border-radius: 0 4px 4px 0;
+}
+
+ul {
+    margin-top: 0px;
+    margin-bottom: 1.2em;
+    padding-left: 20px;
+    list-style-type: disc;
+}
+
+ol {
+    margin-top: 0px;
+    margin-bottom: 1.2em;
+    padding-left: 20px;
+    list-style-type: decimal;
+}
+
+li {
+    margin-bottom: 6px;
+    line-height: 1.7;
+    color: #444444;
+}
+
+strong {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+a {
+    color: #e74c3c;
+    text-decoration: none;
+    border-bottom: 1px dashed #e74c3c;
+}
+`;
+				await adapter.write(`${folderPath}/红色热情 (示例).css`, templateCss);
+			}
+		} catch (e) {
+			console.error("【微信同步】创建自定义主题目录失败:", e);
+		}
+	}
+
+	// Load and parse all CSS files in the theme folder
+	async loadCustomThemes() {
+		this.customThemes = {};
+		const folderPath = this.settings.themeFolder;
+		try {
+			const adapter = this.app.vault.adapter;
+			const exists = await adapter.exists(folderPath);
+			if (!exists) return;
+
+			const files = await adapter.list(folderPath);
+			// Filter only .css files
+			const cssFiles = files.files.filter(f => f.endsWith('.css'));
+
+			for (const file of cssFiles) {
+				const content = await adapter.read(file);
+				const fileName = file.split('/').pop() || '';
+				const themeName = fileName.replace(/\.css$/, '');
+				const parsedTheme = this.parseCssToTheme(themeName, content);
+				if (parsedTheme) {
+					this.customThemes[themeName] = parsedTheme;
+				}
+			}
+		} catch (e) {
+			console.error("【微信同步】加载自定义主题失败:", e);
+		}
+	}
+
+	// Simple and robust parser for CSS selectors and rules
+	parseCssToTheme(themeName: string, cssText: string): ThemeStyle | null {
+		// Create a baseline default layout structure (based on elegant green)
+		const baseline: ThemeStyle = {
+			name: `${themeName} (自定义)`,
+			container: "font-family: -apple-system-font, BlinkMacSystemFont, sans-serif; font-size: 15px; color: #353535; line-height: 1.75; text-align: justify;",
+			h1: "font-size: 1.35em; font-weight: bold;",
+			h2: "font-size: 1.2em; font-weight: bold;",
+			h3: "font-size: 1.1em; font-weight: bold;",
+			p: "margin-top: 0px; margin-bottom: 1.4em;",
+			code: "font-family: monospace; font-size: 14px;",
+			blockquote: "margin: 1.5em 0; padding: 10px 15px;",
+			ul: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px;",
+			ol: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px;",
+			li: "margin-bottom: 6px;",
+			strong: "font-weight: bold;",
+			link: "text-decoration: none;"
+		};
+
+		try {
+			// Strip out block comments /* ... */
+			const strippedCss = cssText.replace(/\/\*[\s\S]*?\*\//g, '');
+			
+			// Match "selector { rules }"
+			const ruleRegex = /([^{]+)\{([^}]+)\}/g;
+			let match;
+
+			while ((match = ruleRegex.exec(strippedCss)) !== null) {
+				const selector = match[1].trim().toLowerCase();
+				const rulesRaw = match[2].trim();
+				
+				// Standardize property declarations
+				const rules = rulesRaw
+					.split(';')
+					.map(r => r.trim())
+					.filter(r => r.length > 0)
+					.join('; ') + ';';
+
+				// Map selectors to baseline keys
+				if (selector === '.container' || selector === 'container') {
+					baseline.container = rules;
+				} else if (selector === 'h1') {
+					baseline.h1 = rules;
+				} else if (selector === 'h2') {
+					baseline.h2 = rules;
+				} else if (selector === 'h3') {
+					baseline.h3 = rules;
+				} else if (selector === 'p') {
+					baseline.p = rules;
+				} else if (selector === 'code') {
+					baseline.code = rules;
+				} else if (selector === 'blockquote') {
+					baseline.blockquote = rules;
+				} else if (selector === 'ul') {
+					baseline.ul = rules;
+				} else if (selector === 'ol') {
+					baseline.ol = rules;
+				} else if (selector === 'li') {
+					baseline.li = rules;
+				} else if (selector === 'strong' || selector === 'b') {
+					baseline.strong = rules;
+				} else if (selector === 'a') {
+					baseline.link = rules;
+				}
+			}
+			return baseline;
+		} catch (e) {
+			console.error(`【微信同步】解析CSS主题 ${themeName} 失败:`, e);
+			return null;
 		}
 	}
 }
@@ -315,16 +548,49 @@ class WeChatPreviewView extends ItemView {
 
 		// Theme selector
 		const selector = toolbar.createEl('select', { cls: 'md2wechat-style-select' });
-		Object.keys(THEMES).forEach(key => {
-			const option = selector.createEl('option');
-			option.value = key;
-			option.text = THEMES[key].name;
-			if (key === this.plugin.settings.defaultStyle) option.selected = true;
-		});
+		
+		// Function to rebuild options dynamically including custom themes
+		const populateSelector = () => {
+			// Record currently selected value before clearing to preserve selection state
+			const currentlySelected = selector.value;
+			
+			selector.empty();
+			
+			// Built-in themes
+			Object.keys(THEMES).forEach(key => {
+				const option = selector.createEl('option');
+				option.value = key;
+				option.text = THEMES[key].name;
+				if (currentlySelected) {
+					if (key === currentlySelected) option.selected = true;
+				} else {
+					if (key === this.plugin.settings.defaultStyle) option.selected = true;
+				}
+			});
+
+			// Custom themes
+			Object.keys(this.plugin.customThemes).forEach(key => {
+				const option = selector.createEl('option');
+				option.value = `custom:${key}`;
+				option.text = `📂 ${key}`;
+				if (currentlySelected) {
+					if (`custom:${key}` === currentlySelected) option.selected = true;
+				} else {
+					if (`custom:${key}` === this.plugin.settings.defaultStyle) option.selected = true;
+				}
+			});
+
+			// If the previously selected theme is still valid, restore it explicitly
+			if (currentlySelected) {
+				selector.value = currentlySelected;
+			}
+		};
+
+		populateSelector();
 
 		// Buttons
 		const refreshBtn = toolbar.createEl('button', { text: '🔄' });
-		refreshBtn.title = "Refresh Preview";
+		refreshBtn.title = "Refresh Themes & Preview";
 		const copyBtn = toolbar.createEl('button', { text: 'Copy Rich Text' });
 		const syncBtn = toolbar.createEl('button', { text: 'Sync to Draft' });
 		syncBtn.addClass('mod-cta');
@@ -336,23 +602,42 @@ class WeChatPreviewView extends ItemView {
 		// Render function
 		const render = (onlyIfMarkdown = false) => {
 			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-			if (!activeView) {
+			let markdownText = '';
+			
+			if (activeView) {
+				// 1. If we have a focused markdown view, get its text
+				markdownText = typeof activeView.setViewData === 'function' ? activeView.data : activeView.editor.getValue();
+			} else if (this.lastMarkdown) {
+				// 2. If we lost focus (e.g. focused on sidebar), fallback to cached lastMarkdown to prevent clearing
+				markdownText = this.lastMarkdown;
+			} else {
+				// 3. Complete fallback (fresh open with no focus and no cache)
 				if (!onlyIfMarkdown) {
 					previewArea.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--text-muted);">Please open and select a markdown note first!</div>`;
 				}
 				return;
 			}
-			const markdownText = typeof activeView.setViewData === 'function' ? activeView.data : activeView.editor.getValue();
-			const theme = THEMES[selector.value] || THEMES.elegant;
+			
+			let theme = THEMES.elegant;
+			const selectedVal = selector.value;
+			if (selectedVal && selectedVal.startsWith('custom:')) {
+				const customKey = selectedVal.replace('custom:', '');
+				theme = this.plugin.customThemes[customKey] || THEMES.elegant;
+			} else if (selectedVal) {
+				theme = THEMES[selectedVal] || THEMES.elegant;
+			}
+
 			this.currentHtml = convertToWeChatHtml(markdownText, theme);
 			previewArea.innerHTML = this.currentHtml;
 
 			// Store metadata of the last successfully rendered article
 			this.lastMarkdown = markdownText;
-			this.lastTitle = activeView.file ? activeView.file.basename : 'Untitled Note';
-			const firstHeaderMatch = markdownText.match(/^#\s+(.+)$/m);
-			if (firstHeaderMatch) {
-				this.lastTitle = firstHeaderMatch[1].trim();
+			if (activeView) {
+				this.lastTitle = activeView.file ? activeView.file.basename : 'Untitled Note';
+				const firstHeaderMatch = markdownText.match(/^#\s+(.+)$/m);
+				if (firstHeaderMatch) {
+					this.lastTitle = firstHeaderMatch[1].trim();
+				}
 			}
 			this.lastDigest = markdownText.substring(0, 120).replace(/[#*`>]/g, '').trim();
 		};
@@ -365,9 +650,11 @@ class WeChatPreviewView extends ItemView {
 			render(false);
 		});
 
-		refreshBtn.addEventListener('click', () => {
+		refreshBtn.addEventListener('click', async () => {
+			await this.plugin.loadCustomThemes();
+			populateSelector();
 			render(false);
-			new Notice('Preview refreshed!');
+			new Notice('Themes refreshed and preview updated!');
 		});
 
 		// Automatically refresh preview when user switches file or edits
@@ -557,17 +844,39 @@ class Md2WeChatSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
-		new Setting(containerEl)
+		// Dynamically populate default style dropdown with built-in and custom themes
+		const styleSetting = new Setting(containerEl)
 			.setName('Default Theme')
-			.setDesc('Default style template used for renders')
-			.addDropdown(dropdown => dropdown
-				.addOption('elegant', 'Elegant Green (雅绿)')
-				.addOption('warm', 'Warm Gold (暖金)')
-				.addOption('minimal', 'Minimalist Black (极简)')
-				.setValue(this.plugin.settings.defaultStyle)
+			.setDesc('Default style template used for renders');
+
+		styleSetting.addDropdown(dropdown => {
+			dropdown.addOption('elegant', 'Elegant Green (雅绿)');
+			dropdown.addOption('warm', 'Warm Gold (暖金)');
+			dropdown.addOption('minimal', 'Minimalist Black (极简)');
+			
+			// Load custom themes too
+			Object.keys(this.plugin.customThemes).forEach(key => {
+				dropdown.addOption(`custom:${key}`, `📂 ${key}`);
+			});
+
+			dropdown.setValue(this.plugin.settings.defaultStyle);
+			dropdown.onChange(async (value) => {
+				this.plugin.settings.defaultStyle = value;
+				await this.plugin.saveSettings();
+			});
+		});
+
+		new Setting(containerEl)
+			.setName('Custom Themes Folder')
+			.setDesc('Folder in your vault where custom WeChat CSS themes are stored. (Will auto-initialize if not existing)')
+			.addText(text => text
+				.setPlaceholder('wechat-format-themes')
+				.setValue(this.plugin.settings.themeFolder)
 				.onChange(async (value) => {
-					this.plugin.settings.defaultStyle = value;
+					this.plugin.settings.themeFolder = value.trim() || 'wechat-format-themes';
 					await this.plugin.saveSettings();
+					await this.plugin.initThemeDirectory();
+					await this.plugin.loadCustomThemes();
 				}));
 
 		new Setting(containerEl)

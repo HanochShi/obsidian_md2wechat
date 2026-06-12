@@ -38,7 +38,8 @@ var DEFAULT_SETTINGS = {
   enableImgUpload: true,
   imageHostingType: "wechat",
   defaultThumbMediaId: "",
-  cachedMaterials: []
+  cachedMaterials: [],
+  themeFolder: "wechat-format-themes"
 };
 var THEMES = {
   elegant: {
@@ -88,8 +89,14 @@ var THEMES = {
   }
 };
 var Md2WeChatPlugin = class extends import_obsidian.Plugin {
+  constructor() {
+    super(...arguments);
+    this.customThemes = {};
+  }
   async onload() {
     await this.loadSettings();
+    await this.initThemeDirectory();
+    await this.loadCustomThemes();
     this.registerView(
       VIEW_TYPE_WECHAT_PREVIEW,
       (leaf) => new WeChatPreviewView(leaf, this)
@@ -129,6 +136,213 @@ var Md2WeChatPlugin = class extends import_obsidian.Plugin {
     }
     if (leaf) {
       workspace.revealLeaf(leaf);
+    }
+  }
+  // Initialize theme directory and write custom CSS template
+  async initThemeDirectory() {
+    const folderPath = this.settings.themeFolder;
+    try {
+      const adapter = this.app.vault.adapter;
+      const exists = await adapter.exists(folderPath);
+      if (!exists) {
+        await this.app.vault.createFolder(folderPath);
+        const templateCss = `/* 
+\u5FAE\u4FE1\u81EA\u5B9A\u4E49\u4E3B\u9898\u6A21\u677F (Custom WeChat Theme Template)
+\u6587\u4EF6\u540D\u5C06\u4F5C\u4E3A\u4E3B\u9898\u540D\u79F0\u663E\u793A\u5728\u4E0B\u62C9\u5217\u8868\u4E2D (e.g. "\u9177\u70AB\u9ED1.css" => "\u9177\u70AB\u9ED1")
+
+\u652F\u6301\u7684\u9009\u62E9\u5668\u8BF4\u660E (Supported Selectors):
+- .container  : \u5916\u90E8\u5927\u5305\u88F9\u5BB9\u5668\u6837\u5F0F (\u5B57\u4F53\u3001\u884C\u9AD8\u3001\u5BF9\u9F50\u65B9\u5F0F)
+- h1          : \u4E00\u7EA7\u6807\u9898
+- h2          : \u4E8C\u7EA7\u6807\u9898
+- h3          : \u4E09\u7EA7\u6807\u9898
+- p           : \u666E\u901A\u6BB5\u843D
+- code        : \u884C\u5185\u4EE3\u7801
+- blockquote  : \u5F15\u7528\u5757
+- ul          : \u65E0\u5E8F\u5217\u8868\u5BB9\u5668
+- ol          : \u6709\u5E8F\u5217\u8868\u5BB9\u5668
+- li          : \u5217\u8868\u9879
+- strong      : \u52A0\u7C97\u6587\u672C
+- a           : \u94FE\u63A5
+*/
+
+.container {
+    font-family: -apple-system-font, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', sans-serif;
+    font-size: 15px;
+    color: #2b2b2b;
+    line-height: 1.8;
+    letter-spacing: 0.5px;
+    text-align: justify;
+}
+
+h1 {
+    font-size: 1.4em;
+    color: #e74c3c;
+    border-bottom: 2px solid #e74c3c;
+    padding-bottom: 6px;
+    margin-top: 1.8em;
+    margin-bottom: 0.8em;
+    font-weight: bold;
+}
+
+h2 {
+    font-size: 1.25em;
+    color: #e74c3c;
+    margin-top: 1.6em;
+    margin-bottom: 0.8em;
+    font-weight: bold;
+    border-left: 4px solid #e74c3c;
+    padding-left: 8px;
+}
+
+h3 {
+    font-size: 1.1em;
+    color: #c0392b;
+    margin-top: 1.4em;
+    margin-bottom: 0.6em;
+    font-weight: bold;
+}
+
+p {
+    margin-top: 0px;
+    margin-bottom: 1.4em;
+    color: #333333;
+}
+
+code {
+    font-family: Consolas, Monaco, monospace;
+    font-size: 14px;
+    background-color: #fadbd8;
+    color: #c0392b;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+blockquote {
+    margin: 1.5em 0;
+    padding: 12px 18px;
+    background: #fdf2e9;
+    border-left: 4px solid #e74c3c;
+    color: #5d4037;
+    font-size: 0.95em;
+    border-radius: 0 4px 4px 0;
+}
+
+ul {
+    margin-top: 0px;
+    margin-bottom: 1.2em;
+    padding-left: 20px;
+    list-style-type: disc;
+}
+
+ol {
+    margin-top: 0px;
+    margin-bottom: 1.2em;
+    padding-left: 20px;
+    list-style-type: decimal;
+}
+
+li {
+    margin-bottom: 6px;
+    line-height: 1.7;
+    color: #444444;
+}
+
+strong {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+a {
+    color: #e74c3c;
+    text-decoration: none;
+    border-bottom: 1px dashed #e74c3c;
+}
+`;
+        await adapter.write(`${folderPath}/\u7EA2\u8272\u70ED\u60C5 (\u793A\u4F8B).css`, templateCss);
+      }
+    } catch (e) {
+      console.error("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u521B\u5EFA\u81EA\u5B9A\u4E49\u4E3B\u9898\u76EE\u5F55\u5931\u8D25:", e);
+    }
+  }
+  // Load and parse all CSS files in the theme folder
+  async loadCustomThemes() {
+    this.customThemes = {};
+    const folderPath = this.settings.themeFolder;
+    try {
+      const adapter = this.app.vault.adapter;
+      const exists = await adapter.exists(folderPath);
+      if (!exists)
+        return;
+      const files = await adapter.list(folderPath);
+      const cssFiles = files.files.filter((f) => f.endsWith(".css"));
+      for (const file of cssFiles) {
+        const content = await adapter.read(file);
+        const fileName = file.split("/").pop() || "";
+        const themeName = fileName.replace(/\.css$/, "");
+        const parsedTheme = this.parseCssToTheme(themeName, content);
+        if (parsedTheme) {
+          this.customThemes[themeName] = parsedTheme;
+        }
+      }
+    } catch (e) {
+      console.error("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u52A0\u8F7D\u81EA\u5B9A\u4E49\u4E3B\u9898\u5931\u8D25:", e);
+    }
+  }
+  // Simple and robust parser for CSS selectors and rules
+  parseCssToTheme(themeName, cssText) {
+    const baseline = {
+      name: `${themeName} (\u81EA\u5B9A\u4E49)`,
+      container: "font-family: -apple-system-font, BlinkMacSystemFont, sans-serif; font-size: 15px; color: #353535; line-height: 1.75; text-align: justify;",
+      h1: "font-size: 1.35em; font-weight: bold;",
+      h2: "font-size: 1.2em; font-weight: bold;",
+      h3: "font-size: 1.1em; font-weight: bold;",
+      p: "margin-top: 0px; margin-bottom: 1.4em;",
+      code: "font-family: monospace; font-size: 14px;",
+      blockquote: "margin: 1.5em 0; padding: 10px 15px;",
+      ul: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px;",
+      ol: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px;",
+      li: "margin-bottom: 6px;",
+      strong: "font-weight: bold;",
+      link: "text-decoration: none;"
+    };
+    try {
+      const strippedCss = cssText.replace(/\/\*[\s\S]*?\*\//g, "");
+      const ruleRegex = /([^{]+)\{([^}]+)\}/g;
+      let match;
+      while ((match = ruleRegex.exec(strippedCss)) !== null) {
+        const selector = match[1].trim().toLowerCase();
+        const rulesRaw = match[2].trim();
+        const rules = rulesRaw.split(";").map((r) => r.trim()).filter((r) => r.length > 0).join("; ") + ";";
+        if (selector === ".container" || selector === "container") {
+          baseline.container = rules;
+        } else if (selector === "h1") {
+          baseline.h1 = rules;
+        } else if (selector === "h2") {
+          baseline.h2 = rules;
+        } else if (selector === "h3") {
+          baseline.h3 = rules;
+        } else if (selector === "p") {
+          baseline.p = rules;
+        } else if (selector === "code") {
+          baseline.code = rules;
+        } else if (selector === "blockquote") {
+          baseline.blockquote = rules;
+        } else if (selector === "ul") {
+          baseline.ul = rules;
+        } else if (selector === "ol") {
+          baseline.ol = rules;
+        } else if (selector === "li") {
+          baseline.li = rules;
+        } else if (selector === "strong" || selector === "b") {
+          baseline.strong = rules;
+        } else if (selector === "a") {
+          baseline.link = rules;
+        }
+      }
+      return baseline;
+    } catch (e) {
+      console.error(`\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u89E3\u6790CSS\u4E3B\u9898 ${themeName} \u5931\u8D25:`, e);
+      return null;
     }
   }
 };
@@ -246,15 +460,40 @@ var WeChatPreviewView = class extends import_obsidian.ItemView {
     const container = contentEl.createDiv({ cls: "md2wechat-preview-container" });
     const toolbar = container.createDiv({ cls: "md2wechat-preview-toolbar" });
     const selector = toolbar.createEl("select", { cls: "md2wechat-style-select" });
-    Object.keys(THEMES).forEach((key) => {
-      const option = selector.createEl("option");
-      option.value = key;
-      option.text = THEMES[key].name;
-      if (key === this.plugin.settings.defaultStyle)
-        option.selected = true;
-    });
+    const populateSelector = () => {
+      const currentlySelected = selector.value;
+      selector.empty();
+      Object.keys(THEMES).forEach((key) => {
+        const option = selector.createEl("option");
+        option.value = key;
+        option.text = THEMES[key].name;
+        if (currentlySelected) {
+          if (key === currentlySelected)
+            option.selected = true;
+        } else {
+          if (key === this.plugin.settings.defaultStyle)
+            option.selected = true;
+        }
+      });
+      Object.keys(this.plugin.customThemes).forEach((key) => {
+        const option = selector.createEl("option");
+        option.value = `custom:${key}`;
+        option.text = `\u{1F4C2} ${key}`;
+        if (currentlySelected) {
+          if (`custom:${key}` === currentlySelected)
+            option.selected = true;
+        } else {
+          if (`custom:${key}` === this.plugin.settings.defaultStyle)
+            option.selected = true;
+        }
+      });
+      if (currentlySelected) {
+        selector.value = currentlySelected;
+      }
+    };
+    populateSelector();
     const refreshBtn = toolbar.createEl("button", { text: "\u{1F504}" });
-    refreshBtn.title = "Refresh Preview";
+    refreshBtn.title = "Refresh Themes & Preview";
     const copyBtn = toolbar.createEl("button", { text: "Copy Rich Text" });
     const syncBtn = toolbar.createEl("button", { text: "Sync to Draft" });
     syncBtn.addClass("mod-cta");
@@ -262,21 +501,34 @@ var WeChatPreviewView = class extends import_obsidian.ItemView {
     const previewArea = previewWrapper.createDiv({ cls: "md2wechat-preview-content" });
     const render = (onlyIfMarkdown = false) => {
       const activeView = this.app.workspace.getActiveViewOfType(import_obsidian.MarkdownView);
-      if (!activeView) {
+      let markdownText = "";
+      if (activeView) {
+        markdownText = typeof activeView.setViewData === "function" ? activeView.data : activeView.editor.getValue();
+      } else if (this.lastMarkdown) {
+        markdownText = this.lastMarkdown;
+      } else {
         if (!onlyIfMarkdown) {
           previewArea.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--text-muted);">Please open and select a markdown note first!</div>`;
         }
         return;
       }
-      const markdownText = typeof activeView.setViewData === "function" ? activeView.data : activeView.editor.getValue();
-      const theme = THEMES[selector.value] || THEMES.elegant;
+      let theme = THEMES.elegant;
+      const selectedVal = selector.value;
+      if (selectedVal && selectedVal.startsWith("custom:")) {
+        const customKey = selectedVal.replace("custom:", "");
+        theme = this.plugin.customThemes[customKey] || THEMES.elegant;
+      } else if (selectedVal) {
+        theme = THEMES[selectedVal] || THEMES.elegant;
+      }
       this.currentHtml = convertToWeChatHtml(markdownText, theme);
       previewArea.innerHTML = this.currentHtml;
       this.lastMarkdown = markdownText;
-      this.lastTitle = activeView.file ? activeView.file.basename : "Untitled Note";
-      const firstHeaderMatch = markdownText.match(/^#\s+(.+)$/m);
-      if (firstHeaderMatch) {
-        this.lastTitle = firstHeaderMatch[1].trim();
+      if (activeView) {
+        this.lastTitle = activeView.file ? activeView.file.basename : "Untitled Note";
+        const firstHeaderMatch = markdownText.match(/^#\s+(.+)$/m);
+        if (firstHeaderMatch) {
+          this.lastTitle = firstHeaderMatch[1].trim();
+        }
       }
       this.lastDigest = markdownText.substring(0, 120).replace(/[#*`>]/g, "").trim();
     };
@@ -284,9 +536,11 @@ var WeChatPreviewView = class extends import_obsidian.ItemView {
     selector.addEventListener("change", () => {
       render(false);
     });
-    refreshBtn.addEventListener("click", () => {
+    refreshBtn.addEventListener("click", async () => {
+      await this.plugin.loadCustomThemes();
+      populateSelector();
       render(false);
-      new import_obsidian.Notice("Preview refreshed!");
+      new import_obsidian.Notice("Themes refreshed and preview updated!");
     });
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", () => {
@@ -421,9 +675,25 @@ var Md2WeChatSettingTab = class extends import_obsidian.PluginSettingTab {
       this.plugin.settings.appSecret = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian.Setting(containerEl).setName("Default Theme").setDesc("Default style template used for renders").addDropdown((dropdown) => dropdown.addOption("elegant", "Elegant Green (\u96C5\u7EFF)").addOption("warm", "Warm Gold (\u6696\u91D1)").addOption("minimal", "Minimalist Black (\u6781\u7B80)").setValue(this.plugin.settings.defaultStyle).onChange(async (value) => {
-      this.plugin.settings.defaultStyle = value;
+    const styleSetting = new import_obsidian.Setting(containerEl).setName("Default Theme").setDesc("Default style template used for renders");
+    styleSetting.addDropdown((dropdown) => {
+      dropdown.addOption("elegant", "Elegant Green (\u96C5\u7EFF)");
+      dropdown.addOption("warm", "Warm Gold (\u6696\u91D1)");
+      dropdown.addOption("minimal", "Minimalist Black (\u6781\u7B80)");
+      Object.keys(this.plugin.customThemes).forEach((key) => {
+        dropdown.addOption(`custom:${key}`, `\u{1F4C2} ${key}`);
+      });
+      dropdown.setValue(this.plugin.settings.defaultStyle);
+      dropdown.onChange(async (value) => {
+        this.plugin.settings.defaultStyle = value;
+        await this.plugin.saveSettings();
+      });
+    });
+    new import_obsidian.Setting(containerEl).setName("Custom Themes Folder").setDesc("Folder in your vault where custom WeChat CSS themes are stored. (Will auto-initialize if not existing)").addText((text) => text.setPlaceholder("wechat-format-themes").setValue(this.plugin.settings.themeFolder).onChange(async (value) => {
+      this.plugin.settings.themeFolder = value.trim() || "wechat-format-themes";
       await this.plugin.saveSettings();
+      await this.plugin.initThemeDirectory();
+      await this.plugin.loadCustomThemes();
     }));
     new import_obsidian.Setting(containerEl).setName("WeChat Image Uploads").setDesc("Enable automatic image upload directly to WeChat CDN").addToggle((toggle) => toggle.setValue(this.plugin.settings.enableImgUpload).onChange(async (value) => {
       this.plugin.settings.enableImgUpload = value;
