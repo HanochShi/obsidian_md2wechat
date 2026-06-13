@@ -51863,13 +51863,369 @@ var require_lib = __commonJS({
   }
 });
 
-// main.ts
+// src/main.ts
 var main_exports = {};
 __export(main_exports, {
   default: () => Md2WeChatPlugin
 });
 module.exports = __toCommonJS(main_exports);
+var import_obsidian4 = require("obsidian");
+
+// src/settings.ts
 var import_obsidian = require("obsidian");
+var Md2WeChatSettingTab = class extends import_obsidian.PluginSettingTab {
+  constructor(app, plugin) {
+    super(app, plugin);
+    this.plugin = plugin;
+  }
+  display() {
+    const { containerEl } = this;
+    containerEl.empty();
+    containerEl.createEl("h2", { text: "Markdown to WeChat Settings" });
+    new import_obsidian.Setting(containerEl).setName("WeChat AppID").setDesc("Your WeChat Official Account Developer AppID").addText((text) => text.setPlaceholder("wx...").setValue(this.plugin.settings.appId).onChange(async (value) => {
+      this.plugin.settings.appId = value;
+      await this.plugin.saveSettings();
+    }));
+    new import_obsidian.Setting(containerEl).setName("WeChat AppSecret").setDesc("Your WeChat Official Account Developer AppSecret").addText((text) => text.setPlaceholder("Enter app secret").setValue(this.plugin.settings.appSecret).onChange(async (value) => {
+      this.plugin.settings.appSecret = value;
+      await this.plugin.saveSettings();
+    }));
+    const styleSetting = new import_obsidian.Setting(containerEl).setName("Default Theme").setDesc("Default style template used for renders");
+    styleSetting.addDropdown((dropdown) => {
+      dropdown.addOption("elegant", "Elegant Green (\u96C5\u7EFF)");
+      dropdown.addOption("warm", "Warm Gold (\u6696\u91D1)");
+      dropdown.addOption("minimal", "Minimalist Black (\u6781\u7B80)");
+      Object.keys(this.plugin.customThemes).forEach((key) => {
+        dropdown.addOption(`custom:${key}`, `\u{1F4C2} ${key}`);
+      });
+      dropdown.setValue(this.plugin.settings.defaultStyle);
+      dropdown.onChange(async (value) => {
+        this.plugin.settings.defaultStyle = value;
+        await this.plugin.saveSettings();
+      });
+    });
+    new import_obsidian.Setting(containerEl).setName("Custom Themes Folder").setDesc("Folder in your vault where custom WeChat CSS themes are stored. (Will auto-initialize if not existing)").addText((text) => text.setPlaceholder("wechat-format-themes").setValue(this.plugin.settings.themeFolder).onChange(async (value) => {
+      this.plugin.settings.themeFolder = value.trim() || "wechat-format-themes";
+      await this.plugin.saveSettings();
+      await this.plugin.initThemeDirectory();
+      await this.plugin.loadCustomThemes();
+    }));
+    new import_obsidian.Setting(containerEl).setName("WeChat Image Uploads").setDesc("Enable automatic image upload directly to WeChat CDN").addToggle((toggle) => toggle.setValue(this.plugin.settings.enableImgUpload).onChange(async (value) => {
+      this.plugin.settings.enableImgUpload = value;
+      await this.plugin.saveSettings();
+    }));
+    const materialsSetting = new import_obsidian.Setting(containerEl).setName("Select Cover from WeChat").setDesc('Click "Fetch" to load images from your WeChat library, then choose one.').addButton((btn) => btn.setButtonText("Fetch Materials").onClick(async () => {
+      const { appId, appSecret } = this.plugin.settings;
+      if (!appId || !appSecret) {
+        new import_obsidian.Notice("Please enter AppID and AppSecret first!");
+        return;
+      }
+      btn.setDisabled(true);
+      btn.setButtonText("Fetching...");
+      new import_obsidian.Notice("Fetching permanent images from WeChat...");
+      try {
+        const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
+        const tokenRes = await (0, import_obsidian.requestUrl)({ url: tokenUrl, method: "GET" });
+        const tokenData = JSON.parse(tokenRes.text);
+        if (tokenData.errcode) {
+          throw new Error(tokenData.errmsg);
+        }
+        const token = tokenData.access_token;
+        const matUrl = `https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token=${token}`;
+        const matRes = await (0, import_obsidian.requestUrl)({
+          url: matUrl,
+          method: "POST",
+          contentType: "application/json",
+          body: JSON.stringify({
+            type: "image",
+            offset: 0,
+            count: 20
+          })
+        });
+        const matData = JSON.parse(matRes.text);
+        if (matData.errcode) {
+          throw new Error(matData.errmsg);
+        }
+        const items = matData.item || [];
+        if (items.length === 0) {
+          new import_obsidian.Notice("No permanent images found in your WeChat material library!");
+          return;
+        }
+        this.plugin.settings.cachedMaterials = items.map((item) => ({
+          mediaId: item.media_id,
+          name: item.name
+        }));
+        await this.plugin.saveSettings();
+        new import_obsidian.Notice(`Successfully loaded ${items.length} materials!`);
+        this.display();
+      } catch (err) {
+        console.error(err);
+        new import_obsidian.Notice(`Failed to fetch: ${err.message || err}`);
+      } finally {
+        btn.setDisabled(false);
+        btn.setButtonText("Fetch Materials");
+      }
+    }));
+    if (this.plugin.settings.cachedMaterials && this.plugin.settings.cachedMaterials.length > 0) {
+      materialsSetting.addDropdown((dropdown) => {
+        dropdown.addOption("", "-- Select an Image --");
+        this.plugin.settings.cachedMaterials.forEach((m2) => {
+          dropdown.addOption(m2.mediaId, m2.name.substring(0, 30));
+        });
+        dropdown.setValue(this.plugin.settings.defaultThumbMediaId);
+        dropdown.onChange(async (val) => {
+          this.plugin.settings.defaultThumbMediaId = val;
+          await this.plugin.saveSettings();
+          this.display();
+        });
+      });
+    }
+    new import_obsidian.Setting(containerEl).setName("Default Cover Media ID").setDesc("Manually paste a WeChat Media ID, or select it from the dropdown helper above.").addText((text) => text.setPlaceholder("wx_media_id_...").setValue(this.plugin.settings.defaultThumbMediaId).onChange(async (value) => {
+      this.plugin.settings.defaultThumbMediaId = value.trim();
+      await this.plugin.saveSettings();
+    }));
+  }
+};
+
+// src/view.ts
+var import_obsidian3 = require("obsidian");
+
+// src/themes.ts
+var import_obsidian2 = require("obsidian");
+var THEMES = {
+  elegant: {
+    name: "Elegant Green (\u96C5\u7EFF)",
+    container: "font-family: -apple-system-font, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei UI', Arial, sans-serif; font-size: 15px; color: #353535; line-height: 1.75; letter-spacing: 0.5px; word-wrap: break-word; text-align: justify;",
+    h1: "font-size: 1.35em; color: #2e6851; border-bottom: 2px solid #2e6851; padding-bottom: 5px; margin-top: 1.8em; margin-bottom: 0.8em; font-weight: bold;",
+    h2: "font-size: 1.2em; color: #2e6851; margin-top: 1.6em; margin-bottom: 0.8em; font-weight: bold; padding-left: 6px; border-left: 3px solid #2e6851;",
+    h3: "font-size: 1.1em; color: #3e8868; margin-top: 1.4em; margin-bottom: 0.6em; font-weight: bold;",
+    h4: "font-size: 1.0em; color: #3e8868; margin-top: 1.2em; margin-bottom: 0.6em; font-weight: bold;",
+    h5: "font-size: 1.0em; color: #444444; margin-top: 1.2em; margin-bottom: 0.6em; font-weight: bold;",
+    h6: "font-size: 0.9em; color: #666666; margin-top: 1.2em; margin-bottom: 0.6em; font-weight: bold;",
+    p: "margin-top: 0px; margin-bottom: 1.4em; color: #3e3e3e; line-height: 1.8;",
+    code: "font-family: Consolas, Monaco, monospace; font-size: 14px; background-color: #f8f8f8; color: #c7254e; padding: 2px 4px; border-radius: 4px; border: 1px solid #e1e1e8; word-break: break-all;",
+    blockquote: "margin: 1.5em 0; padding: 10px 15px; background: #f4f9f6; border-left: 4px solid #2e6851; color: #555555; font-size: 0.95em; border-radius: 0 4px 4px 0;",
+    ul: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px; list-style-type: disc;",
+    ol: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px; list-style-type: decimal;",
+    li: "margin-bottom: 6px; line-height: 1.7; color: #444444;",
+    strong: "color: #2e6851; font-weight: bold;",
+    link: "color: #2e6851; text-decoration: none; border-bottom: 1px dashed #2e6851;",
+    em: "font-style: italic; color: #555555;",
+    del: "text-decoration: line-through; color: #888888;",
+    hr: "border: 0; border-top: 1px solid #2e6851; margin: 2em 0; opacity: 0.7;",
+    table: "border-collapse: collapse; width: 100%; margin: 1.5em 0; font-size: 0.9em;",
+    th: "border: 1px solid #dfdfdf; background-color: #f2fcf7; color: #2e6851; padding: 8px 12px; font-weight: bold; text-align: left;",
+    td: "border: 1px solid #dfdfdf; padding: 8px 12px; color: #444444;",
+    pre: "background-color: #1a1a1a; padding: 12px 16px; border-radius: 6px; overflow-x: auto; margin: 1.5em 0; line-height: 1.6; color: #abb2bf; font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; tab-size: 4; -moz-tab-size: 4; -o-tab-size: 4;",
+    pre_code: "font-family: inherit; font-size: 13px; background-color: transparent; border: 0; padding: 0; color: inherit; line-height: inherit; word-wrap: normal;"
+  },
+  warm: {
+    name: "Warm Gold (\u6E29\u6696\u6696\u91D1)",
+    container: "font-family: -apple-system-font, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', sans-serif; font-size: 15px; color: #3e3a35; line-height: 1.8; letter-spacing: 0.5px;",
+    h1: "font-size: 1.4em; color: #b25829; text-align: center; border-bottom: 1px dashed #b25829; padding-bottom: 8px; margin-top: 2em; margin-bottom: 1em; font-weight: bold;",
+    h2: "font-size: 1.2em; color: #b25829; margin-top: 1.6em; margin-bottom: 0.8em; font-weight: bold; background: #faf4ee; padding: 4px 10px; border-radius: 4px;",
+    h3: "font-size: 1.1em; color: #c67144; margin-top: 1.4em; margin-bottom: 0.6em; font-weight: bold;",
+    h4: "font-size: 1.0em; color: #c67144; margin-top: 1.2em; margin-bottom: 0.6em; font-weight: bold;",
+    h5: "font-size: 1.0em; color: #4a453f; margin-top: 1.2em; margin-bottom: 0.6em; font-weight: bold;",
+    h6: "font-size: 0.9em; color: #7e756b; margin-top: 1.2em; margin-bottom: 0.6em; font-weight: bold;",
+    p: "margin-top: 0px; margin-bottom: 1.4em; color: #4a453f; line-height: 1.8; text-align: justify;",
+    code: "font-family: monospace; font-size: 14px; background-color: #faf4ee; color: #b25829; padding: 2px 4px; border-radius: 3px;",
+    blockquote: "margin: 1.5em 0; padding: 12px 18px; background: #faf4ee; border-left: 4px solid #b25829; color: #6e655b; font-size: 0.95em;",
+    ul: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px; list-style-type: circle;",
+    ol: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px; list-style-type: decimal;",
+    li: "margin-bottom: 6px; line-height: 1.7;",
+    strong: "color: #b25829; font-weight: bold;",
+    link: "color: #b25829; text-decoration: underline;",
+    em: "font-style: italic; color: #6e655b;",
+    del: "text-decoration: line-through; color: #9c9287;",
+    hr: "border: 0; border-top: 1px dashed #b25829; margin: 2em 0; opacity: 0.8;",
+    table: "border-collapse: collapse; width: 100%; margin: 1.5em 0; font-size: 0.9em;",
+    th: "border: 1px solid #e9dfd6; background-color: #faf4ee; color: #b25829; padding: 8px 12px; font-weight: bold; text-align: left;",
+    td: "border: 1px solid #e9dfd6; padding: 8px 12px; color: #4a453f;",
+    pre: "background-color: #1a1a1a; border: 1px solid #e9dfd6; padding: 12px 16px; border-radius: 6px; overflow-x: auto; margin: 1.5em 0; line-height: 1.6; color: #abb2bf; font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; tab-size: 4; -moz-tab-size: 4; -o-tab-size: 4;",
+    pre_code: "font-family: inherit; font-size: 13px; background-color: transparent; border: 0; padding: 0; color: inherit; line-height: inherit; word-wrap: normal;"
+  },
+  minimal: {
+    name: "Minimalist Black (\u6781\u7B80\u9ED1\u8272)",
+    container: "font-family: -apple-system-font, BlinkMacSystemFont, sans-serif; font-size: 15px; color: #222222; line-height: 1.7; letter-spacing: 0.2px;",
+    h1: "font-size: 1.5em; color: #000000; font-weight: bold; margin-top: 1.8em; margin-bottom: 0.8em; border-bottom: 1px solid #000000; padding-bottom: 5px;",
+    h2: "font-size: 1.25em; color: #000000; font-weight: bold; margin-top: 1.6em; margin-bottom: 0.8em;",
+    h3: "font-size: 1.1em; color: #444444; font-weight: bold; margin-top: 1.4em; margin-bottom: 0.6em;",
+    h4: "font-size: 1.0em; color: #444444; font-weight: bold; margin-top: 1.2em; margin-bottom: 0.6em;",
+    h5: "font-size: 1.0em; color: #666666; font-weight: bold; margin-top: 1.2em; margin-bottom: 0.6em;",
+    h6: "font-size: 0.9em; color: #888888; font-style: italic; margin-top: 1.2em; margin-bottom: 0.6em;",
+    p: "margin-top: 0px; margin-bottom: 1.4em; color: #222222; text-align: justify;",
+    code: "font-family: monospace; font-size: 14px; background-color: #f3f3f3; color: #000000; padding: 2px 4px; border-radius: 2px;",
+    blockquote: "margin: 1.5em 0; padding: 10px 15px; background: #f9f9f9; border-left: 3px solid #000000; color: #666666; font-style: italic;",
+    ul: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px; list-style-type: square;",
+    ol: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px; list-style-type: decimal;",
+    li: "margin-bottom: 6px; color: #333333;",
+    strong: "color: #000000; font-weight: bold;",
+    link: "color: #1a0dab; text-decoration: underline;",
+    em: "font-style: italic;",
+    del: "text-decoration: line-through; color: #999999;",
+    hr: "border: 0; border-top: 1px solid #000000; margin: 2em 0;",
+    table: "border-collapse: collapse; width: 100%; margin: 1.5em 0; font-size: 0.9em;",
+    th: "border: 1px solid #dddddd; background-color: #f9f9f9; color: #000000; padding: 8px 12px; font-weight: bold; text-align: left;",
+    td: "border: 1px solid #dddddd; padding: 8px 12px; color: #222222;",
+    pre: "background-color: #1a1a1a; padding: 12px 16px; border-radius: 6px; overflow-x: auto; margin: 1.5em 0; line-height: 1.6; color: #abb2bf; font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; tab-size: 4; -moz-tab-size: 4; -o-tab-size: 4;",
+    pre_code: "font-family: inherit; font-size: 13px; background-color: transparent; border: 0; padding: 0; color: inherit; line-height: inherit; word-wrap: normal;"
+  }
+};
+async function initThemeDirectory(adapter, folderPath, templateCss) {
+  try {
+    const exists = await adapter.exists(folderPath);
+    if (!exists) {
+      await adapter.mkdir(folderPath);
+    }
+    await writeThemeWithConflictCheck(adapter, folderPath, "\u7EA2\u8272\u70ED\u60C5 (\u793A\u4F8B)", templateCss);
+  } catch (e) {
+    console.error("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u521D\u59CB\u5316\u4E3B\u9898\u76EE\u5F55\u5931\u8D25:", e);
+  }
+}
+async function writeThemeWithConflictCheck(adapter, folderPath, baseName, content) {
+  const normalizeContent = (str) => str.trim().replace(/\r\n/g, "\n");
+  const targetPath = `${folderPath}/${baseName}.css`;
+  const fileExists = await adapter.exists(targetPath);
+  if (!fileExists) {
+    await adapter.write(targetPath, content);
+    console.log(`\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u6210\u529F\u751F\u6210\u5168\u65B0\u4E3B\u9898\u793A\u4F8B: ${targetPath}`);
+    return;
+  }
+  const existingContent = await adapter.read(targetPath);
+  if (normalizeContent(existingContent) === normalizeContent(content)) {
+    console.log(`\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u793A\u4F8B\u4E3B\u9898 ${baseName}.css \u5185\u5BB9\u672A\u88AB\u4FEE\u6539\uFF0C\u4FDD\u6301\u73B0\u72B6\u3002`);
+    return;
+  }
+  let index = 1;
+  while (true) {
+    const candidatePath = `${folderPath}/${baseName} (${index}).css`;
+    const candidateExists = await adapter.exists(candidatePath);
+    if (!candidateExists) {
+      await adapter.write(candidatePath, content);
+      new import_obsidian2.Notice(`\u68C0\u6D4B\u5230\u60A8\u81EA\u5B9A\u4E49\u4E86\u9ED8\u8BA4\u793A\u4F8B\uFF0C\u5DF2\u81EA\u52A8\u5C06\u6700\u65B0\u7684\u5168\u9762\u6807\u8BB0\u6A21\u7248\u4FDD\u5B58\u4E3A "${baseName} (${index}).css"\uFF01`);
+      console.log(`\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u68C0\u6D4B\u5230\u51B2\u7A81\uFF0C\u5DF2\u5C06\u6700\u65B0\u793A\u4F8B\u6A21\u7248\u5907\u4EFD\u5230: ${candidatePath}`);
+      return;
+    }
+    const candidateContent = await adapter.read(candidatePath);
+    if (normalizeContent(candidateContent) === normalizeContent(content)) {
+      console.log(`\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u6700\u65B0\u7684\u793A\u4F8B\u5185\u5BB9\u5DF2\u7ECF\u5B8C\u7F8E\u5B58\u5728\u4E8E: ${candidatePath}`);
+      return;
+    }
+    index++;
+  }
+}
+async function loadCustomThemes(adapter, folderPath) {
+  const customThemes = {};
+  try {
+    const exists = await adapter.exists(folderPath);
+    if (!exists)
+      return customThemes;
+    const files = await adapter.list(folderPath);
+    const cssFiles = files.files.filter((f) => f.endsWith(".css"));
+    for (const file of cssFiles) {
+      const content = await adapter.read(file);
+      const fileName = file.split("/").pop() || "";
+      const themeName = fileName.replace(/\.css$/, "");
+      const parsedTheme = parseCssToTheme(themeName, content);
+      if (parsedTheme) {
+        customThemes[themeName] = parsedTheme;
+      }
+    }
+  } catch (e) {
+    console.error("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u52A0\u8F7D\u81EA\u5B9A\u4E49\u4E3B\u9898\u5931\u8D25:", e);
+  }
+  return customThemes;
+}
+function parseCssToTheme(themeName, cssText) {
+  const baseline = {
+    name: `${themeName} (\u81EA\u5B9A\u4E49)`,
+    container: "font-family: -apple-system-font, BlinkMacSystemFont, sans-serif; font-size: 15px; color: #353535; line-height: 1.75; text-align: justify;",
+    h1: "font-size: 1.35em; font-weight: bold;",
+    h2: "font-size: 1.2em; font-weight: bold;",
+    h3: "font-size: 1.1em; font-weight: bold;",
+    h4: "font-size: 1.0em; font-weight: bold;",
+    h5: "font-size: 1.0em; font-weight: bold;",
+    h6: "font-size: 0.9em; font-weight: bold;",
+    p: "margin-top: 0px; margin-bottom: 1.4em;",
+    code: "font-family: monospace; font-size: 14px;",
+    blockquote: "margin: 1.5em 0; padding: 10px 15px;",
+    ul: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px;",
+    ol: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px;",
+    li: "margin-bottom: 6px;",
+    strong: "font-weight: bold;",
+    link: "text-decoration: none;",
+    em: "font-style: italic;",
+    del: "text-decoration: line-through;",
+    hr: "border: 0; border-top: 1px solid #cccccc; margin: 2em 0;",
+    table: "border-collapse: collapse; width: 100%; margin: 1.5em 0;",
+    th: "border: 1px solid #cccccc; padding: 8px 12px; font-weight: bold; text-align: left;",
+    td: "border: 1px solid #cccccc; padding: 8px 12px;",
+    pre: "padding: 12px 16px; border-radius: 6px; overflow-x: auto; margin: 1.5em 0; font-family: monospace;",
+    pre_code: "font-family: inherit; font-size: 13px;"
+  };
+  try {
+    const strippedCss = cssText.replace(/\/\*[\s\S]*?\*\//g, "");
+    const ruleRegex = /([^{]+)\{([^}]+)\}/g;
+    let match;
+    while ((match = ruleRegex.exec(strippedCss)) !== null) {
+      const selector = match[1].trim().toLowerCase();
+      const rulesRaw = match[2].trim();
+      const rules = rulesRaw.split(";").map((r) => r.trim()).filter((r) => r.length > 0).join("; ") + ";";
+      if (selector === ".container" || selector === "container") {
+        baseline.container = rules;
+      } else if (selector === "h1") {
+        baseline.h1 = rules;
+      } else if (selector === "h2") {
+        baseline.h2 = rules;
+      } else if (selector === "h3") {
+        baseline.h3 = rules;
+      } else if (selector === "h4") {
+        baseline.h4 = rules;
+      } else if (selector === "h5") {
+        baseline.h5 = rules;
+      } else if (selector === "h6") {
+        baseline.h6 = rules;
+      } else if (selector === "p") {
+        baseline.p = rules;
+      } else if (selector === "code") {
+        baseline.code = rules;
+      } else if (selector === "blockquote") {
+        baseline.blockquote = rules;
+      } else if (selector === "ul") {
+        baseline.ul = rules;
+      } else if (selector === "ol") {
+        baseline.ol = rules;
+      } else if (selector === "li") {
+        baseline.li = rules;
+      } else if (selector === "strong" || selector === "b") {
+        baseline.strong = rules;
+      } else if (selector === "a") {
+        baseline.link = rules;
+      } else if (selector === "em" || selector === "i") {
+        baseline.em = rules;
+      } else if (selector === "del" || selector === "s") {
+        baseline.del = rules;
+      } else if (selector === "hr") {
+        baseline.hr = rules;
+      } else if (selector === "table") {
+        baseline.table = rules;
+      } else if (selector === "th") {
+        baseline.th = rules;
+      } else if (selector === "td") {
+        baseline.td = rules;
+      } else if (selector === "pre") {
+        baseline.pre = rules;
+      } else if (selector === "pre code" || selector === "pre_code") {
+        baseline.pre_code = rules;
+      }
+    }
+    return baseline;
+  } catch (e) {
+    console.error(`\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u89E3\u6790CSS\u4E3B\u9898 ${themeName} \u5931\u8D25:`, e);
+    return null;
+  }
+}
 
 // node_modules/marked/lib/marked.esm.js
 function M() {
@@ -53216,446 +53572,7 @@ var Yt = x.lex;
 var import_lib = __toESM(require_lib(), 1);
 var es_default = import_lib.default;
 
-// main.ts
-var VIEW_TYPE_WECHAT_PREVIEW = "wechat-preview-view";
-var DEFAULT_SETTINGS = {
-  appId: "",
-  appSecret: "",
-  defaultStyle: "elegant",
-  customCss: "",
-  enableImgUpload: true,
-  imageHostingType: "wechat",
-  defaultThumbMediaId: "",
-  cachedMaterials: [],
-  themeFolder: "wechat-format-themes"
-};
-var THEMES = {
-  elegant: {
-    name: "Elegant Green (\u96C5\u7EFF)",
-    container: "font-family: -apple-system-font, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei UI', Arial, sans-serif; font-size: 15px; color: #353535; line-height: 1.75; letter-spacing: 0.5px; word-wrap: break-word; text-align: justify;",
-    h1: "font-size: 1.35em; color: #2e6851; border-bottom: 2px solid #2e6851; padding-bottom: 5px; margin-top: 1.8em; margin-bottom: 0.8em; font-weight: bold;",
-    h2: "font-size: 1.2em; color: #2e6851; margin-top: 1.6em; margin-bottom: 0.8em; font-weight: bold; padding-left: 6px; border-left: 3px solid #2e6851;",
-    h3: "font-size: 1.1em; color: #3e8868; margin-top: 1.4em; margin-bottom: 0.6em; font-weight: bold;",
-    h4: "font-size: 1.0em; color: #3e8868; margin-top: 1.2em; margin-bottom: 0.6em; font-weight: bold;",
-    h5: "font-size: 1.0em; color: #444444; margin-top: 1.2em; margin-bottom: 0.6em; font-weight: bold;",
-    h6: "font-size: 0.9em; color: #666666; margin-top: 1.2em; margin-bottom: 0.6em; font-weight: bold;",
-    p: "margin-top: 0px; margin-bottom: 1.4em; color: #3e3e3e; line-height: 1.8;",
-    code: "font-family: Consolas, Monaco, monospace; font-size: 14px; background-color: #f8f8f8; color: #c7254e; padding: 2px 4px; border-radius: 4px; border: 1px solid #e1e1e8; word-break: break-all;",
-    blockquote: "margin: 1.5em 0; padding: 10px 15px; background: #f4f9f6; border-left: 4px solid #2e6851; color: #555555; font-size: 0.95em; border-radius: 0 4px 4px 0;",
-    ul: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px; list-style-type: disc;",
-    ol: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px; list-style-type: decimal;",
-    li: "margin-bottom: 6px; line-height: 1.7; color: #444444;",
-    strong: "color: #2e6851; font-weight: bold;",
-    link: "color: #2e6851; text-decoration: none; border-bottom: 1px dashed #2e6851;",
-    em: "font-style: italic; color: #555555;",
-    del: "text-decoration: line-through; color: #888888;",
-    hr: "border: 0; border-top: 1px solid #2e6851; margin: 2em 0; opacity: 0.7;",
-    table: "border-collapse: collapse; width: 100%; margin: 1.5em 0; font-size: 0.9em;",
-    th: "border: 1px solid #dfdfdf; background-color: #f2fcf7; color: #2e6851; padding: 8px 12px; font-weight: bold; text-align: left;",
-    td: "border: 1px solid #dfdfdf; padding: 8px 12px; color: #444444;",
-    pre: "background-color: #1a1a1a; padding: 12px 16px; border-radius: 6px; overflow-x: auto; margin: 1.5em 0; line-height: 1.6; color: #abb2bf; font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; tab-size: 4; -moz-tab-size: 4; -o-tab-size: 4;",
-    pre_code: "font-family: inherit; font-size: 13px; background-color: transparent; border: 0; padding: 0; color: inherit; line-height: inherit; word-wrap: normal;"
-  },
-  warm: {
-    name: "Warm Gold (\u6E29\u6696\u6696\u91D1)",
-    container: "font-family: -apple-system-font, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', sans-serif; font-size: 15px; color: #3e3a35; line-height: 1.8; letter-spacing: 0.5px;",
-    h1: "font-size: 1.4em; color: #b25829; text-align: center; border-bottom: 1px dashed #b25829; padding-bottom: 8px; margin-top: 2em; margin-bottom: 1em; font-weight: bold;",
-    h2: "font-size: 1.2em; color: #b25829; margin-top: 1.6em; margin-bottom: 0.8em; font-weight: bold; background: #faf4ee; padding: 4px 10px; border-radius: 4px;",
-    h3: "font-size: 1.1em; color: #c67144; margin-top: 1.4em; margin-bottom: 0.6em; font-weight: bold;",
-    h4: "font-size: 1.0em; color: #c67144; margin-top: 1.2em; margin-bottom: 0.6em; font-weight: bold;",
-    h5: "font-size: 1.0em; color: #4a453f; margin-top: 1.2em; margin-bottom: 0.6em; font-weight: bold;",
-    h6: "font-size: 0.9em; color: #7e756b; margin-top: 1.2em; margin-bottom: 0.6em; font-weight: bold;",
-    p: "margin-top: 0px; margin-bottom: 1.4em; color: #4a453f; line-height: 1.8; text-align: justify;",
-    code: "font-family: monospace; font-size: 14px; background-color: #faf4ee; color: #b25829; padding: 2px 4px; border-radius: 3px;",
-    blockquote: "margin: 1.5em 0; padding: 12px 18px; background: #faf4ee; border-left: 4px solid #b25829; color: #6e655b; font-size: 0.95em;",
-    ul: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px; list-style-type: circle;",
-    ol: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px; list-style-type: decimal;",
-    li: "margin-bottom: 6px; line-height: 1.7;",
-    strong: "color: #b25829; font-weight: bold;",
-    link: "color: #b25829; text-decoration: underline;",
-    em: "font-style: italic; color: #6e655b;",
-    del: "text-decoration: line-through; color: #9c9287;",
-    hr: "border: 0; border-top: 1px dashed #b25829; margin: 2em 0; opacity: 0.8;",
-    table: "border-collapse: collapse; width: 100%; margin: 1.5em 0; font-size: 0.9em;",
-    th: "border: 1px solid #e9dfd6; background-color: #faf4ee; color: #b25829; padding: 8px 12px; font-weight: bold; text-align: left;",
-    td: "border: 1px solid #e9dfd6; padding: 8px 12px; color: #4a453f;",
-    pre: "background-color: #1a1a1a; border: 1px solid #e9dfd6; padding: 12px 16px; border-radius: 6px; overflow-x: auto; margin: 1.5em 0; line-height: 1.6; color: #abb2bf; font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; tab-size: 4; -moz-tab-size: 4; -o-tab-size: 4;",
-    pre_code: "font-family: inherit; font-size: 13px; background-color: transparent; border: 0; padding: 0; color: inherit; line-height: inherit; word-wrap: normal;"
-  },
-  minimal: {
-    name: "Minimalist Black (\u6781\u7B80\u9ED1\u8272)",
-    container: "font-family: -apple-system-font, BlinkMacSystemFont, sans-serif; font-size: 15px; color: #222222; line-height: 1.7; letter-spacing: 0.2px;",
-    h1: "font-size: 1.5em; color: #000000; font-weight: bold; margin-top: 1.8em; margin-bottom: 0.8em; border-bottom: 1px solid #000000; padding-bottom: 5px;",
-    h2: "font-size: 1.25em; color: #000000; font-weight: bold; margin-top: 1.6em; margin-bottom: 0.8em;",
-    h3: "font-size: 1.1em; color: #444444; font-weight: bold; margin-top: 1.4em; margin-bottom: 0.6em;",
-    h4: "font-size: 1.0em; color: #444444; font-weight: bold; margin-top: 1.2em; margin-bottom: 0.6em;",
-    h5: "font-size: 1.0em; color: #666666; font-weight: bold; margin-top: 1.2em; margin-bottom: 0.6em;",
-    h6: "font-size: 0.9em; color: #888888; font-style: italic; margin-top: 1.2em; margin-bottom: 0.6em;",
-    p: "margin-top: 0px; margin-bottom: 1.4em; color: #222222; text-align: justify;",
-    code: "font-family: monospace; font-size: 14px; background-color: #f3f3f3; color: #000000; padding: 2px 4px; border-radius: 2px;",
-    blockquote: "margin: 1.5em 0; padding: 10px 15px; background: #f9f9f9; border-left: 3px solid #000000; color: #666666; font-style: italic;",
-    ul: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px; list-style-type: square;",
-    ol: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px; list-style-type: decimal;",
-    li: "margin-bottom: 6px; color: #333333;",
-    strong: "color: #000000; font-weight: bold;",
-    link: "color: #1a0dab; text-decoration: underline;",
-    em: "font-style: italic;",
-    del: "text-decoration: line-through; color: #999999;",
-    hr: "border: 0; border-top: 1px solid #000000; margin: 2em 0;",
-    table: "border-collapse: collapse; width: 100%; margin: 1.5em 0; font-size: 0.9em;",
-    th: "border: 1px solid #dddddd; background-color: #f9f9f9; color: #000000; padding: 8px 12px; font-weight: bold; text-align: left;",
-    td: "border: 1px solid #dddddd; padding: 8px 12px; color: #222222;",
-    pre: "background-color: #1a1a1a; padding: 12px 16px; border-radius: 6px; overflow-x: auto; margin: 1.5em 0; line-height: 1.6; color: #abb2bf; font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; tab-size: 4; -moz-tab-size: 4; -o-tab-size: 4;",
-    pre_code: "font-family: inherit; font-size: 13px; background-color: transparent; border: 0; padding: 0; color: inherit; line-height: inherit; word-wrap: normal;"
-  }
-};
-var Md2WeChatPlugin = class extends import_obsidian.Plugin {
-  constructor() {
-    super(...arguments);
-    this.customThemes = {};
-  }
-  async onload() {
-    await this.loadSettings();
-    await this.initThemeDirectory();
-    await this.loadCustomThemes();
-    this.registerView(
-      VIEW_TYPE_WECHAT_PREVIEW,
-      (leaf) => new WeChatPreviewView(leaf, this)
-    );
-    this.addRibbonIcon("share-2", "WeChat Format & Sync", () => {
-      this.activateView();
-    });
-    this.addCommand({
-      id: "preview-wechat-format",
-      name: "Open WeChat format preview and sync panel",
-      callback: () => {
-        this.activateView();
-      }
-    });
-    this.addSettingTab(new Md2WeChatSettingTab(this.app, this));
-  }
-  async loadSettings() {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-  }
-  async saveSettings() {
-    await this.saveData(this.settings);
-  }
-  async activateView() {
-    const { workspace } = this.app;
-    let leaf = null;
-    const leaves = workspace.getLeavesOfType(VIEW_TYPE_WECHAT_PREVIEW);
-    if (leaves.length > 0) {
-      leaf = leaves[0];
-    } else {
-      leaf = workspace.getRightLeaf(false);
-      if (leaf) {
-        await leaf.setViewState({
-          type: VIEW_TYPE_WECHAT_PREVIEW,
-          active: true
-        });
-      }
-    }
-    if (leaf) {
-      workspace.revealLeaf(leaf);
-    }
-  }
-  // Initialize theme directory and write custom CSS template
-  async initThemeDirectory() {
-    const folderPath = this.settings.themeFolder;
-    try {
-      const adapter = this.app.vault.adapter;
-      const exists = await adapter.exists(folderPath);
-      if (!exists) {
-        await this.app.vault.createFolder(folderPath);
-        const templateCss = `/* 
-\u5FAE\u4FE1\u81EA\u5B9A\u4E49\u4E3B\u9898\u6A21\u677F (Custom WeChat Theme Template)
-\u6587\u4EF6\u540D\u5C06\u4F5C\u4E3A\u4E3B\u9898\u540D\u79F0\u663E\u793A\u5728\u4E0B\u62C9\u5217\u8868\u4E2D (e.g. "\u9177\u70AB\u9ED1.css" => "\u9177\u70AB\u9ED1")
-
-\u652F\u6301\u7684\u9009\u62E9\u5668\u8BF4\u660E (Supported Selectors):
-- .container  : \u5916\u90E8\u5927\u5305\u88F9\u5BB9\u5668\u6837\u5F0F (\u5B57\u4F53\u3001\u884C\u9AD8\u3001\u5BF9\u9F50\u65B9\u5F0F)
-- h1, h2, h3, h4, h5, h6 : \u5404\u7EA7\u6807\u9898
-- p           : \u666E\u901A\u6BB5\u843D
-- code        : \u884C\u5185\u4EE3\u7801
-- blockquote  : \u5F15\u7528\u5757
-- ul, ol      : \u65E0\u5E8F/\u6709\u5E8F\u5217\u8868\u5BB9\u5668
-- li          : \u5217\u8868\u9879
-- strong      : \u52A0\u7C97\u6587\u672C
-- a           : \u94FE\u63A5
-- em          : \u659C\u4F53\u6587\u672C
-- del         : \u5220\u9664\u7EBF
-- hr          : \u5206\u5272\u7EBF
-- table, th, td : \u8868\u683C\u548C\u5355\u5143\u683C\u6837\u5F0F
-- pre         : \u591A\u884C\u4EE3\u7801\u5757\u80CC\u666F\u6846
-- pre code    : \u591A\u884C\u4EE3\u7801\u6587\u672C\u6837\u5F0F
-*/
-
-.container {
-    font-family: -apple-system-font, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', sans-serif;
-    font-size: 15px;
-    color: #2b2b2b;
-    line-height: 1.8;
-    letter-spacing: 0.5px;
-    text-align: justify;
-}
-
-h1 {
-    font-size: 1.4em;
-    color: #e74c3c;
-    border-bottom: 2px solid #e74c3c;
-    padding-bottom: 6px;
-    margin-top: 1.8em;
-    margin-bottom: 0.8em;
-    font-weight: bold;
-}
-
-h2 {
-    font-size: 1.25em;
-    color: #e74c3c;
-    margin-top: 1.6em;
-    margin-bottom: 0.8em;
-    font-weight: bold;
-    border-left: 4px solid #e74c3c;
-    padding-left: 8px;
-}
-
-h3 {
-    font-size: 1.1em;
-    color: #c0392b;
-    margin-top: 1.4em;
-    margin-bottom: 0.6em;
-    font-weight: bold;
-}
-
-p {
-    margin-top: 0px;
-    margin-bottom: 1.4em;
-    color: #333333;
-}
-
-code {
-    font-family: Consolas, Monaco, monospace;
-    font-size: 14px;
-    background-color: #fadbd8;
-    color: #c0392b;
-    padding: 2px 6px;
-    border-radius: 4px;
-}
-
-blockquote {
-    margin: 1.5em 0;
-    padding: 12px 18px;
-    background: #fdf2e9;
-    border-left: 4px solid #e74c3c;
-    color: #5d4037;
-    font-size: 0.95em;
-    border-radius: 0 4px 4px 0;
-}
-
-ul {
-    margin-top: 0px;
-    margin-bottom: 1.2em;
-    padding-left: 20px;
-    list-style-type: disc;
-}
-
-ol {
-    margin-top: 0px;
-    margin-bottom: 1.2em;
-    padding-left: 20px;
-    list-style-type: decimal;
-}
-
-li {
-    margin-bottom: 6px;
-    line-height: 1.7;
-    color: #444444;
-}
-
-strong {
-    color: #e74c3c;
-    font-weight: bold;
-}
-
-a {
-    color: #e74c3c;
-    text-decoration: none;
-    border-bottom: 1px dashed #e74c3c;
-}
-
-em {
-    font-style: italic;
-    color: #555555;
-}
-
-del {
-    text-decoration: line-through;
-    color: #888888;
-}
-
-hr {
-    border: 0;
-    border-top: 1px solid #e74c3c;
-    margin: 2.5em 0;
-    opacity: 0.8;
-}
-
-table {
-    border-collapse: collapse;
-    width: 100%;
-    margin: 2em 0;
-    font-size: 0.9em;
-}
-
-th {
-    border: 1px solid #fadbd8;
-    background-color: #fdf2e9;
-    color: #e74c3c;
-    padding: 10px 14px;
-    font-weight: bold;
-}
-
-td {
-    border: 1px solid #fadbd8;
-    padding: 10px 14px;
-    color: #444444;
-}
-
-pre {
-    background-color: #2d3748;
-    padding: 14px 18px;
-    border-radius: 6px;
-    overflow-x: auto;
-    margin: 1.8em 0;
-    line-height: 1.5;
-}
-
-pre_code {
-    font-family: Consolas, Monaco, monospace;
-    font-size: 13px;
-    color: #f7fafc;
-}
-`;
-        await adapter.write(`${folderPath}/\u7EA2\u8272\u70ED\u60C5 (\u793A\u4F8B).css`, templateCss);
-      }
-    } catch (e) {
-      console.error("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u521B\u5EFA\u81EA\u5B9A\u4E49\u4E3B\u9898\u76EE\u5F55\u5931\u8D25:", e);
-    }
-  }
-  // Load and parse all CSS files in the theme folder
-  async loadCustomThemes() {
-    this.customThemes = {};
-    const folderPath = this.settings.themeFolder;
-    try {
-      const adapter = this.app.vault.adapter;
-      const exists = await adapter.exists(folderPath);
-      if (!exists)
-        return;
-      const files = await adapter.list(folderPath);
-      const cssFiles = files.files.filter((f) => f.endsWith(".css"));
-      for (const file of cssFiles) {
-        const content = await adapter.read(file);
-        const fileName = file.split("/").pop() || "";
-        const themeName = fileName.replace(/\.css$/, "");
-        const parsedTheme = this.parseCssToTheme(themeName, content);
-        if (parsedTheme) {
-          this.customThemes[themeName] = parsedTheme;
-        }
-      }
-    } catch (e) {
-      console.error("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u52A0\u8F7D\u81EA\u5B9A\u4E49\u4E3B\u9898\u5931\u8D25:", e);
-    }
-  }
-  // Simple and robust parser for CSS selectors and rules
-  parseCssToTheme(themeName, cssText) {
-    const baseline = {
-      name: `${themeName} (\u81EA\u5B9A\u4E49)`,
-      container: "font-family: -apple-system-font, BlinkMacSystemFont, sans-serif; font-size: 15px; color: #353535; line-height: 1.75; text-align: justify;",
-      h1: "font-size: 1.35em; font-weight: bold;",
-      h2: "font-size: 1.2em; font-weight: bold;",
-      h3: "font-size: 1.1em; font-weight: bold;",
-      h4: "font-size: 1.0em; font-weight: bold;",
-      h5: "font-size: 1.0em; font-weight: bold;",
-      h6: "font-size: 0.9em; font-weight: bold;",
-      p: "margin-top: 0px; margin-bottom: 1.4em;",
-      code: "font-family: monospace; font-size: 14px;",
-      blockquote: "margin: 1.5em 0; padding: 10px 15px;",
-      ul: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px;",
-      ol: "margin-top: 0px; margin-bottom: 1.2em; padding-left: 20px;",
-      li: "margin-bottom: 6px;",
-      strong: "font-weight: bold;",
-      link: "text-decoration: none;",
-      em: "font-style: italic;",
-      del: "text-decoration: line-through;",
-      hr: "border: 0; border-top: 1px solid #cccccc; margin: 2em 0;",
-      table: "border-collapse: collapse; width: 100%; margin: 1.5em 0;",
-      th: "border: 1px solid #cccccc; padding: 8px 12px; font-weight: bold; text-align: left;",
-      td: "border: 1px solid #cccccc; padding: 8px 12px;",
-      pre: "padding: 12px 16px; border-radius: 6px; overflow-x: auto; margin: 1.5em 0; font-family: monospace;",
-      pre_code: "font-family: inherit; font-size: 13px;"
-    };
-    try {
-      const strippedCss = cssText.replace(/\/\*[\s\S]*?\*\//g, "");
-      const ruleRegex = /([^{]+)\{([^}]+)\}/g;
-      let match;
-      while ((match = ruleRegex.exec(strippedCss)) !== null) {
-        const selector = match[1].trim().toLowerCase();
-        const rulesRaw = match[2].trim();
-        const rules = rulesRaw.split(";").map((r) => r.trim()).filter((r) => r.length > 0).join("; ") + ";";
-        if (selector === ".container" || selector === "container") {
-          baseline.container = rules;
-        } else if (selector === "h1") {
-          baseline.h1 = rules;
-        } else if (selector === "h2") {
-          baseline.h2 = rules;
-        } else if (selector === "h3") {
-          baseline.h3 = rules;
-        } else if (selector === "h4") {
-          baseline.h4 = rules;
-        } else if (selector === "h5") {
-          baseline.h5 = rules;
-        } else if (selector === "h6") {
-          baseline.h6 = rules;
-        } else if (selector === "p") {
-          baseline.p = rules;
-        } else if (selector === "code") {
-          baseline.code = rules;
-        } else if (selector === "blockquote") {
-          baseline.blockquote = rules;
-        } else if (selector === "ul") {
-          baseline.ul = rules;
-        } else if (selector === "ol") {
-          baseline.ol = rules;
-        } else if (selector === "li") {
-          baseline.li = rules;
-        } else if (selector === "strong" || selector === "b") {
-          baseline.strong = rules;
-        } else if (selector === "a") {
-          baseline.link = rules;
-        } else if (selector === "em" || selector === "i") {
-          baseline.em = rules;
-        } else if (selector === "del" || selector === "s") {
-          baseline.del = rules;
-        } else if (selector === "hr") {
-          baseline.hr = rules;
-        } else if (selector === "table") {
-          baseline.table = rules;
-        } else if (selector === "th") {
-          baseline.th = rules;
-        } else if (selector === "td") {
-          baseline.td = rules;
-        } else if (selector === "pre") {
-          baseline.pre = rules;
-        } else if (selector === "pre code" || selector === "pre_code") {
-          baseline.pre_code = rules;
-        }
-      }
-      return baseline;
-    } catch (e) {
-      console.error(`\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u89E3\u6790CSS\u4E3B\u9898 ${themeName} \u5931\u8D25:`, e);
-      return null;
-    }
-  }
-};
+// src/renderer.ts
 function preprocessWeChatFootnotes(markdown) {
   const footnotes = [];
   const definitionRegex = /^\s*\[\^([^\]]+)\]:\s*([^\n]+(?:\n(?!\s*\[\^|\s*\n)[^\n]+)*)/gm;
@@ -53693,7 +53610,10 @@ function preprocessWeChatFootnotes(markdown) {
   return { markdown: processedMarkdown, footnotes };
 }
 function convertToWeChatHtml(markdownText, theme) {
-  const { markdown: preparedMarkdown, footnotes } = preprocessWeChatFootnotes(markdownText);
+  let preprocessedMarkdown = markdownText;
+  preprocessedMarkdown = preprocessedMarkdown.replace(/(\*\*|\*|~~)([“‘《「（【])/g, "$1\u200B$2");
+  preprocessedMarkdown = preprocessedMarkdown.replace(/([”’》」）】])(\*\*|\*|~~)/g, "$1\u200B$2");
+  const { markdown: preparedMarkdown, footnotes } = preprocessWeChatFootnotes(preprocessedMarkdown);
   const renderer = new g.Renderer();
   renderer.code = function({ text, lang, escaped }) {
     const validLang = lang && es_default.getLanguage(lang) ? lang : "plaintext";
@@ -53800,9 +53720,12 @@ function convertToWeChatHtml(markdownText, theme) {
     const style = ref.getAttribute("style") || "";
     ref.setAttribute("style", style.replace("color: #2e6851;", `color: ${themeColor};`));
   });
-  return container.outerHTML;
+  return container.outerHTML.replace(/\u200B/g, "");
 }
-var WeChatPreviewView = class extends import_obsidian.ItemView {
+
+// src/view.ts
+var VIEW_TYPE_WECHAT_PREVIEW = "wechat-preview-view";
+var WeChatPreviewView = class extends import_obsidian3.ItemView {
   constructor(leaf, plugin) {
     super(leaf);
     this.currentHtml = "";
@@ -53866,7 +53789,7 @@ var WeChatPreviewView = class extends import_obsidian.ItemView {
     const previewWrapper = container.createDiv({ cls: "md2wechat-preview-content-wrapper" });
     const previewArea = previewWrapper.createDiv({ cls: "md2wechat-preview-content" });
     const render = (onlyIfMarkdown = false) => {
-      const activeView = this.app.workspace.getActiveViewOfType(import_obsidian.MarkdownView);
+      const activeView = this.app.workspace.getActiveViewOfType(import_obsidian3.MarkdownView);
       let markdownText = "";
       if (activeView) {
         markdownText = typeof activeView.setViewData === "function" ? activeView.data : activeView.editor.getValue();
@@ -53906,7 +53829,7 @@ var WeChatPreviewView = class extends import_obsidian.ItemView {
       await this.plugin.loadCustomThemes();
       populateSelector();
       render(false);
-      new import_obsidian.Notice("Themes refreshed and preview updated!");
+      new import_obsidian3.Notice("Themes refreshed and preview updated!");
     });
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", () => {
@@ -53916,17 +53839,17 @@ var WeChatPreviewView = class extends import_obsidian.ItemView {
     copyBtn.addEventListener("click", async () => {
       var _a2, _b;
       if (!this.currentHtml) {
-        new import_obsidian.Notice("No rendered content to copy! Please open and select a markdown note first.");
+        new import_obsidian3.Notice("No rendered content to copy! Please open and select a markdown note first.");
         return;
       }
       try {
         const blob = new Blob([this.currentHtml], { type: "text/html" });
         const data = [new ClipboardItem({ "text/html": blob, "text/plain": new Blob([this.lastMarkdown], { type: "text/plain" }) })];
         await navigator.clipboard.write(data);
-        new import_obsidian.Notice("Rich text copied successfully! Ready to paste into WeChat editor.");
+        new import_obsidian3.Notice("Rich text copied successfully! Ready to paste into WeChat editor.");
       } catch (err) {
         console.error(err);
-        new import_obsidian.Notice("Failed to copy to clipboard automatically. Trying fallback...");
+        new import_obsidian3.Notice("Failed to copy to clipboard automatically. Trying fallback...");
         const el = document.createElement("div");
         el.innerHTML = this.currentHtml;
         el.style.position = "fixed";
@@ -53939,48 +53862,41 @@ var WeChatPreviewView = class extends import_obsidian.ItemView {
         (_b = window.getSelection()) == null ? void 0 : _b.addRange(range);
         document.execCommand("copy");
         document.body.removeChild(el);
-        new import_obsidian.Notice("Copied as HTML successfully via fallback!");
+        new import_obsidian3.Notice("Copied as HTML successfully via fallback!");
       }
     });
     syncBtn.addEventListener("click", async () => {
       if (!this.currentHtml) {
-        new import_obsidian.Notice("No rendered content to sync! Please open and select a markdown note first.");
+        new import_obsidian3.Notice("No rendered content to sync! Please open and select a markdown note first.");
         return;
       }
       const { appId, appSecret } = this.plugin.settings;
       if (!appId || !appSecret) {
-        new import_obsidian.Notice("Please configure WeChat AppID and AppSecret in the plugin settings first!");
+        new import_obsidian3.Notice("Please configure WeChat AppID and AppSecret in the plugin settings first!");
         return;
       }
       syncBtn.disabled = true;
       syncBtn.setText("Syncing...");
-      new import_obsidian.Notice("Acquiring WeChat access token...");
+      new import_obsidian3.Notice("Acquiring WeChat access token...");
       try {
         console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u5F00\u59CB\u540C\u6B65\u6D41\u7A0B...");
-        console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u914D\u7F6E\u53C2\u6570 - AppID:", appId, "AppSecret:", appSecret ? "****** (\u5DF2\u586B\u5199)" : "(\u672A\u586B\u5199)");
         const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
-        console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u6B63\u5728\u83B7\u53D6 Access Token, \u8BF7\u6C42URL:", tokenUrl);
-        const tokenRes = await (0, import_obsidian.requestUrl)({ url: tokenUrl, method: "GET" });
-        console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u83B7\u53D6 Token \u54CD\u5E94\u72B6\u6001\u7801:", tokenRes.status);
+        const tokenRes = await (0, import_obsidian3.requestUrl)({ url: tokenUrl, method: "GET" });
         if (tokenRes.status !== 200) {
-          console.error("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u83B7\u53D6 Token \u5931\u8D25\uFF0C\u539F\u59CB\u54CD\u5E94:", tokenRes.text);
           throw new Error(`Token request failed with status ${tokenRes.status}`);
         }
         const tokenData = JSON.parse(tokenRes.text);
-        console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011Token \u63A5\u53E3\u8FD4\u56DE\u6570\u636E:", tokenData);
         if (tokenData.errcode) {
           throw new Error(`WeChat Token Error: [${tokenData.errcode}] ${tokenData.errmsg}`);
         }
         const accessToken = tokenData.access_token;
-        new import_obsidian.Notice("Token acquired! Creating Draft...");
+        new import_obsidian3.Notice("Token acquired! Creating Draft...");
         const title = this.lastTitle || "Untitled Note";
         const digest = this.lastDigest || "";
         const thumbMediaId = this.plugin.settings.defaultThumbMediaId.trim();
-        console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u5C01\u9762\u56FE thumb_media_id:", thumbMediaId);
         if (!thumbMediaId) {
           throw new Error("WeChat requires a cover image (thumb_media_id) to create draft. Please configure the 'Default Cover Media ID' in plugin settings first!");
         }
-        new import_obsidian.Notice("Uploading draft content to WeChat...");
         const article = {
           title,
           author: "",
@@ -53993,16 +53909,12 @@ var WeChatPreviewView = class extends import_obsidian.ItemView {
         };
         const draftUrl = `https://api.weixin.qq.com/cgi-bin/draft/add?access_token=${accessToken}`;
         const requestPayload = { articles: [article] };
-        console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u6B63\u5728\u5411\u5FAE\u4FE1\u65B0\u5EFA\u8349\u7A3F, \u76EE\u6807\u63A5\u53E3:", draftUrl);
-        console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u53D1\u9001\u7684\u6570\u636E payload:", requestPayload);
-        const draftRes = await (0, import_obsidian.requestUrl)({
+        const draftRes = await (0, import_obsidian3.requestUrl)({
           url: draftUrl,
           method: "POST",
           contentType: "application/json",
           body: JSON.stringify(requestPayload)
         });
-        console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u65B0\u5EFA\u8349\u7A3F \u54CD\u5E94\u72B6\u6001\u7801:", draftRes.status);
-        console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u65B0\u5EFA\u8349\u7A3F \u5FAE\u4FE1\u8FD4\u56DE\u6570\u636E:", draftRes.text);
         const draftData = JSON.parse(draftRes.text);
         if (draftData.errcode) {
           if (draftData.errcode === 40007 || draftData.errcode === 40009) {
@@ -54010,11 +53922,11 @@ var WeChatPreviewView = class extends import_obsidian.ItemView {
           }
           throw new Error(`WeChat Sync Error: [${draftData.errcode}] ${draftData.errmsg}`);
         }
-        new import_obsidian.Notice("Successfully synchronized draft to WeChat Official Account!");
+        new import_obsidian3.Notice("Successfully synchronized draft to WeChat Official Account!");
       } catch (err) {
         console.error("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u53D1\u751F\u5F02\u5E38\uFF0C\u8BE6\u7EC6\u5806\u6808\u5982\u4E0B\uFF1A");
         console.error(err);
-        new import_obsidian.Notice(`Sync failed: ${err.message || err}`);
+        new import_obsidian3.Notice(`Sync failed: ${err.message || err}`);
       } finally {
         syncBtn.disabled = false;
         syncBtn.setText("Sync to Draft");
@@ -54024,116 +53936,267 @@ var WeChatPreviewView = class extends import_obsidian.ItemView {
   async onClose() {
   }
 };
-var Md2WeChatSettingTab = class extends import_obsidian.PluginSettingTab {
-  constructor(app, plugin) {
-    super(app, plugin);
-    this.plugin = plugin;
+
+// src/main.ts
+var DEFAULT_SETTINGS = {
+  appId: "",
+  appSecret: "",
+  defaultStyle: "elegant",
+  customCss: "",
+  enableImgUpload: true,
+  imageHostingType: "wechat",
+  defaultThumbMediaId: "",
+  cachedMaterials: [],
+  themeFolder: "wechat-format-themes"
+};
+var Md2WeChatPlugin = class extends import_obsidian4.Plugin {
+  constructor() {
+    super(...arguments);
+    this.customThemes = {};
   }
-  display() {
-    const { containerEl } = this;
-    containerEl.empty();
-    containerEl.createEl("h2", { text: "Markdown to WeChat Settings" });
-    new import_obsidian.Setting(containerEl).setName("WeChat AppID").setDesc("Your WeChat Official Account Developer AppID").addText((text) => text.setPlaceholder("wx...").setValue(this.plugin.settings.appId).onChange(async (value) => {
-      this.plugin.settings.appId = value;
-      await this.plugin.saveSettings();
-    }));
-    new import_obsidian.Setting(containerEl).setName("WeChat AppSecret").setDesc("Your WeChat Official Account Developer AppSecret").addText((text) => text.setPlaceholder("Enter app secret").setValue(this.plugin.settings.appSecret).onChange(async (value) => {
-      this.plugin.settings.appSecret = value;
-      await this.plugin.saveSettings();
-    }));
-    const styleSetting = new import_obsidian.Setting(containerEl).setName("Default Theme").setDesc("Default style template used for renders");
-    styleSetting.addDropdown((dropdown) => {
-      dropdown.addOption("elegant", "Elegant Green (\u96C5\u7EFF)");
-      dropdown.addOption("warm", "Warm Gold (\u6696\u91D1)");
-      dropdown.addOption("minimal", "Minimalist Black (\u6781\u7B80)");
-      Object.keys(this.plugin.customThemes).forEach((key) => {
-        dropdown.addOption(`custom:${key}`, `\u{1F4C2} ${key}`);
-      });
-      dropdown.setValue(this.plugin.settings.defaultStyle);
-      dropdown.onChange(async (value) => {
-        this.plugin.settings.defaultStyle = value;
-        await this.plugin.saveSettings();
-      });
+  async onload() {
+    await this.loadSettings();
+    await this.initThemeDirectory();
+    await this.loadCustomThemes();
+    this.registerView(
+      VIEW_TYPE_WECHAT_PREVIEW,
+      (leaf) => new WeChatPreviewView(leaf, this)
+    );
+    this.addRibbonIcon("share-2", "WeChat Format & Sync", () => {
+      this.activateView();
     });
-    new import_obsidian.Setting(containerEl).setName("Custom Themes Folder").setDesc("Folder in your vault where custom WeChat CSS themes are stored. (Will auto-initialize if not existing)").addText((text) => text.setPlaceholder("wechat-format-themes").setValue(this.plugin.settings.themeFolder).onChange(async (value) => {
-      this.plugin.settings.themeFolder = value.trim() || "wechat-format-themes";
-      await this.plugin.saveSettings();
-      await this.plugin.initThemeDirectory();
-      await this.plugin.loadCustomThemes();
-    }));
-    new import_obsidian.Setting(containerEl).setName("WeChat Image Uploads").setDesc("Enable automatic image upload directly to WeChat CDN").addToggle((toggle) => toggle.setValue(this.plugin.settings.enableImgUpload).onChange(async (value) => {
-      this.plugin.settings.enableImgUpload = value;
-      await this.plugin.saveSettings();
-    }));
-    const materialsSetting = new import_obsidian.Setting(containerEl).setName("Select Cover from WeChat").setDesc('Click "Fetch" to load images from your WeChat library, then choose one.').addButton((btn) => btn.setButtonText("Fetch Materials").onClick(async () => {
-      const { appId, appSecret } = this.plugin.settings;
-      if (!appId || !appSecret) {
-        new import_obsidian.Notice("Please enter AppID and AppSecret first!");
-        return;
+    this.addCommand({
+      id: "preview-wechat-format",
+      name: "Open WeChat format preview and sync panel",
+      callback: () => {
+        this.activateView();
       }
-      btn.setDisabled(true);
-      btn.setButtonText("Fetching...");
-      new import_obsidian.Notice("Fetching permanent images from WeChat...");
-      try {
-        const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
-        const tokenRes = await (0, import_obsidian.requestUrl)({ url: tokenUrl, method: "GET" });
-        const tokenData = JSON.parse(tokenRes.text);
-        if (tokenData.errcode) {
-          throw new Error(tokenData.errmsg);
-        }
-        const token = tokenData.access_token;
-        const matUrl = `https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token=${token}`;
-        const matRes = await (0, import_obsidian.requestUrl)({
-          url: matUrl,
-          method: "POST",
-          contentType: "application/json",
-          body: JSON.stringify({
-            type: "image",
-            offset: 0,
-            count: 20
-          })
+    });
+    this.addSettingTab(new Md2WeChatSettingTab(this.app, this));
+  }
+  async loadSettings() {
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  }
+  async saveSettings() {
+    await this.saveData(this.settings);
+  }
+  async activateView() {
+    const { workspace } = this.app;
+    let leaf = null;
+    const leaves = workspace.getLeavesOfType(VIEW_TYPE_WECHAT_PREVIEW);
+    if (leaves.length > 0) {
+      leaf = leaves[0];
+    } else {
+      leaf = workspace.getRightLeaf(false);
+      if (leaf) {
+        await leaf.setViewState({
+          type: VIEW_TYPE_WECHAT_PREVIEW,
+          active: true
         });
-        const matData = JSON.parse(matRes.text);
-        if (matData.errcode) {
-          throw new Error(matData.errmsg);
-        }
-        const items = matData.item || [];
-        if (items.length === 0) {
-          new import_obsidian.Notice("No permanent images found in your WeChat material library!");
-          return;
-        }
-        this.plugin.settings.cachedMaterials = items.map((item) => ({
-          mediaId: item.media_id,
-          name: item.name
-        }));
-        await this.plugin.saveSettings();
-        new import_obsidian.Notice(`Successfully loaded ${items.length} materials!`);
-        this.display();
-      } catch (err) {
-        console.error(err);
-        new import_obsidian.Notice(`Failed to fetch: ${err.message || err}`);
-      } finally {
-        btn.setDisabled(false);
-        btn.setButtonText("Fetch Materials");
       }
-    }));
-    if (this.plugin.settings.cachedMaterials && this.plugin.settings.cachedMaterials.length > 0) {
-      materialsSetting.addDropdown((dropdown) => {
-        dropdown.addOption("", "-- Select an Image --");
-        this.plugin.settings.cachedMaterials.forEach((m2) => {
-          dropdown.addOption(m2.mediaId, m2.name.substring(0, 30));
-        });
-        dropdown.setValue(this.plugin.settings.defaultThumbMediaId);
-        dropdown.onChange(async (val) => {
-          this.plugin.settings.defaultThumbMediaId = val;
-          await this.plugin.saveSettings();
-          this.display();
-        });
-      });
     }
-    new import_obsidian.Setting(containerEl).setName("Default Cover Media ID").setDesc("Manually paste a WeChat Media ID, or select it from the dropdown helper above.").addText((text) => text.setPlaceholder("wx_media_id_...").setValue(this.plugin.settings.defaultThumbMediaId).onChange(async (value) => {
-      this.plugin.settings.defaultThumbMediaId = value.trim();
-      await this.plugin.saveSettings();
-    }));
+    if (leaf) {
+      workspace.revealLeaf(leaf);
+    }
+  }
+  async initThemeDirectory() {
+    const adapter = this.app.vault.adapter;
+    const folderPath = this.settings.themeFolder;
+    const templateCss = `/* 
+\u5FAE\u4FE1\u81EA\u5B9A\u4E49\u4E3B\u9898\u6A21\u677F (Custom WeChat Theme Template)
+\u6587\u4EF6\u540D\u5C06\u4F5C\u4E3A\u4E3B\u9898\u540D\u79F0\u663E\u793A\u5728\u4E0B\u62C9\u5217\u8868\u4E2D (e.g. "\u84DD\u8272\u6781\u5BA2.css" => "\u84DD\u8272\u6781\u5BA2")
+
+\u652F\u6301\u7684\u9009\u62E9\u5668\u8BF4\u660E (Supported Selectors):
+- .container  : \u5916\u90E8\u5927\u5305\u88F9\u5BB9\u5668\u6837\u5F0F (\u6574\u4F53\u5B57\u4F53\u3001\u884C\u9AD8\u3001\u5BF9\u9F50\u7B49)
+- h1, h2, h3, h4, h5, h6 : \u4E00\u81F3\u516D\u7EA7\u6807\u9898\u6837\u5F0F
+- p           : \u666E\u901A\u6BB5\u843D\u6837\u5F0F
+- code        : \u884C\u5185\u5355\u884C\u4EE3\u7801\u6807\u7B7E
+- blockquote  : \u5F15\u7528\u5757
+- ul, ol      : \u65E0\u5E8F/\u6709\u5E8F\u5217\u8868\u5BB9\u5668
+- li          : \u5217\u8868\u9879\u6837\u5F0F
+- strong      : \u52A0\u7C97\u6587\u672C
+- a           : \u94FE\u63A5 (\u5FAE\u4FE1\u7AEF\u5C06\u6E32\u67D3\u4E3A\u9AD8\u4EAE\u4E0B\u5212\u7EBF)
+- em          : \u659C\u4F53\u6587\u672C
+- del         : \u5220\u9664\u7EBF
+- hr          : \u5206\u5272\u7EBF
+- table, th, td : \u8868\u683C\u548C\u5355\u5143\u683C\u6837\u5F0F
+- pre         : \u591A\u884C\u4EE3\u7801\u5757\u80CC\u666F\u6846
+- pre_code    : \u591A\u884C\u4EE3\u7801\u6587\u672C\u6837\u5F0F (\u5BF9\u5E94\u4EE3\u7801\u5757\u5185\u90E8\u7684 code \u6807\u7B7E)
+*/
+
+.container {
+    font-family: -apple-system-font, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+    font-size: 15px;
+    color: #333333;
+    line-height: 1.8;
+    letter-spacing: 0.5px;
+    text-align: justify;
+}
+
+h1 {
+    font-size: 1.45em;
+    color: #d35400; /* \u73CA\u745A\u7EA2 */
+    border-bottom: 2px solid #d35400;
+    padding-bottom: 6px;
+    margin-top: 1.8em;
+    margin-bottom: 0.8em;
+    font-weight: bold;
+}
+
+h2 {
+    font-size: 1.25em;
+    color: #d35400;
+    margin-top: 1.6em;
+    margin-bottom: 0.8em;
+    font-weight: bold;
+    border-left: 4px solid #d35400;
+    padding-left: 8px;
+}
+
+h3 {
+    font-size: 1.12em;
+    color: #e67e22;
+    margin-top: 1.4em;
+    margin-bottom: 0.6em;
+    font-weight: bold;
+}
+
+h4 {
+    font-size: 1.0em;
+    color: #e67e22;
+    margin-top: 1.2em;
+    margin-bottom: 0.6em;
+    font-weight: bold;
+}
+
+h5 {
+    font-size: 1.0em;
+    color: #444444;
+    margin-top: 1.2em;
+    margin-bottom: 0.6em;
+    font-weight: bold;
+}
+
+h6 {
+    font-size: 0.9em;
+    color: #666666;
+    margin-top: 1.2em;
+    margin-bottom: 0.6em;
+    font-weight: bold;
+}
+
+p {
+    margin-top: 0px;
+    margin-bottom: 1.4em;
+    color: #333333;
+}
+
+code {
+    font-family: Consolas, Monaco, monospace;
+    font-size: 14px;
+    background-color: #fbeee6;
+    color: #d35400;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+blockquote {
+    margin: 1.5em 0;
+    padding: 12px 18px;
+    background: #fdf5e6;
+    border-left: 4px solid #d35400;
+    color: #5d4037;
+    font-size: 0.95em;
+    border-radius: 0 4px 4px 0;
+}
+
+ul {
+    margin-top: 0px;
+    margin-bottom: 1.2em;
+    padding-left: 20px;
+    list-style-type: disc;
+}
+
+ol {
+    margin-top: 0px;
+    margin-bottom: 1.2em;
+    padding-left: 20px;
+    list-style-type: decimal;
+}
+
+li {
+    margin-bottom: 6px;
+    line-height: 1.7;
+    color: #444444;
+}
+
+strong {
+    color: #d35400;
+    font-weight: bold;
+}
+
+a {
+    color: #d35400;
+    text-decoration: none;
+    border-bottom: 1px dashed #d35400;
+}
+
+em {
+    font-style: italic;
+    color: #5d4037;
+}
+
+del {
+    text-decoration: line-through;
+    color: #888888;
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid #d35400;
+    margin: 2.5em 0;
+    opacity: 0.8;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 2em 0;
+    font-size: 0.9em;
+}
+
+th {
+    border: 1px solid #f9ebdf;
+    background-color: #fdf5e6;
+    color: #d35400;
+    padding: 10px 14px;
+    font-weight: bold;
+}
+
+td {
+    border: 1px solid #f9ebdf;
+    padding: 10px 14px;
+    color: #444444;
+}
+
+pre {
+    background-color: #282c34;
+    padding: 14px 18px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 1.8em 0;
+    line-height: 1.6;
+}
+
+pre_code {
+    font-family: Consolas, Monaco, monospace;
+    font-size: 13px;
+    color: #abb2bf;
+}
+`;
+    await initThemeDirectory(adapter, folderPath, templateCss);
+  }
+  async loadCustomThemes() {
+    this.customThemes = await loadCustomThemes(this.app.vault.adapter, this.settings.themeFolder);
   }
 };
