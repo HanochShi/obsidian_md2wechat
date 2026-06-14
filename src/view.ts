@@ -30,7 +30,7 @@ export class WeChatPreviewView extends ItemView {
 	}
 
 	getIcon(): string {
-		return "share-2";
+		return "messages-square";
 	}
 
 	async onOpen() {

@@ -33,7 +33,7 @@ export default class Md2WeChatPlugin extends Plugin {
 		);
 
 		// Add Ribbon icon for preview
-		this.addRibbonIcon('share-2', 'WeChat Format & Sync', () => {
+		this.addRibbonIcon('messages-square', 'WeChat Format & Sync', () => {
 			this.activateView();
 		});
 

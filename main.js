@@ -54161,7 +54161,7 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
     return t("view_title", lang);
   }
   getIcon() {
-    return "share-2";
+    return "messages-square";
   }
   async onOpen() {
     const { contentEl } = this;
@@ -54490,7 +54490,7 @@ var Md2WeChatPlugin = class extends import_obsidian5.Plugin {
       VIEW_TYPE_WECHAT_PREVIEW,
       (leaf) => new WeChatPreviewView(leaf, this)
     );
-    this.addRibbonIcon("share-2", "WeChat Format & Sync", () => {
+    this.addRibbonIcon("messages-square", "WeChat Format & Sync", () => {
       this.activateView();
     });
     this.addCommand({

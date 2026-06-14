@@ -11,7 +11,7 @@
 然而，开发和维护本项目（尤其在频繁利用先进 AI 协作进行“Vibe Coding”时）消耗了大量的 API 消耗成本和时间精力。如果本插件为你节省了时间，提升了排版同步体验，不妨请我吃碗鸡腿饭！你的支持将直接用于回血 API token 成本，并持续驱动后续的功能更新！🚀
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/9f4ee71c-c8ad-4500-b612-ee53131836b1" width="250" alt="微信收款码" />
+  <img src="https://github.com/user-attachments/assets/9f4ee71c-c8ad-4500-b612-ee53131836b1" width="250" margin-right="50" alt="微信收款码" />
   <img src="https://github.com/user-attachments/assets/b782068d-0f80-4a98-a4e3-1ca644627b21" width="250" alt="支付宝收款码" />
 </div>
 
@@ -40,14 +40,16 @@
 ![设置界面](https://github.com/user-attachments/assets/5ba031ae-bdfd-4642-8322-c52e183cd78c)
 
 ### 2. 侧边栏高保真预览
-在侧边栏即可直观看到手机端展现效果，图片能正常无痕预览（已打通 Obsidian 安全路径转换）。
+在侧边栏即可直观看到手机端展现效果，图片也能正常无痕预览。
 
-`[图片占位符：Obsidian 分栏截图，左边为正在编写的 Markdown 笔记，右边为微信排版实时高保真预览界面，展示着精美的标题、行内代码、引用块以及图片]`
+![预览效果图1](https://github.com/user-attachments/assets/258ed1cc-33cf-4815-96ed-4f3bc20f6898)
+
+![预览效果图2](https://github.com/user-attachments/assets/e3a2c979-d8de-471a-a75f-84be25370e28)
 
 ### 3. 同步至微信公众平台草稿箱
 一键点击“Sync to Draft”，在微信公众平台后台即可直接打开生成好的、排版完全正常的精美草稿。
 
-`[图片占位符：微信公众平台草稿箱编辑器的实际效果截图，展示自动上传成功的正文插图、自动绑定的首图封面、以及高亮着色的多行代码块]`
+![同步操作演示](https://github.com/user-attachments/assets/1fc31b47-dd22-477b-a4b6-36aa5abb883e)
 
 ---
 
@@ -55,8 +57,8 @@
 
 ### 方法一：通过社区插件市场安装（推荐）
 1. 打开 Obsidian 的 **设置**。
-2. 进入 **社区插件 (Community plugins)** -> **浏览 (Browse)**。
-3. 搜索 `WeChat Format Sync` 或 `obsidian-md2wechat`。
+2. 进入 **第三场插件** -> **社区插件市场** -> **浏览 (Browse)**。
+3. 搜索 `Markdown to Wechat Sync` 或 `obsidian-md2wechat`。
 4. 点击 **安装 (Install)** 并 **启用 (Enable)**。
 
 ### 方法二：手动安装
@@ -74,7 +76,7 @@
 1. 登录 [微信公众平台](https://mp.weixin.qq.com/)。
 2. 侧边栏滑到最下方，点击 **设置与开发** -> **基本配置**。
 3. 获取你的 **AppID** 和 **AppSecret**（如果忘记，需重置并进行管理员扫码验证）。
-4. **【至关重要】** 在下方 **IP白名单** 中，将你当前电脑的公网 IP 地址添加进去，否则微信服务器会拒绝你的同步请求。
+4. **【至关重要】** 在下方 **IP白名单** 中，将你当前电脑的公网 IP 地址添加进去，否则微信服务器会拒绝你的同步请求。（如果不知道自己的公网IP，可以访问[https://tool.lu/ip]查询）
 5. 返回 Obsidian 设置中，填入 **AppID** 和 **AppSecret**。
 
 ### 第二步：配置微信备用默认封面
@@ -83,9 +85,9 @@
 
 ### 第三步：一键预览、复制与同步
 1. 打开你想要排版或同步的 Markdown 笔记。
-2. 点击 Obsidian 左侧功能栏的 **微信图标 (Share-2)**，或使用快捷键 `Ctrl/Cmd + P` 打开命令行输入 `Open WeChat format preview and sync panel` 打开侧边栏。
+2. 点击 Obsidian 左侧功能栏的图标![](assets/icon.png)，或使用快捷键 `Ctrl/Cmd + P` 打开命令行输入 `Open WeChat format preview and sync panel` 打开侧边栏。
 3. 在侧边栏下拉菜单里切换选择你中意的样式主题。
-4. 点击 **Copy Rich Text** 可以立刻复制富文本进行手动粘贴；点击 **Sync to Draft** 则会一键批量上传文中所有插图、自动绑定封面、全自动在微信后台创建草稿！
+4. 点击 **复制富文本** 可以立刻复制富文本进行手动粘贴；点击 **同步到草稿箱** 则会一键批量上传文中所有插图、自动绑定封面、全自动在微信后台创建草稿！
 
 ---
 
