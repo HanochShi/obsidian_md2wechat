@@ -14,7 +14,7 @@
     "markdown"
   ],
   "author": "Zhuanz1",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "devDependencies": {
     "@types/node": "^16.11.6",
     "builtin-modules": "^3.2.0",
