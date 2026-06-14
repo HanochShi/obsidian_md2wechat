@@ -1,5 +1,5 @@
 {
-  "id": "md2wechat",
+  "id": "md-to-wechat",
   "name": "Markdown to WeChat MP Sync",
   "version": "1.0.0",
   "minAppVersion": "0.15.0",
