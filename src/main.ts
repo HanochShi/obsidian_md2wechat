@@ -5,7 +5,7 @@ import { WeChatPreviewView, VIEW_TYPE_WECHAT_PREVIEW } from './view';
 import { loadCustomThemes, initThemeDirectory } from './themes'; // We will define loader wrappers inside main or bind them
 
 const DEFAULT_SETTINGS: Md2WeChatSettings = {
-	lang: 'en',
+	lang: 'zh-CN',
 	appId: '',
 	appSecret: '',
 	defaultStyle: 'elegant',

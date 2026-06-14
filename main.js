@@ -54466,7 +54466,7 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
 
 // src/main.ts
 var DEFAULT_SETTINGS = {
-  lang: "en",
+  lang: "zh-CN",
   appId: "",
   appSecret: "",
   defaultStyle: "elegant",

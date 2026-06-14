@@ -1,101 +1,102 @@
-# Obsidian WeChat Format Sync (`obsidian-md2wechat`)
+# Obsidian 微信一键同步排版助手 (`obsidian-md2wechat`)
 
-Format and sync your Obsidian Markdown notes to your WeChat Official Account drafts in just one click, complete with auto-image hosting and custom CSS themes.
-
----
-
-## 💖 Support the Project
-
-This plugin is **100% free and open-source, and always will be!** 
-
-However, developing and maintaining this project—especially leveraging advanced AI "vibe coding" tools—consumes a significant amount of API tokens and server costs. If this plugin saves you time and elevates your writing workflow, please consider buying me a coffee! Your support helps cover these token costs and keeps the updates rolling. 🚀
-
-`[SPONSORSHIP PLACEHOLDER: A section or image link showing your WeChat Pay / Alipay QR code or Buy Me a Coffee link for donations]`
+一键排版 Markdown 笔记并完美无缝同步至微信公众号草稿箱，包含图片自动上传微信 CDN、智能封面提取及自定义 CSS 主题支持。
 
 ---
 
-## ✨ Features
+## 💖 支持本项目
 
-- **🚀 One-Click Sync to WeChat**: Automatically compiles your notes into inline-styled HTML and creates a draft in your WeChat Official Account. No manual copy-pasting required!
-- **🖼️ Auto Image Uploads to WeChat CDN**: Scans your notes for any local images (including standard Markdown syntax `![](...)` and Obsidian wikilinks `![[...]`), uploads them directly to the WeChat CDN, and replaces references dynamically. No more broken images!
-- **🏷️ Smart Cover Extraction**: Automatically extracts the first image in your note, uploads it as a permanent thumbnail, and sets it as the draft cover. If no image is found, it falls back gracefully to your selected default cover.
-- **🎨 Live Preview Sidebar with Beautiful Built-In & Custom CSS Themes**:
-  - Live side-by-side preview panel that updates instantly.
-  - Built-in premium templates: *Elegant Green (雅绿)*, *Warm Gold (暖金)*, *Minimalist Black (极简)*, and *Red Passion (红色热情)*.
-  - **Custom Themes**: Add your own CSS files to the designated folder; the plugin automatically parses them and makes them selectable in the sidebar with strict conflict-protection.
-- **🌐 Full i18n Support**: Native localization for 6 major languages: **English**, **Simplified Chinese (简体中文)**, **Traditional Chinese (繁體中文)**, **Spanish (Español)**, **French (Français)**, and **Japanese (日本語)**. Perfect for global creators.
-- **📋 Copy Rich Text (Clipboard fallback)**: Copy perfectly formatted rich-text directly to your clipboard with custom CSS rules inlined, ready to paste into any editor (WeChat, Medium, Substack, etc.).
-- **🔗 WeChat Dual Footnotes**: Formats standard markdown footnotes into clean, WeChat-compatible superscript references and styled lists at the bottom of the article.
+本插件**100% 永久免费且开源**，未来也一直会是！
+
+然而，开发和维护本项目（尤其在频繁利用先进 AI 协作进行“Vibe Coding”时）消耗了大量的 API 消耗成本和时间精力。如果本插件为您节省了时间，提升了排版同步体验，不妨请我喝杯咖啡！您的支持将直接用于回血 API token 成本，并持续驱动后续的功能更新！🚀
+
+`[赞助二维码占位符：可以在此处展示您的微信支付/支付宝收款码，或 Buy Me a Coffee 链接]`
 
 ---
 
-## 📸 Screenshots & Workflow
+## ✨ 核心特性
 
-### 1. Settings Configuration
-Set up your Developer Credentials, default style, and fetch cover materials directly from your WeChat permanent library.
-
-`[IMAGE PLACEHOLDER: A screenshot of the plugin settings tab showing WeChat AppID, AppSecret, Language selector, Custom CSS folder path, WeChat Image Upload toggle, and the permanent library Cover Dropdown with "Fetch Materials" button]`
-
-### 2. Live Format Preview Panel
-The responsive side-by-side view allows you to see how your article will look on mobile screens in real-time.
-
-`[IMAGE PLACEHOLDER: A screenshot of Obsidian with a split view: markdown note on the left, and the WeChat Format Sync sidebar preview on the right showcasing formatted headings, code blocks, inlined images, and styled footnotes]`
-
-### 3. Successfully Synced Draft in WeChat
-No more formatting bugs—perfectly compiled text, highlists, blockquotes, and lists visible in the WeChat draft editor.
-
-`[IMAGE PLACEHOLDER: A screenshot of the WeChat Official Account Creator Platform (微信公众平台) showing the newly synced draft containing inline highlighted code blocks, centered images, and footnotes]`
+- **🚀 一键无缝同步至微信草稿箱**：自动将您的 Markdown 笔记转换为含有行内样式的 HTML，并直接写入您的微信公众号草稿箱中。告别繁琐的复制粘贴！
+- **🖼️ 本地图片自动托管微信 CDN**：深度扫描文章中的所有本地图片（同时完美支持标准 Markdown 语法 `![](...)` 与 Obsidian 双括号维基链接 `![[...]`），自动将二进制数据无损上传至微信 CDN 替换，彻底解决图片在微信裂开的痛点！
+- **🏷️ 智能首图提取为封面**：自动提取正文中的第一张本地图片上传并设为草稿封面。若文章没有图片，则优雅降级为设置中指定的“默认封面图”。
+- **🎨 侧边栏实时预览与内置/自定义 CSS 主题**：
+  - 侧边栏支持高仿真手机宽度的实时渲染排版预览。
+  - 内置多款精美主题模板：*雅绿 (Elegant Green)*、*暖金 (Warm Gold)*、*极简 (Minimalist Black)* 以及 *红色热情 (Red Passion)*。
+  - **自定义主题**：只需在自定义主题文件夹里放入任意 `.css` 文件，插件即会自动检测、冲突保护并提供侧边栏下拉切换！
+- **🌐 全球多语言支持**：原生支持 **简体中文**、**繁体中文**、**英语**、**西班牙语**、**法语**、以及 **日语** 六国语言。
+- **📋 复制富文本（备用剪贴板方案）**：一键将带行内样式的富文本内容复制到系统剪贴板，支持直接粘贴至任何公众号编辑器。
+- **🔗 双向脚注解析**：自动将 Markdown 标准脚注翻译并重写为符合微信排版规范的双向角标，并在文章底部渲染出精美的参考资料列表。
 
 ---
 
-## 🛠️ Installation
+## 📸 运行预览与工作流
 
-### Option 1: Via Community Plugins (Recommended once listed)
-1. Open Obsidian settings.
-2. Navigate to **Community plugins** -> **Browse**.
-3. Search for `WeChat Format Sync` or `obsidian-md2wechat`.
-4. Click **Install**, then **Enable**.
+### 1. 插件控制面板设置
+配置您的微信公众号开发者凭证（AppID & AppSecret）、默认首选语言、自定义主题文件夹、以及从微信永久素材库中拉取并快捷绑定备用封面。
 
-### Option 2: Manual Installation
-1. Download the latest release (`main.js`, `manifest.json`, `styles.css`) from the [GitHub Releases](https://github.com/HanochShi/obsidian_md2wechat/releases) page.
-2. Create a folder named `obsidian-md2wechat` under your vault's `.obsidian/plugins/` directory.
-3. Move the downloaded files into that folder.
-4. Go to **Community plugins** in Obsidian settings and enable the plugin.
+`[图片占位符：插件设置页面的截图，展示 AppID、AppSecret 填写区，语言选择器，以及一键“拉取素材”并绑定默认封面图的下拉选单]`
 
----
+### 2. 侧边栏高保真预览
+在侧边栏即可直观看到手机端展现效果，图片能正常无痕预览（已打通 Obsidian 安全路径转换）。
 
-## 📖 How to Use
+`[图片占位符：Obsidian 分栏截图，左边为正在编写的 Markdown 笔记，右边为微信排版实时高保真预览界面，展示着精美的标题、行内代码、引用块以及图片]`
 
-### Step 1: Configure WeChat Credentials
-To enable Draft Synchronization and Auto-Image Upload, you need a **WeChat Subscription/Service Account (订阅号/服务号)**:
-1. Log in to the [WeChat Official Account Platform](https://mp.weixin.qq.com/).
-2. Navigate to **Settings and Development (设置与开发)** -> **Basic Configuration (基本配置)**.
-3. Find your **AppID** and **AppSecret** (you may need to reset and authenticate it).
-4. Add your **IP address** to the IP Whitelist (IP白名单) to allow requests from your computer.
-5. In Obsidian settings, enter your **AppID** and **AppSecret**.
+### 3. 同步至微信公众平台草稿箱
+一键点击“Sync to Draft”，在微信公众平台后台即可直接打开生成好的、排版完全正常的精美草稿。
 
-### Step 2: Set up a Default Cover
-1. In the plugin settings, click **Fetch Materials**. This downloads the permanent images from your WeChat media library.
-2. Choose one from the dropdown to use as your default fallback cover.
-
-### Step 3: Preview and Sync
-1. Open the Markdown note you wish to sync.
-2. Click the **WeChat Icon (Share-2)** on the left ribbon bar or run the command `Open WeChat format preview and sync panel` from the Command Palette (`Ctrl/Cmd + P`).
-3. Select your favorite style from the dropdown.
-4. Click **Copy Rich Text** to copy formatting immediately, or click **Sync to Draft** to automatically push the article, positive inline images, and cover image to your WeChat account draft box!
+`[图片占位符：微信公众平台草稿箱编辑器的实际效果截图，展示自动上传成功的正文插图、自动绑定的首图封面、以及高亮着色的多行代码块]`
 
 ---
 
-## 🎨 Custom CSS Customization
+## 🛠️ 安装方法
 
-You can fully customize your layout!
-1. The plugin automatically creates a folder inside your vault (defaults to `wechat-format-themes/`) with a template theme CSS.
-2. Any `.css` file you drop in this folder will instantly show up as a selectable theme in the sidebar selector (e.g., `geek-blue.css` will be listed as `📂 geek-blue`).
-3. We support mapping tags to standard WeChat classes. Example:
+### 方法一：通过社区插件市场安装（推荐）
+1. 打开 Obsidian 的 **设置**。
+2. 进入 **社区插件 (Community plugins)** -> **浏览 (Browse)**。
+3. 搜索 `WeChat Format Sync` 或 `obsidian-md2wechat`。
+4. 点击 **安装 (Install)** 并 **启用 (Enable)**。
+
+### 方法二：手动安装
+1. 在 [GitHub Releases](https://github.com/HanochShi/obsidian_md2wechat/releases) 页面下载最新发布的版本文件（包含 `main.js`, `manifest.json`, `styles.css`）。
+2. 在您库的 `.obsidian/plugins/` 路径下创建一个名为 `obsidian-md2wechat` 的子文件夹。
+3. 将下载的 3 个文件放入该文件夹中。
+4. 返回 Obsidian 的“社区插件”设置面板，刷新并启用该插件。
+
+---
+
+## 📖 使用指南
+
+### 第一步：获取并配置微信公众号开发者凭证
+要实现草稿一键同步和图片 CDN 上传，您需要拥有一个**微信公众号（订阅号或服务号均可）**：
+1. 登录 [微信公众平台](https://mp.weixin.qq.com/)。
+2. 侧边栏滑到最下方，点击 **设置与开发** -> **基本配置**。
+3. 获取您的 **AppID** 和 **AppSecret**（如果忘记，需重置并进行管理员扫码验证）。
+4. **【至关重要】** 在下方 **IP白名单** 中，将您当前电脑的公网 IP 地址添加进去，否则微信服务器会拒绝您的同步请求。
+5. 返回 Obsidian 设置中，填入 **AppID** 和 **AppSecret**。
+
+### 第二步：配置微信备用默认封面
+1. 在插件设置中，点击 **拉取素材 (Fetch Materials)**，插件将自动获取您素材库中最新的永久图片。
+2. 在下拉菜单中选择一张作为文章在“正文无任何图片”时的自动默认封面图。
+
+### 第三步：一键预览、复制与同步
+1. 打开您想要排版或同步的 Markdown 笔记。
+2. 点击 Obsidian 左侧功能栏的 **微信图标 (Share-2)**，或使用快捷键 `Ctrl/Cmd + P` 打开命令行输入 `Open WeChat format preview and sync panel` 打开侧边栏。
+3. 在侧边栏下拉菜单里切换选择您中意的样式主题。
+4. 点击 **Copy Rich Text** 可以立刻复制富文本进行手动粘贴；点击 **Sync to Draft** 则会一键批量上传文中所有插图、自动绑定封面、全自动在微信后台创建草稿！
+
+---
+
+## 🎨 自定义 CSS 主题微调
+
+您可以对排版视觉风格进行极高自由度的定制：
+1. 插件首次加载时，会自动在您库的根目录下创建一个名为 `wechat-format-themes` 的样式目录，并初始化放入一份示例主题文件。
+2. 您扔进该文件夹的任何 `.css` 文件，都会立即、自动被插件捕获并渲染到侧边栏主题下拉菜单中（例如放入一个 `my-style.css`，菜单里就会直接多出一个 `📂 my-style` 选项）。
+3. 编写自定义 CSS 非常简单，支持将特定的标准标签样式映射为微信行内样式：
    ```css
    .container {
        font-family: sans-serif;
        font-size: 15px;
+       line-height: 1.8;
    }
    h1 {
        color: #d35400;
@@ -103,17 +104,18 @@ You can fully customize your layout!
    }
    strong {
        color: #d35400;
+       font-weight: bold;
    }
    ```
 
 ---
 
-## 🔒 Security & Privacy
+## 🔒 隐私与安全性声明
 
-This plugin communicates **directly** and **exclusively** with official WeChat API endpoints (`api.weixin.qq.com`) to fetch materials and upload drafts. Your credentials (AppID and AppSecret) are stored locally in your private Obsidian settings file and are **never** shared with third parties.
+本插件没有任何中转服务器。所有请求、本地图片二进制数据上传以及草稿写入，均是通过您本地的电脑**直接与微信官方的 API 终点（`api.weixin.qq.com`）进行端到端通信**。您的 AppID、AppSecret 均加密存在您本地的 Obsidian 库设置文件中，任何人（包括本插件作者）都绝无可能获取。
 
 ---
 
-## 📄 License
+## 📄 开源许可证
 
-This project is licensed under the GNU AGPLv3 License - see the [LICENSE](LICENSE) file for details.
+本项目基于 **GNU AGPLv3** 开源协议进行托管，完整授权详情请参阅项目中的 [LICENSE](LICENSE) 文件。
