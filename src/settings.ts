@@ -1,5 +1,6 @@
 import { App, PluginSettingTab, Setting, Notice, requestUrl } from 'obsidian';
 import Md2WeChatPlugin from './main';
+import { t } from './i18n';
 
 export class Md2WeChatSettingTab extends PluginSettingTab {
 	plugin: Md2WeChatPlugin;
@@ -12,12 +13,43 @@ export class Md2WeChatSettingTab extends PluginSettingTab {
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
+		
+		const lang = this.plugin.settings.lang;
 
-		containerEl.createEl('h2', { text: 'Markdown to WeChat Settings' });
+		containerEl.createEl('h2', { text: t('settings_title', lang) });
+
+		// Language Setting dropdown
+		new Setting(containerEl)
+			.setName(t('settings_lang_name', lang))
+			.setDesc(t('settings_lang_desc', lang))
+			.addDropdown(dropdown => {
+				dropdown.addOption('en', 'English');
+				dropdown.addOption('zh-CN', '简体中文');
+				dropdown.addOption('zh-TW', '繁體中文');
+				dropdown.addOption('es', 'Español');
+				dropdown.addOption('fr', 'Français');
+				dropdown.addOption('ja', '日本語');
+				
+				dropdown.setValue(this.plugin.settings.lang);
+				dropdown.onChange(async (value: any) => {
+					this.plugin.settings.lang = value;
+					await this.plugin.saveSettings();
+					
+					// Force active view update to refresh text if view exists
+					const activeViews = this.app.workspace.getLeavesOfType("wechat-preview-view");
+					activeViews.forEach(leaf => {
+						if (leaf.view && typeof (leaf.view as any).onOpen === 'function') {
+							(leaf.view as any).onOpen();
+						}
+					});
+					
+					this.display(); // Redraw settings tab
+				});
+			});
 
 		new Setting(containerEl)
-			.setName('WeChat AppID')
-			.setDesc('Your WeChat Official Account Developer AppID')
+			.setName(t('settings_appid_name', lang))
+			.setDesc(t('settings_appid_desc', lang))
 			.addText(text => text
 				.setPlaceholder('wx...')
 				.setValue(this.plugin.settings.appId)
@@ -27,8 +59,8 @@ export class Md2WeChatSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('WeChat AppSecret')
-			.setDesc('Your WeChat Official Account Developer AppSecret')
+			.setName(t('settings_appsecret_name', lang))
+			.setDesc(t('settings_appsecret_desc', lang))
 			.addText(text => text
 				.setPlaceholder('Enter app secret')
 				.setValue(this.plugin.settings.appSecret)
@@ -39,8 +71,8 @@ export class Md2WeChatSettingTab extends PluginSettingTab {
 
 		// Dynamically populate default style dropdown with built-in and custom themes
 		const styleSetting = new Setting(containerEl)
-			.setName('Default Theme')
-			.setDesc('Default style template used for renders');
+			.setName(t('settings_theme_name', lang))
+			.setDesc(t('settings_theme_desc', lang));
 
 		styleSetting.addDropdown(dropdown => {
 			dropdown.addOption('elegant', 'Elegant Green (雅绿)');
@@ -60,8 +92,8 @@ export class Md2WeChatSettingTab extends PluginSettingTab {
 		});
 
 		new Setting(containerEl)
-			.setName('Custom Themes Folder')
-			.setDesc('Folder in your vault where custom WeChat CSS themes are stored. (Will auto-initialize if not existing)')
+			.setName(t('settings_folder_name', lang))
+			.setDesc(t('settings_folder_desc', lang))
 			.addText(text => text
 				.setPlaceholder('wechat-format-themes')
 				.setValue(this.plugin.settings.themeFolder)
@@ -73,8 +105,8 @@ export class Md2WeChatSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('WeChat Image Uploads')
-			.setDesc('Enable automatic image upload directly to WeChat CDN')
+			.setName(t('settings_upload_name', lang))
+			.setDesc(t('settings_upload_desc', lang))
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.enableImgUpload)
 				.onChange(async (value) => {
@@ -84,19 +116,19 @@ export class Md2WeChatSettingTab extends PluginSettingTab {
 
 		// Fetch & Select Materials Setting
 		const materialsSetting = new Setting(containerEl)
-			.setName('Select Cover from WeChat')
-			.setDesc('Click "Fetch" to load images from your WeChat library, then choose one.')
+			.setName(t('settings_fetch_name', lang))
+			.setDesc(t('settings_fetch_desc', lang))
 			.addButton(btn => btn
-				.setButtonText('Fetch Materials')
+				.setButtonText(t('settings_fetch_btn', lang))
 				.onClick(async () => {
 					const { appId, appSecret } = this.plugin.settings;
 					if (!appId || !appSecret) {
-						new Notice('Please enter AppID and AppSecret first!');
+						new Notice(t('settings_notice_enter_api', lang));
 						return;
 					}
 					btn.setDisabled(true);
-					btn.setButtonText('Fetching...');
-					new Notice('Fetching permanent images from WeChat...');
+					btn.setButtonText(t('settings_fetching_btn', lang));
+					new Notice(t('settings_notice_fetching', lang));
 
 					try {
 						// Get Access Token
@@ -127,7 +159,7 @@ export class Md2WeChatSettingTab extends PluginSettingTab {
 
 						const items = matData.item || [];
 						if (items.length === 0) {
-							new Notice('No permanent images found in your WeChat material library!');
+							new Notice(t('settings_notice_no_img', lang));
 							return;
 						}
 
@@ -136,20 +168,20 @@ export class Md2WeChatSettingTab extends PluginSettingTab {
 							name: item.name
 						}));
 						await this.plugin.saveSettings();
-						new Notice(`Successfully loaded ${items.length} materials!`);
+						new Notice(t('settings_notice_loaded', lang).replace('{count}', items.length.toString()));
 						this.display(); // Redraw settings tab to populate dropdown
 					} catch (err: any) {
 						console.error(err);
 						new Notice(`Failed to fetch: ${err.message || err}`);
 					} finally {
 						btn.setDisabled(false);
-						btn.setButtonText('Fetch Materials');
+						btn.setButtonText(t('settings_fetch_btn', lang));
 					}
 				}));
 
 		if (this.plugin.settings.cachedMaterials && this.plugin.settings.cachedMaterials.length > 0) {
 			materialsSetting.addDropdown(dropdown => {
-				dropdown.addOption('', '-- Select an Image --');
+				dropdown.addOption('', t('settings_cover_select_placeholder', lang));
 				this.plugin.settings.cachedMaterials.forEach((m: any) => {
 					dropdown.addOption(m.mediaId, m.name.substring(0, 30));
 				});
@@ -157,20 +189,8 @@ export class Md2WeChatSettingTab extends PluginSettingTab {
 				dropdown.onChange(async (val) => {
 					this.plugin.settings.defaultThumbMediaId = val;
 					await this.plugin.saveSettings();
-					this.display(); // Refresh to update text input
 				});
 			});
 		}
-
-		new Setting(containerEl)
-			.setName('Default Cover Media ID')
-			.setDesc('Manually paste a WeChat Media ID, or select it from the dropdown helper above.')
-			.addText(text => text
-				.setPlaceholder('wx_media_id_...')
-				.setValue(this.plugin.settings.defaultThumbMediaId)
-				.onChange(async (value) => {
-					this.plugin.settings.defaultThumbMediaId = value.trim();
-					await this.plugin.saveSettings();
-				}));
 	}
 }

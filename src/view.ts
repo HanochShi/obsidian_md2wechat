@@ -1,7 +1,9 @@
-import { ItemView, WorkspaceLeaf, MarkdownView, Notice, requestUrl } from 'obsidian';
+import { ItemView, WorkspaceLeaf, MarkdownView, Notice, requestUrl, TFile } from 'obsidian';
 import Md2WeChatPlugin from './main';
 import { THEMES } from './themes';
 import { convertToWeChatHtml } from './renderer';
+import { uploadImageToWeChat, uploadThumbToWeChat } from './uploader';
+import { t } from './i18n';
 
 export const VIEW_TYPE_WECHAT_PREVIEW = "wechat-preview-view";
 
@@ -22,7 +24,9 @@ export class WeChatPreviewView extends ItemView {
 	}
 
 	getDisplayText(): string {
-		return "WeChat Format Sync";
+		// Use dynamic title translation based on language setting
+		const lang = this.plugin?.settings?.lang || 'en';
+		return t('view_title', lang);
 	}
 
 	getIcon(): string {
@@ -32,6 +36,8 @@ export class WeChatPreviewView extends ItemView {
 	async onOpen() {
 		const { contentEl } = this;
 		contentEl.empty();
+		
+		const lang = this.plugin.settings.lang;
 
 		// Create HTML layout
 		const container = contentEl.createDiv({ cls: 'md2wechat-preview-container' });
@@ -79,10 +85,10 @@ export class WeChatPreviewView extends ItemView {
 		populateSelector();
 
 		// Buttons
-		const refreshBtn = toolbar.createEl('button', { text: '🔄' });
-		refreshBtn.title = "Refresh Themes & Preview";
-		const copyBtn = toolbar.createEl('button', { text: 'Copy Rich Text' });
-		const syncBtn = toolbar.createEl('button', { text: 'Sync to Draft' });
+		const refreshBtn = toolbar.createEl('button', { text: t('button_refresh', lang) });
+		refreshBtn.title = t('button_refresh_title', lang);
+		const copyBtn = toolbar.createEl('button', { text: t('button_copy', lang) });
+		const syncBtn = toolbar.createEl('button', { text: t('button_sync', lang) });
 		syncBtn.addClass('mod-cta');
 
 		// Preview Wrapper
@@ -100,7 +106,7 @@ export class WeChatPreviewView extends ItemView {
 				markdownText = this.lastMarkdown;
 			} else {
 				if (!onlyIfMarkdown) {
-					previewArea.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--text-muted);">Please open and select a markdown note first!</div>`;
+					previewArea.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--text-muted);">${t('view_empty_notice', lang)}</div>`;
 				}
 				return;
 			}
@@ -115,7 +121,42 @@ export class WeChatPreviewView extends ItemView {
 			}
 
 			this.currentHtml = convertToWeChatHtml(markdownText, theme);
-			previewArea.innerHTML = this.currentHtml;
+			
+			// Dynamic local image resolution for preview panel using getResourcePath
+			let previewHtml = this.currentHtml;
+			const activeFile = activeView ? activeView.file : null;
+			
+			try {
+				const parser = new DOMParser();
+				const doc = parser.parseFromString(`<div>${previewHtml}</div>`, 'text/html');
+				
+				// Make sure parsing succeeded and returned a body
+				if (doc && doc.body && doc.body.firstElementChild) {
+					const imgElements = doc.querySelectorAll('img');
+					let hasLocalImages = false;
+					
+					imgElements.forEach(img => {
+						const src = img.getAttribute('src') || '';
+						if (src && !src.startsWith('http://') && !src.startsWith('https://')) {
+							const file = resolveImageToFile(src, activeFile);
+							if (file) {
+								// Convert system local path to safe WebView app://local path
+								const resourcePath = this.app.vault.adapter.getResourcePath(file.path);
+								img.setAttribute('src', resourcePath);
+								hasLocalImages = true;
+							}
+						}
+					});
+					
+					if (hasLocalImages) {
+						previewHtml = doc.body.firstElementChild.innerHTML;
+					}
+				}
+			} catch (err) {
+				console.error("Failed to parse dynamic local images in preview:", err);
+			}
+
+			previewArea.innerHTML = previewHtml;
 
 			this.lastMarkdown = markdownText;
 			if (activeView) {
@@ -138,7 +179,7 @@ export class WeChatPreviewView extends ItemView {
 			await this.plugin.loadCustomThemes();
 			populateSelector();
 			render(false);
-			new Notice('Themes refreshed and preview updated!');
+			new Notice(t('notice_theme_refreshed', lang));
 		});
 
 		this.registerEvent(
@@ -150,7 +191,7 @@ export class WeChatPreviewView extends ItemView {
 		// Copy button handler
 		copyBtn.addEventListener('click', async () => {
 			if (!this.currentHtml) {
-				new Notice('No rendered content to copy! Please open and select a markdown note first.');
+				new Notice(t('notice_no_content_copy', lang));
 				return;
 			}
 
@@ -158,7 +199,7 @@ export class WeChatPreviewView extends ItemView {
 				const blob = new Blob([this.currentHtml], { type: 'text/html' });
 				const data = [new ClipboardItem({ 'text/html': blob, 'text/plain': new Blob([this.lastMarkdown], { type: 'text/plain' }) })];
 				await navigator.clipboard.write(data);
-				new Notice('Rich text copied successfully! Ready to paste into WeChat editor.');
+				new Notice(t('notice_copy_success', lang));
 			} catch (err) {
 				console.error(err);
 				new Notice('Failed to copy to clipboard automatically. Trying fallback...');
@@ -174,26 +215,43 @@ export class WeChatPreviewView extends ItemView {
 				window.getSelection()?.addRange(range);
 				document.execCommand('copy');
 				document.body.removeChild(el);
-				new Notice('Copied as HTML successfully via fallback!');
+				new Notice(t('notice_copy_fallback_success', lang));
 			}
 		});
+
+		// Helper to resolve Obsidian Wikilinks or Markdown images to TFile
+		const resolveImageToFile = (pathStr: string, activeFile: TFile | null): TFile | null => {
+			if (!pathStr) return null;
+			// Decode URI spaces and formatting
+			const decodedPath = decodeURIComponent(pathStr).trim();
+			
+			// 1. Try resolving using Obsidian metadata/firstMatch
+			const file = this.app.metadataCache.getFirstLinkpathDest(decodedPath, activeFile ? activeFile.path : '');
+			if (file) return file;
+
+			// 2. Fallback search by file name
+			const allFiles = this.app.vault.getFiles();
+			const baseName = decodedPath.split('/').pop() || decodedPath;
+			const found = allFiles.find(f => f.name === baseName || f.path === decodedPath);
+			return found || null;
+		};
 
 		// Sync button handler
 		syncBtn.addEventListener('click', async () => {
 			if (!this.currentHtml) {
-				new Notice('No rendered content to sync! Please open and select a markdown note first.');
+				new Notice(t('notice_no_content_sync', lang));
 				return;
 			}
 
-			const { appId, appSecret } = this.plugin.settings;
+			const { appId, appSecret, enableImgUpload } = this.plugin.settings;
 			if (!appId || !appSecret) {
-				new Notice('Please configure WeChat AppID and AppSecret in the plugin settings first!');
+				new Notice(t('notice_configure_app', lang));
 				return;
 			}
 
 			syncBtn.disabled = true;
-			syncBtn.setText('Syncing...');
-			new Notice('Acquiring WeChat access token...');
+			syncBtn.setText(t('button_syncing', lang));
+			new Notice(t('notice_acquiring_token', lang));
 
 			try {
 				console.log("【微信同步】开始同步流程...");
@@ -210,21 +268,108 @@ export class WeChatPreviewView extends ItemView {
 				}
 
 				const accessToken = tokenData.access_token;
-				new Notice('Token acquired! Creating Draft...');
+				
+				// ---------------- IMAGE UPLOADING & LINK REPLACEMENT ----------------
+				let finalHtml = this.currentHtml;
+				let activeFile = this.app.workspace.getActiveViewOfType(MarkdownView)?.file || null;
+				let firstLocalImageFile: TFile | null = null;
+
+				if (enableImgUpload) {
+					new Notice(t('notice_uploading_cdn', lang));
+					
+					// Parse HTML using DOMParser to accurately locate and replace <img> tags
+					const parser = new DOMParser();
+					const doc = parser.parseFromString(`<div>${finalHtml}</div>`, 'text/html');
+					const imgElements = doc.querySelectorAll('img');
+					
+					let uploadCount = 0;
+					for (let i = 0; i < imgElements.length; i++) {
+						const img = imgElements[i];
+						const src = img.getAttribute('src') || '';
+						
+						// Skip http/https external links
+						if (src.startsWith('http://') || src.startsWith('https://')) {
+							continue;
+						}
+
+						const file = resolveImageToFile(src, activeFile);
+						if (file) {
+							if (!firstLocalImageFile) {
+								firstLocalImageFile = file;
+							}
+							try {
+								new Notice(t('notice_uploading_inline_img', lang)
+									.replace('{current}', (i + 1).toString())
+									.replace('{total}', imgElements.length.toString())
+									.replace('{name}', file.name)
+								);
+								const wechatCdnUrl = await uploadImageToWeChat(this.app, file, accessToken);
+								img.setAttribute('src', wechatCdnUrl);
+								uploadCount++;
+							} catch (uploadErr: any) {
+								console.error(`Failed to upload ${file.name}:`, uploadErr);
+								new Notice(`Warning: Failed to upload ${file.name}. Staying with local path.`);
+							}
+						}
+					}
+
+					if (uploadCount > 0) {
+						new Notice(t('notice_upload_cdn_success', lang).replace('{count}', uploadCount.toString()));
+					}
+					finalHtml = (doc.body.firstElementChild as HTMLElement).innerHTML;
+				}
+
+				// ---------------- COVER IMAGE SELECTION / UPLOAD ----------------
+				let thumbMediaId = this.plugin.settings.defaultThumbMediaId.trim();
+				
+				// Try to auto-extract and upload the first image as cover
+				if (enableImgUpload) {
+					// 1. Check if we have a local image found during scanning
+					if (!firstLocalImageFile) {
+						// Fallback: Check if there's any image link in the Markdown
+						const imageRegex = /!\[.*?\]\((.*?)\)|!\[[[].*?]]/g;
+						let match;
+						while ((match = imageRegex.exec(this.lastMarkdown)) !== null) {
+							const imgPath = match[1] || match[2];
+							if (imgPath && !imgPath.startsWith('http://') && !imgPath.startsWith('https://')) {
+								const file = resolveImageToFile(imgPath, activeFile);
+								if (file) {
+									firstLocalImageFile = file;
+									break;
+								}
+							}
+						}
+					}
+
+					if (firstLocalImageFile) {
+						new Notice(t('notice_uploading_cover', lang).replace('{name}', firstLocalImageFile.name));
+						try {
+							const uploadedThumbId = await uploadThumbToWeChat(this.app, firstLocalImageFile, accessToken);
+							if (uploadedThumbId) {
+								thumbMediaId = uploadedThumbId;
+								new Notice(t('notice_cover_success', lang));
+							}
+						} catch (thumbErr: any) {
+							console.error("Failed to upload auto cover:", thumbErr);
+							new Notice(t('notice_cover_fallback_warning', lang));
+						}
+					}
+				}
+
+				if (!thumbMediaId) {
+					throw new Error("WeChat requires a cover image (thumb_media_id) to create draft. Please configure the 'Default Cover Media ID' in settings or include a local image in your note.");
+				}
+
+				new Notice(t('notice_syncing_draft', lang));
 
 				const title = this.lastTitle || 'Untitled Note';
 				const digest = this.lastDigest || '';
-
-				const thumbMediaId = this.plugin.settings.defaultThumbMediaId.trim();
-				if (!thumbMediaId) {
-					throw new Error("WeChat requires a cover image (thumb_media_id) to create draft. Please configure the 'Default Cover Media ID' in plugin settings first!");
-				}
 
 				const article = {
 					title: title,
 					author: '',
 					digest: digest,
-					content: this.currentHtml,
+					content: finalHtml,
 					content_source_url: '',
 					thumb_media_id: thumbMediaId,
 					need_open_comment: 0,
@@ -249,7 +394,7 @@ export class WeChatPreviewView extends ItemView {
 					throw new Error(`WeChat Sync Error: [${draftData.errcode}] ${draftData.errmsg}`);
 				}
 
-				new Notice('Successfully synchronized draft to WeChat Official Account!');
+				new Notice(t('notice_sync_success', lang));
 
 			} catch (err: any) {
 				console.error("【微信同步】发生异常，详细堆栈如下：");
@@ -257,7 +402,7 @@ export class WeChatPreviewView extends ItemView {
 				new Notice(`Sync failed: ${err.message || err}`);
 			} finally {
 				syncBtn.disabled = false;
-				syncBtn.setText('Sync to Draft');
+				syncBtn.setText(t('button_sync', lang));
 			}
 		});
 	}

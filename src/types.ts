@@ -1,4 +1,5 @@
 export interface Md2WeChatSettings {
+	lang: 'en' | 'zh-CN' | 'zh-TW' | 'es' | 'fr' | 'ja';
 	appId: string;
 	appSecret: string;
 	defaultStyle: string;

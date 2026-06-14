@@ -48360,7 +48360,7 @@ var require_twig = __commonJS({
         "verbatim",
         "with"
       ];
-      TAG_NAMES = TAG_NAMES.concat(TAG_NAMES.map((t) => `end${t}`));
+      TAG_NAMES = TAG_NAMES.concat(TAG_NAMES.map((t2) => `end${t2}`));
       const STRING = {
         scope: "string",
         variants: [
@@ -51869,10 +51869,306 @@ __export(main_exports, {
   default: () => Md2WeChatPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian4 = require("obsidian");
+var import_obsidian5 = require("obsidian");
 
 // src/settings.ts
 var import_obsidian = require("obsidian");
+
+// src/i18n.ts
+var TRANSLATIONS = {
+  en: {
+    // View Title / Sidebar
+    view_title: "WeChat Format Sync",
+    view_empty_notice: "Please open and select a markdown note first!",
+    button_refresh: "\u{1F504}",
+    button_refresh_title: "Refresh Themes & Preview",
+    button_copy: "Copy Rich Text",
+    button_sync: "Sync to Draft",
+    button_syncing: "Syncing...",
+    // Notifications / Notices
+    notice_no_content_copy: "No rendered content to copy! Please open and select a markdown note first.",
+    notice_copy_success: "Rich text copied successfully! Ready to paste into WeChat editor.",
+    notice_copy_fallback_success: "Copied as HTML successfully via fallback!",
+    notice_no_content_sync: "No rendered content to sync! Please open and select a markdown note first.",
+    notice_configure_app: "Please configure WeChat AppID and AppSecret in the plugin settings first!",
+    notice_acquiring_token: "Acquiring WeChat access token...",
+    notice_token_acquired: "Token acquired! Creating Draft...",
+    notice_uploading_cdn: "Scanning and uploading images to WeChat CDN...",
+    notice_uploading_inline_img: "Uploading inline image [{current}/{total}]: {name}...",
+    notice_upload_cdn_success: "Successfully uploaded {count} images to WeChat CDN!",
+    notice_uploading_cover: "Uploading draft cover: {name}...",
+    notice_cover_success: "Cover uploaded successfully! (Temporary Media ID obtained)",
+    notice_cover_fallback_warning: "Failed to auto-upload cover, falling back to default cover settings.",
+    notice_syncing_draft: "Creating draft on WeChat...",
+    notice_sync_success: "Successfully synchronized draft to WeChat Official Account!",
+    notice_theme_refreshed: "Themes refreshed and preview updated!",
+    // Settings Tab
+    settings_title: "Markdown to WeChat Settings",
+    settings_lang_name: "Language / \u8BED\u8A00 / Idioma / Langue / \u8A00\u8A9E",
+    settings_lang_desc: "Choose the display language for the plugin UI and notices",
+    settings_appid_name: "WeChat AppID",
+    settings_appid_desc: "Your WeChat Official Account Developer AppID",
+    settings_appsecret_name: "WeChat AppSecret",
+    settings_appsecret_desc: "Your WeChat Official Account Developer AppSecret",
+    settings_theme_name: "Default Theme",
+    settings_theme_desc: "Default style template used for renders",
+    settings_folder_name: "Custom Themes Folder",
+    settings_folder_desc: "Folder in your vault where custom WeChat CSS themes are stored. (Will auto-initialize if not existing)",
+    settings_upload_name: "WeChat Image Uploads",
+    settings_upload_desc: "Enable automatic image upload directly to WeChat CDN",
+    settings_fetch_name: "Select Default Cover from WeChat",
+    settings_fetch_desc: 'Click "Fetch" to load images from your WeChat library, then choose one.',
+    settings_fetch_btn: "Fetch Materials",
+    settings_fetching_btn: "Fetching...",
+    settings_notice_enter_api: "Please enter AppID and AppSecret first!",
+    settings_notice_fetching: "Fetching permanent images from WeChat...",
+    settings_notice_no_img: "No permanent images found in your WeChat material library!",
+    settings_notice_loaded: "Successfully loaded {count} materials!",
+    settings_cover_select_placeholder: "-- Select an Image --"
+  },
+  "zh-CN": {
+    view_title: "\u5FAE\u4FE1\u4E00\u952E\u6392\u7248\u540C\u6B65",
+    view_empty_notice: "\u8BF7\u5148\u6253\u5F00\u5E76\u9009\u62E9\u4E00\u7BC7 Markdown \u7B14\u8BB0\uFF01",
+    button_refresh: "\u{1F504}",
+    button_refresh_title: "\u5237\u65B0\u4E3B\u9898\u548C\u9884\u89C8",
+    button_copy: "\u590D\u5236\u5BCC\u6587\u672C",
+    button_sync: "\u540C\u6B65\u5230\u8349\u7A3F\u7BB1",
+    button_syncing: "\u540C\u6B65\u4E2D...",
+    notice_no_content_copy: "\u6CA1\u6709\u53EF\u590D\u5236\u7684\u5185\u5BB9\uFF01\u8BF7\u5148\u6253\u5F00\u5E76\u9009\u62E9\u4E00\u7BC7 Markdown \u7B14\u8BB0\u3002",
+    notice_copy_success: "\u5BCC\u6587\u672C\u590D\u5236\u6210\u529F\uFF01\u53EF\u4EE5\u76F4\u63A5\u7C98\u8D34\u5230\u5FAE\u4FE1\u516C\u4F17\u53F7\u540E\u53F0\u7F16\u8F91\u5668\u4E86\u3002",
+    notice_copy_fallback_success: "\u5DF2\u6210\u529F\u901A\u8FC7\u5907\u7528\u65B9\u6848\u590D\u5236\u4E3A HTML\uFF01",
+    notice_no_content_sync: "\u6CA1\u6709\u53EF\u540C\u6B65\u7684\u5185\u5BB9\uFF01\u8BF7\u5148\u6253\u5F00\u5E76\u9009\u62E9\u4E00\u7BC7 Markdown \u7B14\u8BB0\u3002",
+    notice_configure_app: "\u8BF7\u5148\u5728\u63D2\u4EF6\u8BBE\u7F6E\u4E2D\u914D\u7F6E\u5FAE\u4FE1\u7684 AppID \u548C AppSecret\uFF01",
+    notice_acquiring_token: "\u6B63\u5728\u83B7\u53D6\u5FAE\u4FE1 Access Token...",
+    notice_token_acquired: "Token \u83B7\u53D6\u6210\u529F\uFF01\u6B63\u5728\u51C6\u5907\u521B\u5EFA\u8349\u7A3F...",
+    notice_uploading_cdn: "\u6B63\u5728\u626B\u63CF\u6B63\u6587\u5E76\u81EA\u52A8\u4E0A\u4F20\u672C\u5730\u56FE\u7247\u81F3\u5FAE\u4FE1 CDN...",
+    notice_uploading_inline_img: "\u6B63\u5728\u4E0A\u4F20\u6B63\u6587\u63D2\u56FE [{current}/{total}]: {name}...",
+    notice_upload_cdn_success: "\u6210\u529F\u5C06 {count} \u5F20\u56FE\u7247\u4E0A\u4F20\u5E76\u66FF\u6362\u4E3A\u5FAE\u4FE1 CDN \u94FE\u63A5\uFF01",
+    notice_uploading_cover: "\u6B63\u5728\u4E0A\u4F20\u6587\u7AE0\u5C01\u9762\u56FE: {name}...",
+    notice_cover_success: "\u5C01\u9762\u4E0A\u4F20\u6210\u529F\uFF01\u5DF2\u83B7\u53D6\u4E34\u65F6\u7D20\u6750 Media ID\u3002",
+    notice_cover_fallback_warning: "\u81EA\u52A8\u4E0A\u4F20\u5C01\u9762\u56FE\u5931\u8D25\uFF0C\u5C06\u81EA\u52A8\u964D\u7EA7\u4F7F\u7528\u8BBE\u7F6E\u4E2D\u7684\u9ED8\u8BA4\u5C01\u9762\u3002",
+    notice_syncing_draft: "\u6B63\u5728\u5411\u5FAE\u4FE1\u670D\u52A1\u5668\u8BF7\u6C42\u521B\u5EFA\u8349\u7A3F...",
+    notice_sync_success: "\u606D\u559C\uFF01\u6587\u7AE0\u5DF2\u6210\u529F\u540C\u6B65\u81F3\u5FAE\u4FE1\u516C\u4F17\u53F7\u8349\u7A3F\u7BB1\uFF01",
+    notice_theme_refreshed: "\u4E3B\u9898\u5217\u8868\u548C\u9884\u89C8\u5DF2\u6210\u529F\u5237\u65B0\uFF01",
+    settings_title: "Markdown \u8F6C\u5FAE\u4FE1\u6392\u7248\u8BBE\u7F6E",
+    settings_lang_name: "\u8BED\u8A00 / Language",
+    settings_lang_desc: "\u9009\u62E9\u63D2\u4EF6\u754C\u9762\u3001\u9009\u9879\u4E0E\u7CFB\u7EDF\u63D0\u793A\u8BED\u7684\u663E\u793A\u8BED\u8A00",
+    settings_appid_name: "\u5FAE\u4FE1\u516C\u4F17\u53F7 AppID",
+    settings_appid_desc: "\u60A8\u7684\u5FAE\u4FE1\u516C\u4F17\u53F7\u5F00\u53D1\u8005 AppID",
+    settings_appsecret_name: "\u5FAE\u4FE1\u516C\u4F17\u53F7 AppSecret",
+    settings_appsecret_desc: "\u60A8\u7684\u5FAE\u4FE1\u516C\u4F17\u53F7\u5F00\u53D1\u8005 AppSecret",
+    settings_theme_name: "\u9ED8\u8BA4\u6392\u7248\u4E3B\u9898",
+    settings_theme_desc: "\u4FA7\u8FB9\u680F\u521D\u59CB\u52A0\u8F7D\u6216\u590D\u5236\u65F6\u9ED8\u8BA4\u4F7F\u7528\u7684\u6392\u7248\u6837\u5F0F\u6A21\u677F",
+    settings_folder_name: "\u81EA\u5B9A\u4E49 CSS \u4E3B\u9898\u6587\u4EF6\u5939",
+    settings_folder_desc: "\u60A8\u5E93\u4E2D\u7528\u6765\u5B58\u653E\u81EA\u5B9A\u4E49 CSS \u5FAE\u4FE1\u4E3B\u9898\u7684\u6587\u4EF6\u5939\u8DEF\u5F84\uFF08\u82E5\u4E0D\u5B58\u5728\u5C06\u81EA\u52A8\u4E3A\u60A8\u521B\u5EFA\u5E76\u521D\u59CB\u5316\u793A\u4F8B\uFF09",
+    settings_upload_name: "\u81EA\u52A8\u4E0A\u4F20\u56FE\u7247",
+    settings_upload_desc: "\u5F00\u542F\u540E\uFF0C\u70B9\u51FB\u540C\u6B65\u65F6\uFF0C\u6B63\u6587\u4E2D\u7684\u672C\u5730\u56FE\u7247\u5C06\u81EA\u52A8\u6279\u91CF\u4E0A\u4F20\u81F3\u5FAE\u4FE1 CDN \u66FF\u6362\uFF0C\u9632\u6B62\u56FE\u7247\u5728\u5FAE\u4FE1\u88C2\u5F00",
+    settings_fetch_name: "\u4ECE\u5FAE\u4FE1\u9009\u62E9\u9ED8\u8BA4\u5C01\u9762\u56FE",
+    settings_fetch_desc: "\u70B9\u51FB\u201C\u62C9\u53D6\u7D20\u6750\u201D\u5C06\u5FAE\u4FE1\u7D20\u6750\u5E93\u6700\u65B0\u7684\u56FE\u7247\u540C\u6B65\u7F13\u5B58\u5230\u672C\u5730\uFF0C\u5E76\u5728\u4E0B\u65B9\u4E0B\u62C9\u83DC\u5355\u4E2D\u9009\u62E9\u4E00\u5F20\u4F5C\u4E3A\u540C\u6B65\u9ED8\u8BA4\u5C01\u9762\u56FE\u3002",
+    settings_fetch_btn: "\u62C9\u53D6\u7D20\u6750",
+    settings_fetching_btn: "\u6B63\u5728\u62C9\u53D6...",
+    settings_notice_enter_api: "\u8BF7\u5148\u586B\u5199 AppID \u548C AppSecret\uFF01",
+    settings_notice_fetching: "\u6B63\u5728\u62C9\u53D6\u5FAE\u4FE1\u516C\u4F17\u5E73\u53F0\u6C38\u4E45\u56FE\u7247\u7D20\u6750...",
+    settings_notice_no_img: "\u60A8\u7684\u5FAE\u4FE1\u6C38\u4E45\u7D20\u6750\u5E93\u4E2D\u6CA1\u6709\u627E\u5230\u4EFB\u4F55\u56FE\u7247\u7D20\u6750\uFF01",
+    settings_notice_loaded: "\u6210\u529F\u52A0\u8F7D\u5E76\u540C\u6B65\u4E86 {count} \u4E2A\u56FE\u7247\u7D20\u6750\uFF01",
+    settings_cover_select_placeholder: "-- \u8BF7\u9009\u62E9\u4E00\u5F20\u56FE\u7247 --"
+  },
+  "zh-TW": {
+    view_title: "\u5FAE\u4FE1\u4E00\u9375\u6392\u7248\u540C\u6B65",
+    view_empty_notice: "\u8ACB\u5148\u6253\u958B\u4E26\u9078\u64C7\u4E00\u7BC7 Markdown \u7B46\u8A18\uFF01",
+    button_refresh: "\u{1F504}",
+    button_refresh_title: "\u5237\u65B0\u4E3B\u984C\u548C\u9810\u89BD",
+    button_copy: "\u8907\u88FD\u5BCC\u6587\u672C",
+    button_sync: "\u540C\u6B65\u5230\u8349\u7A3F\u7BB1",
+    button_syncing: "\u540C\u6B65\u4E2D...",
+    notice_no_content_copy: "\u6C92\u6709\u53EF\u8907\u88FD\u7684\u5167\u5BB9\uFF01\u8ACB\u5148\u6253\u958B\u4E26\u9078\u64C7\u4E00\u7BC7 Markdown \u7B46\u8A18\u3002",
+    notice_copy_success: "\u5BCC\u6587\u672C\u8907\u88FD\u6210\u529F\uFF01\u53EF\u4EE5\u76F4\u63A5\u7C98\u8CBC\u5230\u5FAE\u4FE1\u516C\u773E\u865F\u5F8C\u53F0\u7DE8\u8F2F\u5668\u4E86\u3002",
+    notice_copy_fallback_success: "\u5DF2\u6210\u529F\u901A\u904E\u5099\u7528\u65B9\u6848\u8907\u88FD\u70BA HTML\uFF01",
+    notice_no_content_sync: "\u6C92\u6709\u53EF\u540C\u6B65\u7684\u5167\u5BB9\uFF01\u8ACB\u5148\u6253\u958B\u4E26\u9078\u64C7\u4E00\u7BC7 Markdown \u7B46\u8A18\u3002",
+    notice_configure_app: "\u8ACB\u5148\u5728\u63D2\u4EF6\u8A2D\u7F6E\u4E2D\u914D\u7F6E\u5FAE\u4FE1\u7684 AppID \u548C AppSecret\uFF01",
+    notice_acquiring_token: "\u6B63\u5728\u7372\u53D6\u5FAE\u4FE1 Access Token...",
+    notice_token_acquired: "Token \u7372\u53D6\u6210\u529F\uFF01\u6B63\u5728\u6E96\u5099\u5275\u5EFA\u8349\u7A3F...",
+    notice_uploading_cdn: "\u6B63\u5728\u6383\u63CF\u6B63\u6587\u4E26\u81EA\u52D5\u4E0A\u50B3\u672C\u5730\u5716\u7247\u81F3\u5FAE\u4FE1 CDN...",
+    notice_uploading_inline_img: "\u6B63\u5728\u4E0A\u50B3\u6B63\u6587\u63D2\u5716 [{current}/{total}]: {name}...",
+    notice_upload_cdn_success: "\u6210\u529F\u5C07 {count} \u5F35\u5716\u7247\u4E0A\u50B3\u4E26\u66FF\u63DB\u70BA\u5FAE\u4FE1 CDN \u93C8\u63A5\uFF01",
+    notice_uploading_cover: "\u6B63\u5728\u4E0A\u50B3\u6587\u7AE0\u5C01\u9762\u5716: {name}...",
+    notice_cover_success: "\u5C01\u9762\u4E0A\u50B3\u6210\u529F\uFF01\u5DF2\u7372\u53D6\u81E8\u6642\u7D20\u6750 Media ID\u3002",
+    notice_cover_fallback_warning: "\u81EA\u52D5\u4E0A\u50B3\u5C01\u9762\u5716\u5931\u6557\uFF0C\u5C07\u81EA\u52D5\u964D\u7D1A\u4F7F\u7528\u8A2D\u7F6E\u4E2D\u7684\u9ED8\u8A8D\u5C01\u9762\u3002",
+    notice_syncing_draft: "\u6B63\u5728\u5411\u5FAE\u4FE1\u670D\u52D9\u5668\u8ACB\u6C42\u5275\u5EFA\u8349\u7A3F...",
+    notice_sync_success: "\u606D\u559C\uFF01\u6587\u7AE0\u5DF2\u6210\u529F\u540C\u6B65\u81F3\u5FAE\u4FE1\u516C\u773E\u865F\u8349\u7A3F\u7BB1\uFF01",
+    notice_theme_refreshed: "\u4E3B\u984C\u5217\u8868\u548C\u9810\u89BD\u5DF2\u6210\u529F\u5237\u65B0\uFF01",
+    settings_title: "Markdown \u8F49\u5FAE\u4FE1\u6392\u7248\u8A2D\u7F6E",
+    settings_lang_name: "\u8A9E\u8A00 / Language",
+    settings_lang_desc: "\u9078\u64C7\u63D2\u4EF6\u754C\u9762\u3001\u9078\u9805\u8207\u7CFB\u7D71\u63D0\u793A\u8A9E\u7684\u986F\u793A\u8A9E\u8A00",
+    settings_appid_name: "\u5FAE\u4FE1\u516C\u773E\u865F AppID",
+    settings_appid_desc: "\u60A8\u7684\u5FAE\u4FE1\u516C\u773E\u865F\u958B\u767C\u8005 AppID",
+    settings_appsecret_name: "\u5FAE\u4FE1\u516C\u773E\u865F AppSecret",
+    settings_appsecret_desc: "\u60A8\u7684\u5FAE\u4FE1\u516C\u773E\u865F\u958B\u767C\u8005 AppSecret",
+    settings_theme_name: "\u9ED8\u8A8D\u6392\u7248\u4E3B\u984C",
+    settings_theme_desc: "\u5074\u908A\u6B04\u521D\u59CB\u52A0\u8F09\u6216\u8907\u88FD\u6642\u9ED8\u8A8D\u4F7F\u7528\u7684\u6392\u7248\u6A23\u5F0F\u6A21\u677F",
+    settings_folder_name: "\u81EA\u5B9A\u7FA9 CSS \u4E3B\u984C\u6587\u4EF6\u593E",
+    settings_folder_desc: "\u60A8\u5EAB\u4E2D\u7528\u4F86\u5B58\u653E\u81EA\u5B9A\u7FA9 CSS \u5FAE\u4FE1\u4E3B\u984C\u7684\u6587\u4EF6\u593E\u8DEF\u5F91\uFF08\u82E5\u4E0D\u5B58\u5728\u5C07\u81EA\u52D5\u70BA\u60A8\u5275\u5EFA\u4E26\u521D\u59CB\u5316\u793A\u4F8B\uFF09",
+    settings_upload_name: "\u81EA\u52D5\u4E0A\u50B3\u5716\u7247",
+    settings_upload_desc: "\u958B\u555F\u5F8C\uFF0C\u9EDE\u64CA\u540C\u6B65\u6642\uFF0C\u6B63\u6587\u4E2D\u7684\u672C\u5730\u5716\u7247\u5C07\u81EA\u52D5\u6279\u91CF\u4E0A\u50B3\u81F3\u5FAE\u4FE1 CDN \u66FF\u63DB\uFF0C\u9632\u6B62\u5716\u7247\u5728\u5FAE\u4FE1\u88C2\u958B",
+    settings_fetch_name: "\u5F9E\u5FAE\u4FE1\u9078\u64C7\u9ED8\u8A8D\u5C01\u9762\u5716",
+    settings_fetch_desc: "\u9EDE\u64CA\u201C\u62C9\u53D6\u7D20\u6750\u201D\u5C07\u5FAE\u4FE1\u7D20\u6750\u5EAB\u6700\u65B0\u7684\u5716\u7247\u540C\u6B65\u7DE9\u5B58\u5230\u672C\u5730\uFF0C\u4E26\u5728\u4E0B\u65B9\u4E0B\u62C9\u83DC\u55AE\u4E2D\u9078\u64C7\u4E00\u5F35\u4F5C\u70BA\u540C\u6B65\u9ED8\u8A8D\u5C01\u9762\u5716\u3002",
+    settings_fetch_btn: "\u62C9\u53D6\u7D20\u6750",
+    settings_fetching_btn: "\u6B63\u5728\u62C9\u53D6...",
+    settings_notice_enter_api: "\u8ACB\u5148\u586B\u5BEB AppID \u548C AppSecret\uFF01",
+    settings_notice_fetching: "\u6B63\u5728\u62C9\u53D6\u5FAE\u4FE1\u516C\u773E\u5E73\u53F0\u6C38\u4E45\u5716\u7247\u7D20\u6750...",
+    settings_notice_no_img: "\u60A8\u7684\u5FAE\u4FE1\u6C38\u4E45\u7D20\u6750\u5EAB\u4E2D\u6C92\u6709\u627E\u5230\u4EFB\u4F55\u5716\u7247\u7D20\u6750\uFF01",
+    settings_notice_loaded: "\u6210\u529F\u52A0\u8F09\u4E26\u540C\u6B65\u4E86 {count} \u500B\u5716\u7247\u7D20\u6750\uFF01",
+    settings_cover_select_placeholder: "-- \u8ACB\u9078\u64C7\u4E00\u5F35\u5716\u7247 --"
+  },
+  es: {
+    view_title: "Sincronizaci\xF3n WeChat",
+    view_empty_notice: "\xA1Abra y seleccione una nota de Markdown primero!",
+    button_refresh: "\u{1F504}",
+    button_refresh_title: "Actualizar temas y vista previa",
+    button_copy: "Copiar texto enriquecido",
+    button_sync: "Sincronizar borrador",
+    button_syncing: "Sincronizando...",
+    notice_no_content_copy: "\xA1No hay contenido para copiar! Abra y seleccione una nota primero.",
+    notice_copy_success: "\xA1Texto copiado con \xE9xito! Listo para pegar en el editor de WeChat.",
+    notice_copy_fallback_success: "\xA1Copiado como HTML con \xE9xito mediante alternativa!",
+    notice_no_content_sync: "\xA1No hay contenido para sincronizar! Abra y seleccione una nota primero.",
+    notice_configure_app: "\xA1Configure WeChat AppID y AppSecret en los ajustes del plugin primero!",
+    notice_acquiring_token: "Adquiriendo token de acceso de WeChat...",
+    notice_token_acquired: "\xA1Token adquirido! Creando borrador...",
+    notice_uploading_cdn: "Escaneando y subiendo im\xE1genes a la CDN de WeChat...",
+    notice_uploading_inline_img: "Subiendo imagen insertada [{current}/{total}]: {name}...",
+    notice_upload_cdn_success: "\xA1Se subieron {count} im\xE1genes con \xE9xito a la CDN de WeChat!",
+    notice_uploading_cover: "Subiendo portada del borrador: {name}...",
+    notice_cover_success: "\xA1Portada subida con \xE9xito! (ID de medio temporal obtenido)",
+    notice_cover_fallback_warning: "No se pudo subir la portada autom\xE1ticamente, usando la portada por defecto.",
+    notice_syncing_draft: "Creando borrador en WeChat...",
+    notice_sync_success: "\xA1Borrador sincronizado con \xE9xito en WeChat Official Account!",
+    notice_theme_refreshed: "\xA1Temas actualizados y vista previa renovada!",
+    settings_title: "Ajustes de Markdown a WeChat",
+    settings_lang_name: "Idioma / Language",
+    settings_lang_desc: "Elija el idioma de visualizaci\xF3n para la interfaz del plugin y las notificaciones",
+    settings_appid_name: "AppID de WeChat",
+    settings_appid_desc: "Su AppID de desarrollador de cuenta oficial de WeChat",
+    settings_appsecret_name: "AppSecret de WeChat",
+    settings_appsecret_desc: "Su AppSecret de desarrollador de cuenta oficial de WeChat",
+    settings_theme_name: "Tema por defecto",
+    settings_theme_desc: "Plantilla de estilo predeterminada para el renderizado",
+    settings_folder_name: "Carpeta de temas personalizados",
+    settings_folder_desc: "Carpeta de su b\xF3veda donde se guardan los temas CSS personalizados de WeChat (se inicializar\xE1 si no existe)",
+    settings_upload_name: "Subir im\xE1genes a WeChat",
+    settings_upload_desc: "Habilita la subida autom\xE1tica de im\xE1genes locales directamente a la CDN de WeChat",
+    settings_fetch_name: "Seleccionar portada predeterminada de WeChat",
+    settings_fetch_desc: 'Haga clic en "Obtener" para cargar im\xE1genes de su biblioteca permanente de WeChat y elija una.',
+    settings_fetch_btn: "Obtener materiales",
+    settings_fetching_btn: "Obteniendo...",
+    settings_notice_enter_api: "\xA1Introduzca primero su AppID y AppSecret!",
+    settings_notice_fetching: "Obteniendo im\xE1genes permanentes de WeChat...",
+    settings_notice_no_img: "\xA1No se encontraron im\xE1genes permanentes en su biblioteca de WeChat!",
+    settings_notice_loaded: "\xA1Se cargaron {count} materiales con \xE9xito!",
+    settings_cover_select_placeholder: "-- Seleccione una imagen --"
+  },
+  fr: {
+    view_title: "Ajustement WeChat",
+    view_empty_notice: "Veuillez d'abord ouvrir et s\xE9lectionner une note Markdown !",
+    button_refresh: "\u{1F504}",
+    button_refresh_title: "Actualiser les th\xE8mes et l'aper\xE7u",
+    button_copy: "Copier le texte enrichi",
+    button_sync: "Synchroniser le brouillon",
+    button_syncing: "Synchronisation...",
+    notice_no_content_copy: "Aucun contenu \xE0 copier ! Veuillez d'abord ouvrir une note.",
+    notice_copy_success: "Texte enrichi copi\xE9 ! Pr\xEAt \xE0 \xEAtre coll\xE9 dans l'\xE9diteur WeChat.",
+    notice_copy_fallback_success: "Copi\xE9 avec succ\xE8s sous forme de code HTML !",
+    notice_no_content_sync: "Aucun contenu \xE0 synchroniser ! Veuillez d'abord ouvrir une note.",
+    notice_configure_app: "Veuillez d'abord configurer AppID et AppSecret dans les param\xE8tres !",
+    notice_acquiring_token: "Acquisition du jeton d'acc\xE8s WeChat...",
+    notice_token_acquired: "Jeton obtenu ! Cr\xE9ation du brouillon...",
+    notice_uploading_cdn: "Num\xE9risation et envoi des images vers le CDN WeChat...",
+    notice_uploading_inline_img: "Envoi de l'image ins\xE9r\xE9e [{current}/{total}]: {name}...",
+    notice_upload_cdn_success: "{count} images envoy\xE9es avec succ\xE8s vers le CDN WeChat !",
+    notice_uploading_cover: "Envoi de la couverture du brouillon : {name}...",
+    notice_cover_success: "Couverture envoy\xE9e ! (ID de m\xE9dia temporaire obtenu)",
+    notice_cover_fallback_warning: "\xC9chec de l'envoi de la couverture, retour \xE0 la couverture par d\xE9faut.",
+    notice_syncing_draft: "Cr\xE9ation du brouillon sur WeChat...",
+    notice_sync_success: "Brouillon synchronis\xE9 avec succ\xE8s sur WeChat Official Account !",
+    notice_theme_refreshed: "Th\xE8mes actualis\xE9s et aper\xE7u mis \xE0 jour !",
+    settings_title: "Param\xE8tres Markdown vers WeChat",
+    settings_lang_name: "Langue / Language",
+    settings_lang_desc: "Choisissez la langue d'affichage pour l'interface et les notifications",
+    settings_appid_name: "AppID WeChat",
+    settings_appid_desc: "Votre AppID d\xE9veloppeur de compte officiel WeChat",
+    settings_appsecret_name: "AppSecret WeChat",
+    settings_appsecret_desc: "Votre AppSecret d\xE9veloppeur de compte officiel WeChat",
+    settings_theme_name: "Th\xE8me par d\xE9faut",
+    settings_theme_desc: "Mod\xE8le de style par d\xE9faut utilis\xE9 pour le rendu",
+    settings_folder_name: "Dossier des th\xE8mes personnalis\xE9s",
+    settings_folder_desc: "Dossier de votre coffre contenant les th\xE8mes CSS WeChat (sera cr\xE9\xE9 s'il n'existe pas)",
+    settings_upload_name: "T\xE9l\xE9chargement d'images WeChat",
+    settings_upload_desc: "Activer l'envoi automatique d'images locales directement vers le CDN WeChat",
+    settings_fetch_name: "S\xE9lectionner une couverture par d\xE9faut depuis WeChat",
+    settings_fetch_desc: 'Cliquez sur "R\xE9cup\xE9rer" pour charger les images de votre biblioth\xE8que WeChat, puis choisissez-en une.',
+    settings_fetch_btn: "R\xE9cup\xE9rer les m\xE9dias",
+    settings_fetching_btn: "R\xE9cup\xE9ration...",
+    settings_notice_enter_api: "Veuillez saisir d'abord AppID et AppSecret !",
+    settings_notice_fetching: "R\xE9cup\xE9ration des images permanentes depuis WeChat...",
+    settings_notice_no_img: "Aucune image permanente trouv\xE9e dans votre biblioth\xE8que WeChat !",
+    settings_notice_loaded: "{count} m\xE9dias r\xE9cup\xE9r\xE9s avec succ\xE8s !",
+    settings_cover_select_placeholder: "-- S\xE9lectionner une image --"
+  },
+  ja: {
+    view_title: "WeChat\u8868\u793A\u540C\u671F",
+    view_empty_notice: "\u6700\u521D\u306BMarkdown\u30CE\u30FC\u30C8\u3092\u958B\u3044\u3066\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044\uFF01",
+    button_refresh: "\u{1F504}",
+    button_refresh_title: "\u30C6\u30FC\u30DE\u3068\u30D7\u30EC\u30D3\u30E5\u30FC\u306E\u66F4\u65B0",
+    button_copy: "\u30EA\u30C3\u30C1\u30C6\u30AD\u30B9\u30C8\u3092\u30B3\u30D4\u30FC",
+    button_sync: "\u4E0B\u66F8\u304D\u3092\u540C\u671F",
+    button_syncing: "\u540C\u671F\u4E2D...",
+    notice_no_content_copy: "\u30B3\u30D4\u30FC\u3059\u308B\u30B3\u30F3\u30C6\u30F3\u30C4\u304C\u3042\u308A\u307E\u305B\u3093\uFF01\u30CE\u30FC\u30C8\u3092\u958B\u3044\u3066\u304F\u3060\u3055\u3044\u3002",
+    notice_copy_success: "\u30EA\u30C3\u30C1\u30C6\u30AD\u30B9\u30C8\u304C\u6B63\u5E38\u306B\u30B3\u30D4\u30FC\u3055\u308C\u307E\u3057\u305F\uFF01WeChat\u30A8\u30C7\u30A3\u30BF\u30FC\u306B\u8CBC\u308A\u4ED8\u3051\u53EF\u80FD\u3067\u3059\u3002",
+    notice_copy_fallback_success: "\u30D5\u30A9\u30FC\u30EB\u30D0\u30C3\u30AF\u306B\u3088\u308AHTML\u3068\u3057\u3066\u6B63\u5E38\u306B\u30B3\u30D4\u30FC\u3055\u308C\u307E\u3057\u305F\uFF01",
+    notice_no_content_sync: "\u540C\u671F\u3059\u308B\u30B3\u30F3\u30C6\u30F3\u30C4\u304C\u3042\u308A\u307E\u305B\u3093\uFF01\u30CE\u30FC\u30C8\u3092\u958B\u3044\u3066\u304F\u3060\u3055\u3044\u3002",
+    notice_configure_app: "\u30D7\u30E9\u30B0\u30A4\u30F3\u8A2D\u5B9A\u3067WeChat\u306EAppID\u3068AppSecret\u3092\u69CB\u6210\u3057\u3066\u304F\u3060\u3055\u3044\uFF01",
+    notice_acquiring_token: "WeChat\u30A2\u30AF\u30BB\u30B9\u30C8\u30FC\u30AF\u30F3\u3092\u53D6\u5F97\u4E2D...",
+    notice_token_acquired: "\u30C8\u30FC\u30AF\u30F3\u53D6\u5F97\u6210\u529F\uFF01\u4E0B\u66F8\u304D\u3092\u4F5C\u6210\u4E2D...",
+    notice_uploading_cdn: "\u753B\u50CF\u3092\u30B9\u30AD\u30E3\u30F3\u3057\u3066WeChat CDN\u306B\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u4E2D...",
+    notice_uploading_inline_img: "\u30A4\u30F3\u30E9\u30A4\u30F3\u753B\u50CF\u3092\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u4E2D [{current}/{total}]: {name}...",
+    notice_upload_cdn_success: "{count}\u679A\u306E\u753B\u50CF\u304C\u6B63\u5E38\u306BWeChat CDN\u306B\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u3055\u308C\u307E\u3057\u305F\uFF01",
+    notice_uploading_cover: "\u4E0B\u66F8\u304D\u30AB\u30D0\u30FC\u3092\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u4E2D: {name}...",
+    notice_cover_success: "\u30AB\u30D0\u30FC\u306E\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u6210\u529F\uFF01(\u4E00\u6642\u30E1\u30C7\u30A3\u30A2ID\u3092\u53D6\u5F97)",
+    notice_cover_fallback_warning: "\u30AB\u30D0\u30FC\u306E\u81EA\u52D5\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002\u30C7\u30D5\u30A9\u30EB\u30C8\u8A2D\u5B9A\u306B\u623B\u3057\u307E\u3059\u3002",
+    notice_syncing_draft: "WeChat\u306B\u4E0B\u66F8\u304D\u3092\u4F5C\u6210\u4E2D...",
+    notice_sync_success: "WeChat\u516C\u5F0F\u30A2\u30AB\u30A6\u30F3\u30C8\u306B\u4E0B\u66F8\u304D\u304C\u6B63\u5E38\u306B\u540C\u671F\u3055\u308C\u307E\u3057\u305F\uFF01",
+    notice_theme_refreshed: "\u30C6\u30FC\u30DE\u304C\u66F4\u65B0\u3055\u308C\u3001\u30D7\u30EC\u30D3\u30E5\u30FC\u304C\u518D\u63CF\u753B\u3055\u308C\u307E\u3057\u305F\uFF01",
+    settings_title: "Markdown to WeChat \u8A2D\u5B9A",
+    settings_lang_name: "\u8A00\u8A9E / Language",
+    settings_lang_desc: "\u30D7\u30E9\u30B0\u30A4\u30F3UI\u3068\u901A\u77E5\u30E1\u30C3\u30BB\u30FC\u30B8\u306E\u8868\u793A\u8A00\u8A9E\u3092\u9078\u629E\u3057\u307E\u3059",
+    settings_appid_name: "WeChat AppID",
+    settings_appid_desc: "WeChat\u516C\u5F0F\u30A2\u30AB\u30A6\u30F3\u30C8\u958B\u767A\u8005\u7528AppID",
+    settings_appsecret_name: "WeChat AppSecret",
+    settings_appsecret_desc: "WeChat\u516C\u5F0F\u30A2\u30AB\u30A6\u30F3\u30C8\u958B\u767A\u8005\u7528AppSecret",
+    settings_theme_name: "\u30C7\u30D5\u30A9\u30EB\u30C8\u30C6\u30FC\u30DE",
+    settings_theme_desc: "\u63CF\u753B\u306B\u4F7F\u7528\u3055\u308C\u308B\u6A19\u6E96\u306E\u30B9\u30BF\u30A4\u30EB\u30C6\u30F3\u30D7\u30EC\u30FC\u30C8",
+    settings_folder_name: "\u30AB\u30B9\u30BF\u30E0\u30C6\u30FC\u30DE\u30D5\u30A9\u30EB\u30C0",
+    settings_folder_desc: "\u30AB\u30B9\u30BF\u30E0CSS\u30C6\u30FC\u30DE\u304C\u4FDD\u5B58\u3055\u308C\u3066\u3044\u308BVault\u5185\u306E\u30D5\u30A9\u30EB\u30C0 (\u5B58\u5728\u3057\u306A\u3044\u5834\u5408\u306F\u81EA\u52D5\u751F\u6210)",
+    settings_upload_name: "WeChat\u753B\u50CF\u81EA\u52D5\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9",
+    settings_upload_desc: "\u6709\u52B9\u306B\u3059\u308B\u3068\u3001\u540C\u671F\u6642\u306B\u30ED\u30FC\u30AB\u30EB\u753B\u50CF\u304CWeChat CDN\u306B\u81EA\u52D5\u3067\u30A2\u30C3\u30D7\u30ED\u30FC\u30C9\u3055\u308C\u307E\u3059",
+    settings_fetch_name: "WeChat\u304B\u3089\u30C7\u30D5\u30A9\u30EB\u30C8\u30AB\u30D0\u30FC\u3092\u9078\u629E",
+    settings_fetch_desc: "\u300C\u7D20\u6750\u3092\u53D6\u5F97\u300D\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u3066WeChat\u30E9\u30A4\u30D6\u30E9\u30EA\u304B\u3089\u753B\u50CF\u3092\u30ED\u30FC\u30C9\u3057\u30011\u3064\u9078\u629E\u3057\u307E\u3059\u3002",
+    settings_fetch_btn: "\u7D20\u6750\u3092\u53D6\u5F97",
+    settings_fetching_btn: "\u53D6\u5F97\u4E2D...",
+    settings_notice_enter_api: "\u6700\u521D\u306BAppID\u3068AppSecret\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044\uFF01",
+    settings_notice_fetching: "WeChat\u304B\u3089\u6052\u4E45\u7684\u306A\u753B\u50CF\u3092\u53D6\u5F97\u4E2D...",
+    settings_notice_no_img: "WeChat\u7D20\u6750\u30E9\u30A4\u30D6\u30E9\u30EA\u306B\u6052\u4E45\u7684\u306A\u753B\u50CF\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3067\u3057\u305F\uFF01",
+    settings_notice_loaded: "{count}\u500B\u306E\u7D20\u6750\u3092\u6B63\u5E38\u306B\u8AAD\u307F\u8FBC\u307F\u307E\u3057\u305F\uFF01",
+    settings_cover_select_placeholder: "-- \u753B\u50CF\u3092\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044 --"
+  }
+};
+function t(key, lang) {
+  const currentLang = TRANSLATIONS[lang] || TRANSLATIONS["en"];
+  const val = currentLang[key] || TRANSLATIONS["en"][key];
+  return val || key;
+}
+
+// src/settings.ts
 var Md2WeChatSettingTab = class extends import_obsidian.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
@@ -51881,16 +52177,37 @@ var Md2WeChatSettingTab = class extends import_obsidian.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h2", { text: "Markdown to WeChat Settings" });
-    new import_obsidian.Setting(containerEl).setName("WeChat AppID").setDesc("Your WeChat Official Account Developer AppID").addText((text) => text.setPlaceholder("wx...").setValue(this.plugin.settings.appId).onChange(async (value) => {
+    const lang = this.plugin.settings.lang;
+    containerEl.createEl("h2", { text: t("settings_title", lang) });
+    new import_obsidian.Setting(containerEl).setName(t("settings_lang_name", lang)).setDesc(t("settings_lang_desc", lang)).addDropdown((dropdown) => {
+      dropdown.addOption("en", "English");
+      dropdown.addOption("zh-CN", "\u7B80\u4F53\u4E2D\u6587");
+      dropdown.addOption("zh-TW", "\u7E41\u9AD4\u4E2D\u6587");
+      dropdown.addOption("es", "Espa\xF1ol");
+      dropdown.addOption("fr", "Fran\xE7ais");
+      dropdown.addOption("ja", "\u65E5\u672C\u8A9E");
+      dropdown.setValue(this.plugin.settings.lang);
+      dropdown.onChange(async (value) => {
+        this.plugin.settings.lang = value;
+        await this.plugin.saveSettings();
+        const activeViews = this.app.workspace.getLeavesOfType("wechat-preview-view");
+        activeViews.forEach((leaf) => {
+          if (leaf.view && typeof leaf.view.onOpen === "function") {
+            leaf.view.onOpen();
+          }
+        });
+        this.display();
+      });
+    });
+    new import_obsidian.Setting(containerEl).setName(t("settings_appid_name", lang)).setDesc(t("settings_appid_desc", lang)).addText((text) => text.setPlaceholder("wx...").setValue(this.plugin.settings.appId).onChange(async (value) => {
       this.plugin.settings.appId = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian.Setting(containerEl).setName("WeChat AppSecret").setDesc("Your WeChat Official Account Developer AppSecret").addText((text) => text.setPlaceholder("Enter app secret").setValue(this.plugin.settings.appSecret).onChange(async (value) => {
+    new import_obsidian.Setting(containerEl).setName(t("settings_appsecret_name", lang)).setDesc(t("settings_appsecret_desc", lang)).addText((text) => text.setPlaceholder("Enter app secret").setValue(this.plugin.settings.appSecret).onChange(async (value) => {
       this.plugin.settings.appSecret = value;
       await this.plugin.saveSettings();
     }));
-    const styleSetting = new import_obsidian.Setting(containerEl).setName("Default Theme").setDesc("Default style template used for renders");
+    const styleSetting = new import_obsidian.Setting(containerEl).setName(t("settings_theme_name", lang)).setDesc(t("settings_theme_desc", lang));
     styleSetting.addDropdown((dropdown) => {
       dropdown.addOption("elegant", "Elegant Green (\u96C5\u7EFF)");
       dropdown.addOption("warm", "Warm Gold (\u6696\u91D1)");
@@ -51904,25 +52221,25 @@ var Md2WeChatSettingTab = class extends import_obsidian.PluginSettingTab {
         await this.plugin.saveSettings();
       });
     });
-    new import_obsidian.Setting(containerEl).setName("Custom Themes Folder").setDesc("Folder in your vault where custom WeChat CSS themes are stored. (Will auto-initialize if not existing)").addText((text) => text.setPlaceholder("wechat-format-themes").setValue(this.plugin.settings.themeFolder).onChange(async (value) => {
+    new import_obsidian.Setting(containerEl).setName(t("settings_folder_name", lang)).setDesc(t("settings_folder_desc", lang)).addText((text) => text.setPlaceholder("wechat-format-themes").setValue(this.plugin.settings.themeFolder).onChange(async (value) => {
       this.plugin.settings.themeFolder = value.trim() || "wechat-format-themes";
       await this.plugin.saveSettings();
       await this.plugin.initThemeDirectory();
       await this.plugin.loadCustomThemes();
     }));
-    new import_obsidian.Setting(containerEl).setName("WeChat Image Uploads").setDesc("Enable automatic image upload directly to WeChat CDN").addToggle((toggle) => toggle.setValue(this.plugin.settings.enableImgUpload).onChange(async (value) => {
+    new import_obsidian.Setting(containerEl).setName(t("settings_upload_name", lang)).setDesc(t("settings_upload_desc", lang)).addToggle((toggle) => toggle.setValue(this.plugin.settings.enableImgUpload).onChange(async (value) => {
       this.plugin.settings.enableImgUpload = value;
       await this.plugin.saveSettings();
     }));
-    const materialsSetting = new import_obsidian.Setting(containerEl).setName("Select Cover from WeChat").setDesc('Click "Fetch" to load images from your WeChat library, then choose one.').addButton((btn) => btn.setButtonText("Fetch Materials").onClick(async () => {
+    const materialsSetting = new import_obsidian.Setting(containerEl).setName(t("settings_fetch_name", lang)).setDesc(t("settings_fetch_desc", lang)).addButton((btn) => btn.setButtonText(t("settings_fetch_btn", lang)).onClick(async () => {
       const { appId, appSecret } = this.plugin.settings;
       if (!appId || !appSecret) {
-        new import_obsidian.Notice("Please enter AppID and AppSecret first!");
+        new import_obsidian.Notice(t("settings_notice_enter_api", lang));
         return;
       }
       btn.setDisabled(true);
-      btn.setButtonText("Fetching...");
-      new import_obsidian.Notice("Fetching permanent images from WeChat...");
+      btn.setButtonText(t("settings_fetching_btn", lang));
+      new import_obsidian.Notice(t("settings_notice_fetching", lang));
       try {
         const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
         const tokenRes = await (0, import_obsidian.requestUrl)({ url: tokenUrl, method: "GET" });
@@ -51948,7 +52265,7 @@ var Md2WeChatSettingTab = class extends import_obsidian.PluginSettingTab {
         }
         const items = matData.item || [];
         if (items.length === 0) {
-          new import_obsidian.Notice("No permanent images found in your WeChat material library!");
+          new import_obsidian.Notice(t("settings_notice_no_img", lang));
           return;
         }
         this.plugin.settings.cachedMaterials = items.map((item) => ({
@@ -51956,19 +52273,19 @@ var Md2WeChatSettingTab = class extends import_obsidian.PluginSettingTab {
           name: item.name
         }));
         await this.plugin.saveSettings();
-        new import_obsidian.Notice(`Successfully loaded ${items.length} materials!`);
+        new import_obsidian.Notice(t("settings_notice_loaded", lang).replace("{count}", items.length.toString()));
         this.display();
       } catch (err) {
         console.error(err);
         new import_obsidian.Notice(`Failed to fetch: ${err.message || err}`);
       } finally {
         btn.setDisabled(false);
-        btn.setButtonText("Fetch Materials");
+        btn.setButtonText(t("settings_fetch_btn", lang));
       }
     }));
     if (this.plugin.settings.cachedMaterials && this.plugin.settings.cachedMaterials.length > 0) {
       materialsSetting.addDropdown((dropdown) => {
-        dropdown.addOption("", "-- Select an Image --");
+        dropdown.addOption("", t("settings_cover_select_placeholder", lang));
         this.plugin.settings.cachedMaterials.forEach((m2) => {
           dropdown.addOption(m2.mediaId, m2.name.substring(0, 30));
         });
@@ -51976,19 +52293,14 @@ var Md2WeChatSettingTab = class extends import_obsidian.PluginSettingTab {
         dropdown.onChange(async (val) => {
           this.plugin.settings.defaultThumbMediaId = val;
           await this.plugin.saveSettings();
-          this.display();
         });
       });
     }
-    new import_obsidian.Setting(containerEl).setName("Default Cover Media ID").setDesc("Manually paste a WeChat Media ID, or select it from the dropdown helper above.").addText((text) => text.setPlaceholder("wx_media_id_...").setValue(this.plugin.settings.defaultThumbMediaId).onChange(async (value) => {
-      this.plugin.settings.defaultThumbMediaId = value.trim();
-      await this.plugin.saveSettings();
-    }));
   }
 };
 
 // src/view.ts
-var import_obsidian3 = require("obsidian");
+var import_obsidian4 = require("obsidian");
 
 // src/themes.ts
 var import_obsidian2 = require("obsidian");
@@ -52238,16 +52550,16 @@ function N(l3) {
 var _ = { exec: () => null };
 function E(l3) {
   let e = [];
-  return (t) => {
-    let n = Math.max(0, Math.min(3, t - 1)), s = e[n];
+  return (t2) => {
+    let n = Math.max(0, Math.min(3, t2 - 1)), s = e[n];
     return s || (s = l3(n), e[n] = s), s;
   };
 }
 function d(l3, e = "") {
-  let t = typeof l3 == "string" ? l3 : l3.source, n = { replace: (s, r) => {
+  let t2 = typeof l3 == "string" ? l3 : l3.source, n = { replace: (s, r) => {
     let i = typeof r == "string" ? r : r.source;
-    return i = i.replace(m.caret, "$1"), t = t.replace(s, i), n;
-  }, getRegex: () => new RegExp(t, e) };
+    return i = i.replace(m.caret, "$1"), t2 = t2.replace(s, i), n;
+  }, getRegex: () => new RegExp(t2, e) };
   return n;
 }
 var Te = ((l3 = "") => {
@@ -52340,12 +52652,12 @@ function V(l3) {
 }
 function Y(l3, e) {
   var _a2;
-  let t = l3.replace(m.findPipe, (r, i, o) => {
+  let t2 = l3.replace(m.findPipe, (r, i, o) => {
     let u = false, a = i;
     for (; --a >= 0 && o[a] === "\\"; )
       u = !u;
     return u ? "|" : " |";
-  }), n = t.split(m.splitPipe), s = 0;
+  }), n = t2.split(m.splitPipe), s = 0;
   if (n[0].trim() || n.shift(), n.length > 0 && !((_a2 = n.at(-1)) == null ? void 0 : _a2.trim()) && n.pop(), e)
     if (n.length > e)
       n.splice(e);
@@ -52356,16 +52668,16 @@ function Y(l3, e) {
     n[s] = n[s].trim().replace(m.slashPipe, "|");
   return n;
 }
-function $(l3, e, t) {
+function $(l3, e, t2) {
   let n = l3.length;
   if (n === 0)
     return "";
   let s = 0;
   for (; s < n; ) {
     let r = l3.charAt(n - s - 1);
-    if (r === e && !t)
+    if (r === e && !t2)
       s++;
-    else if (r !== e && t)
+    else if (r !== e && t2)
       s++;
     else
       break;
@@ -52374,49 +52686,49 @@ function $(l3, e, t) {
 }
 function ee(l3) {
   let e = l3.split(`
-`), t = e.length - 1;
-  for (; t >= 0 && m.blankLine.test(e[t]); )
-    t--;
-  return e.length - t <= 2 ? l3 : e.slice(0, t + 1).join(`
+`), t2 = e.length - 1;
+  for (; t2 >= 0 && m.blankLine.test(e[t2]); )
+    t2--;
+  return e.length - t2 <= 2 ? l3 : e.slice(0, t2 + 1).join(`
 `);
 }
 function fe(l3, e) {
   if (l3.indexOf(e[1]) === -1)
     return -1;
-  let t = 0;
+  let t2 = 0;
   for (let n = 0; n < l3.length; n++)
     if (l3[n] === "\\")
       n++;
     else if (l3[n] === e[0])
-      t++;
-    else if (l3[n] === e[1] && (t--, t < 0))
+      t2++;
+    else if (l3[n] === e[1] && (t2--, t2 < 0))
       return n;
-  return t > 0 ? -2 : -1;
+  return t2 > 0 ? -2 : -1;
 }
 function me(l3, e = 0) {
-  let t = e, n = "";
+  let t2 = e, n = "";
   for (let s of l3)
     if (s === "	") {
-      let r = 4 - t % 4;
-      n += " ".repeat(r), t += r;
+      let r = 4 - t2 % 4;
+      n += " ".repeat(r), t2 += r;
     } else
-      n += s, t++;
+      n += s, t2++;
   return n;
 }
-function xe(l3, e, t, n, s) {
+function xe(l3, e, t2, n, s) {
   let r = e.href, i = e.title || null, o = l3[1].replace(s.other.outputLinkReplace, "$1");
   n.state.inLink = true;
-  let u = { type: l3[0].charAt(0) === "!" ? "image" : "link", raw: t, href: r, title: i, text: o, tokens: n.inlineTokens(o) };
+  let u = { type: l3[0].charAt(0) === "!" ? "image" : "link", raw: t2, href: r, title: i, text: o, tokens: n.inlineTokens(o) };
   return n.state.inLink = false, u;
 }
-function st(l3, e, t) {
-  let n = l3.match(t.other.indentCodeCompensation);
+function st(l3, e, t2) {
+  let n = l3.match(t2.other.indentCodeCompensation);
   if (n === null)
     return e;
   let s = n[1];
   return e.split(`
 `).map((r) => {
-    let i = r.match(t.other.beginningSpace);
+    let i = r.match(t2.other.beginningSpace);
     if (i === null)
       return r;
     let [o] = i;
@@ -52432,46 +52744,46 @@ var w = class {
     this.options = e || T;
   }
   space(e) {
-    let t = this.rules.block.newline.exec(e);
-    if (t && t[0].length > 0)
-      return { type: "space", raw: t[0] };
+    let t2 = this.rules.block.newline.exec(e);
+    if (t2 && t2[0].length > 0)
+      return { type: "space", raw: t2[0] };
   }
   code(e) {
-    let t = this.rules.block.code.exec(e);
-    if (t) {
-      let n = this.options.pedantic ? t[0] : ee(t[0]), s = n.replace(this.rules.other.codeRemoveIndent, "");
+    let t2 = this.rules.block.code.exec(e);
+    if (t2) {
+      let n = this.options.pedantic ? t2[0] : ee(t2[0]), s = n.replace(this.rules.other.codeRemoveIndent, "");
       return { type: "code", raw: n, codeBlockStyle: "indented", text: s };
     }
   }
   fences(e) {
-    let t = this.rules.block.fences.exec(e);
-    if (t) {
-      let n = t[0], s = st(n, t[3] || "", this.rules);
-      return { type: "code", raw: n, lang: t[2] ? t[2].trim().replace(this.rules.inline.anyPunctuation, "$1") : t[2], text: s };
+    let t2 = this.rules.block.fences.exec(e);
+    if (t2) {
+      let n = t2[0], s = st(n, t2[3] || "", this.rules);
+      return { type: "code", raw: n, lang: t2[2] ? t2[2].trim().replace(this.rules.inline.anyPunctuation, "$1") : t2[2], text: s };
     }
   }
   heading(e) {
-    let t = this.rules.block.heading.exec(e);
-    if (t) {
-      let n = t[2].trim();
+    let t2 = this.rules.block.heading.exec(e);
+    if (t2) {
+      let n = t2[2].trim();
       if (this.rules.other.endingHash.test(n)) {
         let s = $(n, "#");
         (this.options.pedantic || !s || this.rules.other.endingSpaceChar.test(s)) && (n = s.trim());
       }
-      return { type: "heading", raw: $(t[0], `
-`), depth: t[1].length, text: n, tokens: this.lexer.inline(n) };
+      return { type: "heading", raw: $(t2[0], `
+`), depth: t2[1].length, text: n, tokens: this.lexer.inline(n) };
     }
   }
   hr(e) {
-    let t = this.rules.block.hr.exec(e);
-    if (t)
-      return { type: "hr", raw: $(t[0], `
+    let t2 = this.rules.block.hr.exec(e);
+    if (t2)
+      return { type: "hr", raw: $(t2[0], `
 `) };
   }
   blockquote(e) {
-    let t = this.rules.block.blockquote.exec(e);
-    if (t) {
-      let n = $(t[0], `
+    let t2 = this.rules.block.blockquote.exec(e);
+    if (t2) {
+      let n = $(t2[0], `
 `).split(`
 `), s = "", r = "", i = [];
       for (; n.length > 0; ) {
@@ -52515,20 +52827,20 @@ ${p}` : p;
     }
   }
   list(e) {
-    let t = this.rules.block.list.exec(e);
-    if (t) {
-      let n = t[1].trim(), s = n.length > 1, r = { type: "list", raw: "", ordered: s, start: s ? +n.slice(0, -1) : "", loose: false, items: [] };
+    let t2 = this.rules.block.list.exec(e);
+    if (t2) {
+      let n = t2[1].trim(), s = n.length > 1, r = { type: "list", raw: "", ordered: s, start: s ? +n.slice(0, -1) : "", loose: false, items: [] };
       n = s ? `\\d{1,9}\\${n.slice(-1)}` : `\\${n}`, this.options.pedantic && (n = s ? n : "[*+-]");
       let i = this.rules.other.listItemRegex(n), o = false;
       for (; e; ) {
         let a = false, c = "", p = "";
-        if (!(t = i.exec(e)) || this.rules.block.hr.test(e))
+        if (!(t2 = i.exec(e)) || this.rules.block.hr.test(e))
           break;
-        c = t[0], e = e.substring(c.length);
-        let k = me(t[2].split(`
-`, 1)[0], t[1].length), h = e.split(`
+        c = t2[0], e = e.substring(c.length);
+        let k = me(t2[2].split(`
+`, 1)[0], t2[1].length), h = e.split(`
 `, 1)[0], R = !k.trim(), f = 0;
-        if (this.options.pedantic ? (f = 2, p = k.trimStart()) : R ? f = t[1].length + 1 : (f = k.search(this.rules.other.nonSpaceChar), f = f > 4 ? 1 : f, p = k.slice(f), f += t[1].length), R && this.rules.other.blankLine.test(h) && (c += h + `
+        if (this.options.pedantic ? (f = 2, p = k.trimStart()) : R ? f = t2[1].length + 1 : (f = k.search(this.rules.other.nonSpaceChar), f = f > 4 ? 1 : f, p = k.slice(f), f += t2[1].length), R && this.rules.other.blankLine.test(h) && (c += h + `
 `, e = e.substring(h.length + 1), a = true), !a) {
           let S = this.rules.other.nextBulletRegex(f), te = this.rules.other.hrRegex(f), ne = this.rules.other.fencesBeginRegex(f), re = this.rules.other.headingBeginRegex(f), be = this.rules.other.htmlBeginRegex(f), Re = this.rules.other.blockquoteBeginRegex(f);
           for (; e; ) {
@@ -52589,27 +52901,27 @@ ${p}` : p;
     }
   }
   html(e) {
-    let t = this.rules.block.html.exec(e);
-    if (t) {
-      let n = ee(t[0]);
-      return { type: "html", block: true, raw: n, pre: t[1] === "pre" || t[1] === "script" || t[1] === "style", text: n };
+    let t2 = this.rules.block.html.exec(e);
+    if (t2) {
+      let n = ee(t2[0]);
+      return { type: "html", block: true, raw: n, pre: t2[1] === "pre" || t2[1] === "script" || t2[1] === "style", text: n };
     }
   }
   def(e) {
-    let t = this.rules.block.def.exec(e);
-    if (t) {
-      let n = t[1].toLowerCase().replace(this.rules.other.multipleSpaceGlobal, " "), s = t[2] ? t[2].replace(this.rules.other.hrefBrackets, "$1").replace(this.rules.inline.anyPunctuation, "$1") : "", r = t[3] ? t[3].substring(1, t[3].length - 1).replace(this.rules.inline.anyPunctuation, "$1") : t[3];
-      return { type: "def", tag: n, raw: $(t[0], `
+    let t2 = this.rules.block.def.exec(e);
+    if (t2) {
+      let n = t2[1].toLowerCase().replace(this.rules.other.multipleSpaceGlobal, " "), s = t2[2] ? t2[2].replace(this.rules.other.hrefBrackets, "$1").replace(this.rules.inline.anyPunctuation, "$1") : "", r = t2[3] ? t2[3].substring(1, t2[3].length - 1).replace(this.rules.inline.anyPunctuation, "$1") : t2[3];
+      return { type: "def", tag: n, raw: $(t2[0], `
 `), href: s, title: r };
     }
   }
   table(e) {
     var _a2;
-    let t = this.rules.block.table.exec(e);
-    if (!t || !this.rules.other.tableDelimiter.test(t[2]))
+    let t2 = this.rules.block.table.exec(e);
+    if (!t2 || !this.rules.other.tableDelimiter.test(t2[2]))
       return;
-    let n = Y(t[1]), s = t[2].replace(this.rules.other.tableAlignChars, "").split("|"), r = ((_a2 = t[3]) == null ? void 0 : _a2.trim()) ? t[3].replace(this.rules.other.tableRowBlankLine, "").split(`
-`) : [], i = { type: "table", raw: $(t[0], `
+    let n = Y(t2[1]), s = t2[2].replace(this.rules.other.tableAlignChars, "").split("|"), r = ((_a2 = t2[3]) == null ? void 0 : _a2.trim()) ? t2[3].replace(this.rules.other.tableRowBlankLine, "").split(`
+`) : [], i = { type: "table", raw: $(t2[0], `
 `), header: [], align: [], rows: [] };
     if (n.length === s.length) {
       for (let o of s)
@@ -52622,40 +52934,40 @@ ${p}` : p;
     }
   }
   lheading(e) {
-    let t = this.rules.block.lheading.exec(e);
-    if (t) {
-      let n = t[1].trim();
-      return { type: "heading", raw: $(t[0], `
-`), depth: t[2].charAt(0) === "=" ? 1 : 2, text: n, tokens: this.lexer.inline(n) };
+    let t2 = this.rules.block.lheading.exec(e);
+    if (t2) {
+      let n = t2[1].trim();
+      return { type: "heading", raw: $(t2[0], `
+`), depth: t2[2].charAt(0) === "=" ? 1 : 2, text: n, tokens: this.lexer.inline(n) };
     }
   }
   paragraph(e) {
-    let t = this.rules.block.paragraph.exec(e);
-    if (t) {
-      let n = t[1].charAt(t[1].length - 1) === `
-` ? t[1].slice(0, -1) : t[1];
-      return { type: "paragraph", raw: t[0], text: n, tokens: this.lexer.inline(n) };
+    let t2 = this.rules.block.paragraph.exec(e);
+    if (t2) {
+      let n = t2[1].charAt(t2[1].length - 1) === `
+` ? t2[1].slice(0, -1) : t2[1];
+      return { type: "paragraph", raw: t2[0], text: n, tokens: this.lexer.inline(n) };
     }
   }
   text(e) {
-    let t = this.rules.block.text.exec(e);
-    if (t)
-      return { type: "text", raw: t[0], text: t[0], tokens: this.lexer.inline(t[0]) };
+    let t2 = this.rules.block.text.exec(e);
+    if (t2)
+      return { type: "text", raw: t2[0], text: t2[0], tokens: this.lexer.inline(t2[0]) };
   }
   escape(e) {
-    let t = this.rules.inline.escape.exec(e);
-    if (t)
-      return { type: "escape", raw: t[0], text: t[1] };
+    let t2 = this.rules.inline.escape.exec(e);
+    if (t2)
+      return { type: "escape", raw: t2[0], text: t2[1] };
   }
   tag(e) {
-    let t = this.rules.inline.tag.exec(e);
-    if (t)
-      return !this.lexer.state.inLink && this.rules.other.startATag.test(t[0]) ? this.lexer.state.inLink = true : this.lexer.state.inLink && this.rules.other.endATag.test(t[0]) && (this.lexer.state.inLink = false), !this.lexer.state.inRawBlock && this.rules.other.startPreScriptTag.test(t[0]) ? this.lexer.state.inRawBlock = true : this.lexer.state.inRawBlock && this.rules.other.endPreScriptTag.test(t[0]) && (this.lexer.state.inRawBlock = false), { type: "html", raw: t[0], inLink: this.lexer.state.inLink, inRawBlock: this.lexer.state.inRawBlock, block: false, text: t[0] };
+    let t2 = this.rules.inline.tag.exec(e);
+    if (t2)
+      return !this.lexer.state.inLink && this.rules.other.startATag.test(t2[0]) ? this.lexer.state.inLink = true : this.lexer.state.inLink && this.rules.other.endATag.test(t2[0]) && (this.lexer.state.inLink = false), !this.lexer.state.inRawBlock && this.rules.other.startPreScriptTag.test(t2[0]) ? this.lexer.state.inRawBlock = true : this.lexer.state.inRawBlock && this.rules.other.endPreScriptTag.test(t2[0]) && (this.lexer.state.inRawBlock = false), { type: "html", raw: t2[0], inLink: this.lexer.state.inLink, inRawBlock: this.lexer.state.inRawBlock, block: false, text: t2[0] };
   }
   link(e) {
-    let t = this.rules.inline.link.exec(e);
-    if (t) {
-      let n = t[2].trim();
+    let t2 = this.rules.inline.link.exec(e);
+    if (t2) {
+      let n = t2[2].trim();
       if (!this.options.pedantic && this.rules.other.startAngleBracket.test(n)) {
         if (!this.rules.other.endAngleBracket.test(n))
           return;
@@ -52663,27 +52975,27 @@ ${p}` : p;
         if ((n.length - i.length) % 2 === 0)
           return;
       } else {
-        let i = fe(t[2], "()");
+        let i = fe(t2[2], "()");
         if (i === -2)
           return;
         if (i > -1) {
-          let u = (t[0].indexOf("!") === 0 ? 5 : 4) + t[1].length + i;
-          t[2] = t[2].substring(0, i), t[0] = t[0].substring(0, u).trim(), t[3] = "";
+          let u = (t2[0].indexOf("!") === 0 ? 5 : 4) + t2[1].length + i;
+          t2[2] = t2[2].substring(0, i), t2[0] = t2[0].substring(0, u).trim(), t2[3] = "";
         }
       }
-      let s = t[2], r = "";
+      let s = t2[2], r = "";
       if (this.options.pedantic) {
         let i = this.rules.other.pedanticHrefTitle.exec(s);
         i && (s = i[1], r = i[3]);
       } else
-        r = t[3] ? t[3].slice(1, -1) : "";
-      return s = s.trim(), this.rules.other.startAngleBracket.test(s) && (this.options.pedantic && !this.rules.other.endAngleBracket.test(n) ? s = s.slice(1) : s = s.slice(1, -1)), xe(t, { href: s && s.replace(this.rules.inline.anyPunctuation, "$1"), title: r && r.replace(this.rules.inline.anyPunctuation, "$1") }, t[0], this.lexer, this.rules);
+        r = t2[3] ? t2[3].slice(1, -1) : "";
+      return s = s.trim(), this.rules.other.startAngleBracket.test(s) && (this.options.pedantic && !this.rules.other.endAngleBracket.test(n) ? s = s.slice(1) : s = s.slice(1, -1)), xe(t2, { href: s && s.replace(this.rules.inline.anyPunctuation, "$1"), title: r && r.replace(this.rules.inline.anyPunctuation, "$1") }, t2[0], this.lexer, this.rules);
     }
   }
-  reflink(e, t) {
+  reflink(e, t2) {
     let n;
     if ((n = this.rules.inline.reflink.exec(e)) || (n = this.rules.inline.nolink.exec(e))) {
-      let s = (n[2] || n[1]).replace(this.rules.other.multipleSpaceGlobal, " "), r = t[s.toLowerCase()];
+      let s = (n[2] || n[1]).replace(this.rules.other.multipleSpaceGlobal, " "), r = t2[s.toLowerCase()];
       if (!r) {
         let i = n[0].charAt(0);
         return { type: "text", raw: i, text: i };
@@ -52691,13 +53003,13 @@ ${p}` : p;
       return xe(n, r, n[0], this.lexer, this.rules);
     }
   }
-  emStrong(e, t, n = "") {
+  emStrong(e, t2, n = "") {
     let s = this.rules.inline.emStrongLDelim.exec(e);
     if (!s || !s[1] && !s[2] && !s[3] && !s[4] || s[4] && n.match(this.rules.other.unicodeAlphaNumeric))
       return;
     if (!(s[1] || s[3] || "") || !n || this.rules.inline.punctuation.exec(n)) {
       let i = [...s[0]].length - 1, o, u, a = i, c = 0, p = s[0][0] === "*" ? this.rules.inline.emStrongRDelimAst : this.rules.inline.emStrongRDelimUnd;
-      for (p.lastIndex = 0, t = t.slice(-1 * e.length + i); (s = p.exec(t)) !== null; ) {
+      for (p.lastIndex = 0, t2 = t2.slice(-1 * e.length + i); (s = p.exec(t2)) !== null; ) {
         if (o = s[1] || s[2] || s[3] || s[4] || s[5] || s[6], !o)
           continue;
         if (u = [...o].length, s[3] || s[4]) {
@@ -52721,24 +53033,24 @@ ${p}` : p;
     }
   }
   codespan(e) {
-    let t = this.rules.inline.code.exec(e);
-    if (t) {
-      let n = t[2].replace(this.rules.other.newLineCharGlobal, " "), s = this.rules.other.nonSpaceChar.test(n), r = this.rules.other.startingSpaceChar.test(n) && this.rules.other.endingSpaceChar.test(n);
-      return s && r && (n = n.substring(1, n.length - 1)), { type: "codespan", raw: t[0], text: n };
+    let t2 = this.rules.inline.code.exec(e);
+    if (t2) {
+      let n = t2[2].replace(this.rules.other.newLineCharGlobal, " "), s = this.rules.other.nonSpaceChar.test(n), r = this.rules.other.startingSpaceChar.test(n) && this.rules.other.endingSpaceChar.test(n);
+      return s && r && (n = n.substring(1, n.length - 1)), { type: "codespan", raw: t2[0], text: n };
     }
   }
   br(e) {
-    let t = this.rules.inline.br.exec(e);
-    if (t)
-      return { type: "br", raw: t[0] };
+    let t2 = this.rules.inline.br.exec(e);
+    if (t2)
+      return { type: "br", raw: t2[0] };
   }
-  del(e, t, n = "") {
+  del(e, t2, n = "") {
     let s = this.rules.inline.delLDelim.exec(e);
     if (!s)
       return;
     if (!(s[1] || "") || !n || this.rules.inline.punctuation.exec(n)) {
       let i = [...s[0]].length - 1, o, u, a = i, c = this.rules.inline.delRDelim;
-      for (c.lastIndex = 0, t = t.slice(-1 * e.length + i); (s = c.exec(t)) !== null; ) {
+      for (c.lastIndex = 0, t2 = t2.slice(-1 * e.length + i); (s = c.exec(t2)) !== null; ) {
         if (o = s[1] || s[2] || s[3] || s[4] || s[5] || s[6], !o || (u = [...o].length, u !== i))
           continue;
         if (s[3] || s[4]) {
@@ -52754,34 +53066,34 @@ ${p}` : p;
     }
   }
   autolink(e) {
-    let t = this.rules.inline.autolink.exec(e);
-    if (t) {
+    let t2 = this.rules.inline.autolink.exec(e);
+    if (t2) {
       let n, s;
-      return t[2] === "@" ? (n = t[1], s = "mailto:" + n) : (n = t[1], s = n), { type: "link", raw: t[0], text: n, href: s, tokens: [{ type: "text", raw: n, text: n }] };
+      return t2[2] === "@" ? (n = t2[1], s = "mailto:" + n) : (n = t2[1], s = n), { type: "link", raw: t2[0], text: n, href: s, tokens: [{ type: "text", raw: n, text: n }] };
     }
   }
   url(e) {
     var _a2, _b;
-    let t;
-    if (t = this.rules.inline.url.exec(e)) {
+    let t2;
+    if (t2 = this.rules.inline.url.exec(e)) {
       let n, s;
-      if (t[2] === "@")
-        n = t[0], s = "mailto:" + n;
+      if (t2[2] === "@")
+        n = t2[0], s = "mailto:" + n;
       else {
         let r;
         do
-          r = t[0], t[0] = (_b = (_a2 = this.rules.inline._backpedal.exec(t[0])) == null ? void 0 : _a2[0]) != null ? _b : "";
-        while (r !== t[0]);
-        n = t[0], t[1] === "www." ? s = "http://" + t[0] : s = t[0];
+          r = t2[0], t2[0] = (_b = (_a2 = this.rules.inline._backpedal.exec(t2[0])) == null ? void 0 : _a2[0]) != null ? _b : "";
+        while (r !== t2[0]);
+        n = t2[0], t2[1] === "www." ? s = "http://" + t2[0] : s = t2[0];
       }
-      return { type: "link", raw: t[0], text: n, href: s, tokens: [{ type: "text", raw: n, text: n }] };
+      return { type: "link", raw: t2[0], text: n, href: s, tokens: [{ type: "text", raw: n, text: n }] };
     }
   }
   inlineText(e) {
-    let t = this.rules.inline.text.exec(e);
-    if (t) {
+    let t2 = this.rules.inline.text.exec(e);
+    if (t2) {
       let n = this.lexer.state.inRawBlock;
-      return { type: "text", raw: t[0], text: t[0], escaped: n };
+      return { type: "text", raw: t2[0], text: t2[0], escaped: n };
     }
   }
 };
@@ -52793,28 +53105,28 @@ var x = class l {
     __publicField(this, "inlineQueue");
     __publicField(this, "tokenizer");
     this.tokens = [], this.tokens.links = /* @__PURE__ */ Object.create(null), this.options = e || T, this.options.tokenizer = this.options.tokenizer || new w(), this.tokenizer = this.options.tokenizer, this.tokenizer.options = this.options, this.tokenizer.lexer = this, this.inlineQueue = [], this.state = { inLink: false, inRawBlock: false, top: true };
-    let t = { other: m, block: D.normal, inline: A.normal };
-    this.options.pedantic ? (t.block = D.pedantic, t.inline = A.pedantic) : this.options.gfm && (t.block = D.gfm, this.options.breaks ? t.inline = A.breaks : t.inline = A.gfm), this.tokenizer.rules = t;
+    let t2 = { other: m, block: D.normal, inline: A.normal };
+    this.options.pedantic ? (t2.block = D.pedantic, t2.inline = A.pedantic) : this.options.gfm && (t2.block = D.gfm, this.options.breaks ? t2.inline = A.breaks : t2.inline = A.gfm), this.tokenizer.rules = t2;
   }
   static get rules() {
     return { block: D, inline: A };
   }
-  static lex(e, t) {
-    return new l(t).lex(e);
+  static lex(e, t2) {
+    return new l(t2).lex(e);
   }
-  static lexInline(e, t) {
-    return new l(t).inlineTokens(e);
+  static lexInline(e, t2) {
+    return new l(t2).inlineTokens(e);
   }
   lex(e) {
     e = e.replace(m.carriageReturn, `
 `), this.blockTokens(e, this.tokens);
-    for (let t = 0; t < this.inlineQueue.length; t++) {
-      let n = this.inlineQueue[t];
+    for (let t2 = 0; t2 < this.inlineQueue.length; t2++) {
+      let n = this.inlineQueue[t2];
       this.inlineTokens(n.src, n.tokens);
     }
     return this.inlineQueue = [], this.tokens;
   }
-  blockTokens(e, t = [], n = false) {
+  blockTokens(e, t2 = [], n = false) {
     var _a2, _b, _c;
     this.tokenizer.lexer = this, this.options.pedantic && (e = e.replace(m.tabCharGlobal, "    ").replace(m.spaceLine, ""));
     let s = 1 / 0;
@@ -52826,63 +53138,63 @@ var x = class l {
         break;
       }
       let r;
-      if ((_b = (_a2 = this.options.extensions) == null ? void 0 : _a2.block) == null ? void 0 : _b.some((o) => (r = o.call({ lexer: this }, e, t)) ? (e = e.substring(r.raw.length), t.push(r), true) : false))
+      if ((_b = (_a2 = this.options.extensions) == null ? void 0 : _a2.block) == null ? void 0 : _b.some((o) => (r = o.call({ lexer: this }, e, t2)) ? (e = e.substring(r.raw.length), t2.push(r), true) : false))
         continue;
       if (r = this.tokenizer.space(e)) {
         e = e.substring(r.raw.length);
-        let o = t.at(-1);
+        let o = t2.at(-1);
         r.raw.length === 1 && o !== void 0 ? o.raw += `
-` : t.push(r);
+` : t2.push(r);
         continue;
       }
       if (r = this.tokenizer.code(e)) {
         e = e.substring(r.raw.length);
-        let o = t.at(-1);
+        let o = t2.at(-1);
         (o == null ? void 0 : o.type) === "paragraph" || (o == null ? void 0 : o.type) === "text" ? (o.raw += (o.raw.endsWith(`
 `) ? "" : `
 `) + r.raw, o.text += `
-` + r.text, this.inlineQueue.at(-1).src = o.text) : t.push(r);
+` + r.text, this.inlineQueue.at(-1).src = o.text) : t2.push(r);
         continue;
       }
       if (r = this.tokenizer.fences(e)) {
-        e = e.substring(r.raw.length), t.push(r);
+        e = e.substring(r.raw.length), t2.push(r);
         continue;
       }
       if (r = this.tokenizer.heading(e)) {
-        e = e.substring(r.raw.length), t.push(r);
+        e = e.substring(r.raw.length), t2.push(r);
         continue;
       }
       if (r = this.tokenizer.hr(e)) {
-        e = e.substring(r.raw.length), t.push(r);
+        e = e.substring(r.raw.length), t2.push(r);
         continue;
       }
       if (r = this.tokenizer.blockquote(e)) {
-        e = e.substring(r.raw.length), t.push(r);
+        e = e.substring(r.raw.length), t2.push(r);
         continue;
       }
       if (r = this.tokenizer.list(e)) {
-        e = e.substring(r.raw.length), t.push(r);
+        e = e.substring(r.raw.length), t2.push(r);
         continue;
       }
       if (r = this.tokenizer.html(e)) {
-        e = e.substring(r.raw.length), t.push(r);
+        e = e.substring(r.raw.length), t2.push(r);
         continue;
       }
       if (r = this.tokenizer.def(e)) {
         e = e.substring(r.raw.length);
-        let o = t.at(-1);
+        let o = t2.at(-1);
         (o == null ? void 0 : o.type) === "paragraph" || (o == null ? void 0 : o.type) === "text" ? (o.raw += (o.raw.endsWith(`
 `) ? "" : `
 `) + r.raw, o.text += `
-` + r.raw, this.inlineQueue.at(-1).src = o.text) : this.tokens.links[r.tag] || (this.tokens.links[r.tag] = { href: r.href, title: r.title }, t.push(r));
+` + r.raw, this.inlineQueue.at(-1).src = o.text) : this.tokens.links[r.tag] || (this.tokens.links[r.tag] = { href: r.href, title: r.title }, t2.push(r));
         continue;
       }
       if (r = this.tokenizer.table(e)) {
-        e = e.substring(r.raw.length), t.push(r);
+        e = e.substring(r.raw.length), t2.push(r);
         continue;
       }
       if (r = this.tokenizer.lheading(e)) {
-        e = e.substring(r.raw.length), t.push(r);
+        e = e.substring(r.raw.length), t2.push(r);
         continue;
       }
       let i = e;
@@ -52893,20 +53205,20 @@ var x = class l {
         }), o < 1 / 0 && o >= 0 && (i = e.substring(0, o + 1));
       }
       if (this.state.top && (r = this.tokenizer.paragraph(i))) {
-        let o = t.at(-1);
+        let o = t2.at(-1);
         n && (o == null ? void 0 : o.type) === "paragraph" ? (o.raw += (o.raw.endsWith(`
 `) ? "" : `
 `) + r.raw, o.text += `
-` + r.text, this.inlineQueue.pop(), this.inlineQueue.at(-1).src = o.text) : t.push(r), n = i.length !== e.length, e = e.substring(r.raw.length);
+` + r.text, this.inlineQueue.pop(), this.inlineQueue.at(-1).src = o.text) : t2.push(r), n = i.length !== e.length, e = e.substring(r.raw.length);
         continue;
       }
       if (r = this.tokenizer.text(e)) {
         e = e.substring(r.raw.length);
-        let o = t.at(-1);
+        let o = t2.at(-1);
         (o == null ? void 0 : o.type) === "text" ? (o.raw += (o.raw.endsWith(`
 `) ? "" : `
 `) + r.raw, o.text += `
-` + r.text, this.inlineQueue.pop(), this.inlineQueue.at(-1).src = o.text) : t.push(r);
+` + r.text, this.inlineQueue.pop(), this.inlineQueue.at(-1).src = o.text) : t2.push(r);
         continue;
       }
       if (e) {
@@ -52914,12 +53226,12 @@ var x = class l {
         break;
       }
     }
-    return this.state.top = true, t;
+    return this.state.top = true, t2;
   }
-  inline(e, t = []) {
-    return this.inlineQueue.push({ src: e, tokens: t }), t;
+  inline(e, t2 = []) {
+    return this.inlineQueue.push({ src: e, tokens: t2 }), t2;
   }
-  inlineTokens(e, t = []) {
+  inlineTokens(e, t2 = []) {
     var _a2, _b, _c, _d, _e2, _f;
     this.tokenizer.lexer = this;
     let n = e, s = null;
@@ -52945,48 +53257,48 @@ var x = class l {
       }
       i || (o = ""), i = false;
       let a;
-      if ((_e2 = (_d = this.options.extensions) == null ? void 0 : _d.inline) == null ? void 0 : _e2.some((p) => (a = p.call({ lexer: this }, e, t)) ? (e = e.substring(a.raw.length), t.push(a), true) : false))
+      if ((_e2 = (_d = this.options.extensions) == null ? void 0 : _d.inline) == null ? void 0 : _e2.some((p) => (a = p.call({ lexer: this }, e, t2)) ? (e = e.substring(a.raw.length), t2.push(a), true) : false))
         continue;
       if (a = this.tokenizer.escape(e)) {
-        e = e.substring(a.raw.length), t.push(a);
+        e = e.substring(a.raw.length), t2.push(a);
         continue;
       }
       if (a = this.tokenizer.tag(e)) {
-        e = e.substring(a.raw.length), t.push(a);
+        e = e.substring(a.raw.length), t2.push(a);
         continue;
       }
       if (a = this.tokenizer.link(e)) {
-        e = e.substring(a.raw.length), t.push(a);
+        e = e.substring(a.raw.length), t2.push(a);
         continue;
       }
       if (a = this.tokenizer.reflink(e, this.tokens.links)) {
         e = e.substring(a.raw.length);
-        let p = t.at(-1);
-        a.type === "text" && (p == null ? void 0 : p.type) === "text" ? (p.raw += a.raw, p.text += a.text) : t.push(a);
+        let p = t2.at(-1);
+        a.type === "text" && (p == null ? void 0 : p.type) === "text" ? (p.raw += a.raw, p.text += a.text) : t2.push(a);
         continue;
       }
       if (a = this.tokenizer.emStrong(e, n, o)) {
-        e = e.substring(a.raw.length), t.push(a);
+        e = e.substring(a.raw.length), t2.push(a);
         continue;
       }
       if (a = this.tokenizer.codespan(e)) {
-        e = e.substring(a.raw.length), t.push(a);
+        e = e.substring(a.raw.length), t2.push(a);
         continue;
       }
       if (a = this.tokenizer.br(e)) {
-        e = e.substring(a.raw.length), t.push(a);
+        e = e.substring(a.raw.length), t2.push(a);
         continue;
       }
       if (a = this.tokenizer.del(e, n, o)) {
-        e = e.substring(a.raw.length), t.push(a);
+        e = e.substring(a.raw.length), t2.push(a);
         continue;
       }
       if (a = this.tokenizer.autolink(e)) {
-        e = e.substring(a.raw.length), t.push(a);
+        e = e.substring(a.raw.length), t2.push(a);
         continue;
       }
       if (!this.state.inLink && (a = this.tokenizer.url(e))) {
-        e = e.substring(a.raw.length), t.push(a);
+        e = e.substring(a.raw.length), t2.push(a);
         continue;
       }
       let c = e;
@@ -52998,8 +53310,8 @@ var x = class l {
       }
       if (a = this.tokenizer.inlineText(c)) {
         e = e.substring(a.raw.length), a.raw.slice(-1) !== "_" && (o = a.raw.slice(-1)), i = true;
-        let p = t.at(-1);
-        (p == null ? void 0 : p.type) === "text" ? (p.raw += a.raw, p.text += a.text) : t.push(a);
+        let p = t2.at(-1);
+        (p == null ? void 0 : p.type) === "text" ? (p.raw += a.raw, p.text += a.text) : t2.push(a);
         continue;
       }
       if (e) {
@@ -53007,14 +53319,14 @@ var x = class l {
         break;
       }
     }
-    return t;
+    return t2;
   }
   infiniteLoopError(e) {
-    let t = "Infinite loop on byte: " + e;
+    let t2 = "Infinite loop on byte: " + e;
     if (this.options.silent)
-      console.error(t);
+      console.error(t2);
     else
-      throw new Error(t);
+      throw new Error(t2);
   }
 };
 var y = class {
@@ -53026,9 +53338,9 @@ var y = class {
   space(e) {
     return "";
   }
-  code({ text: e, lang: t, escaped: n }) {
+  code({ text: e, lang: t2, escaped: n }) {
     var _a2;
-    let s = (_a2 = (t || "").match(m.notSpaceStart)) == null ? void 0 : _a2[0], r = e.replace(m.endingNewline, "") + `
+    let s = (_a2 = (t2 || "").match(m.notSpaceStart)) == null ? void 0 : _a2[0], r = e.replace(m.endingNewline, "") + `
 `;
     return s ? '<pre><code class="language-' + O(s) + '">' + (n ? r : O(r, true)) + `</code></pre>
 ` : "<pre><code>" + (n ? r : O(r, true)) + `</code></pre>
@@ -53045,8 +53357,8 @@ ${this.parser.parse(e)}</blockquote>
   def(e) {
     return "";
   }
-  heading({ tokens: e, depth: t }) {
-    return `<h${t}>${this.parser.parseInline(e)}</h${t}>
+  heading({ tokens: e, depth: t2 }) {
+    return `<h${t2}>${this.parser.parseInline(e)}</h${t2}>
 `;
   }
   hr(e) {
@@ -53054,12 +53366,12 @@ ${this.parser.parse(e)}</blockquote>
 `;
   }
   list(e) {
-    let t = e.ordered, n = e.start, s = "";
+    let t2 = e.ordered, n = e.start, s = "";
     for (let o = 0; o < e.items.length; o++) {
       let u = e.items[o];
       s += this.listitem(u);
     }
-    let r = t ? "ol" : "ul", i = t && n !== 1 ? ' start="' + n + '"' : "";
+    let r = t2 ? "ol" : "ul", i = t2 && n !== 1 ? ' start="' + n + '"' : "";
     return "<" + r + i + `>
 ` + s + "</" + r + `>
 `;
@@ -53076,10 +53388,10 @@ ${this.parser.parse(e)}</blockquote>
 `;
   }
   table(e) {
-    let t = "", n = "";
+    let t2 = "", n = "";
     for (let r = 0; r < e.header.length; r++)
       n += this.tablecell(e.header[r]);
-    t += this.tablerow({ text: n });
+    t2 += this.tablerow({ text: n });
     let s = "";
     for (let r = 0; r < e.rows.length; r++) {
       let i = e.rows[r];
@@ -53090,7 +53402,7 @@ ${this.parser.parse(e)}</blockquote>
     }
     return s && (s = `<tbody>${s}</tbody>`), `<table>
 <thead>
-` + t + `</thead>
+` + t2 + `</thead>
 ` + s + `</table>
 `;
   }
@@ -53100,8 +53412,8 @@ ${e}</tr>
 `;
   }
   tablecell(e) {
-    let t = this.parser.parseInline(e.tokens), n = e.header ? "th" : "td";
-    return (e.align ? `<${n} align="${e.align}">` : `<${n}>`) + t + `</${n}>
+    let t2 = this.parser.parseInline(e.tokens), n = e.header ? "th" : "td";
+    return (e.align ? `<${n} align="${e.align}">` : `<${n}>`) + t2 + `</${n}>
 `;
   }
   strong({ tokens: e }) {
@@ -53119,22 +53431,22 @@ ${e}</tr>
   del({ tokens: e }) {
     return `<del>${this.parser.parseInline(e)}</del>`;
   }
-  link({ href: e, title: t, tokens: n }) {
+  link({ href: e, title: t2, tokens: n }) {
     let s = this.parser.parseInline(n), r = V(e);
     if (r === null)
       return s;
     e = r;
     let i = '<a href="' + e + '"';
-    return t && (i += ' title="' + O(t) + '"'), i += ">" + s + "</a>", i;
+    return t2 && (i += ' title="' + O(t2) + '"'), i += ">" + s + "</a>", i;
   }
-  image({ href: e, title: t, text: n, tokens: s }) {
+  image({ href: e, title: t2, text: n, tokens: s }) {
     s && (n = this.parser.parseInline(s, this.parser.textRenderer));
     let r = V(e);
     if (r === null)
       return O(n);
     e = r;
     let i = `<img src="${e}" alt="${O(n)}"`;
-    return t && (i += ` title="${O(t)}"`), i += ">", i;
+    return t2 && (i += ` title="${O(t2)}"`), i += ">", i;
   }
   text(e) {
     return "tokens" in e && e.tokens ? this.parser.parseInline(e.tokens) : "escaped" in e && e.escaped ? e.text : O(e.text);
@@ -53179,73 +53491,73 @@ var b = class l2 {
     __publicField(this, "textRenderer");
     this.options = e || T, this.options.renderer = this.options.renderer || new y(), this.renderer = this.options.renderer, this.renderer.options = this.options, this.renderer.parser = this, this.textRenderer = new L();
   }
-  static parse(e, t) {
-    return new l2(t).parse(e);
+  static parse(e, t2) {
+    return new l2(t2).parse(e);
   }
-  static parseInline(e, t) {
-    return new l2(t).parseInline(e);
+  static parseInline(e, t2) {
+    return new l2(t2).parseInline(e);
   }
   parse(e) {
     var _a2, _b;
     this.renderer.parser = this;
-    let t = "";
+    let t2 = "";
     for (let n = 0; n < e.length; n++) {
       let s = e[n];
       if ((_b = (_a2 = this.options.extensions) == null ? void 0 : _a2.renderers) == null ? void 0 : _b[s.type]) {
         let i = s, o = this.options.extensions.renderers[i.type].call({ parser: this }, i);
         if (o !== false || !["space", "hr", "heading", "code", "table", "blockquote", "list", "html", "def", "paragraph", "text"].includes(i.type)) {
-          t += o || "";
+          t2 += o || "";
           continue;
         }
       }
       let r = s;
       switch (r.type) {
         case "space": {
-          t += this.renderer.space(r);
+          t2 += this.renderer.space(r);
           break;
         }
         case "hr": {
-          t += this.renderer.hr(r);
+          t2 += this.renderer.hr(r);
           break;
         }
         case "heading": {
-          t += this.renderer.heading(r);
+          t2 += this.renderer.heading(r);
           break;
         }
         case "code": {
-          t += this.renderer.code(r);
+          t2 += this.renderer.code(r);
           break;
         }
         case "table": {
-          t += this.renderer.table(r);
+          t2 += this.renderer.table(r);
           break;
         }
         case "blockquote": {
-          t += this.renderer.blockquote(r);
+          t2 += this.renderer.blockquote(r);
           break;
         }
         case "list": {
-          t += this.renderer.list(r);
+          t2 += this.renderer.list(r);
           break;
         }
         case "checkbox": {
-          t += this.renderer.checkbox(r);
+          t2 += this.renderer.checkbox(r);
           break;
         }
         case "html": {
-          t += this.renderer.html(r);
+          t2 += this.renderer.html(r);
           break;
         }
         case "def": {
-          t += this.renderer.def(r);
+          t2 += this.renderer.def(r);
           break;
         }
         case "paragraph": {
-          t += this.renderer.paragraph(r);
+          t2 += this.renderer.paragraph(r);
           break;
         }
         case "text": {
-          t += this.renderer.text(r);
+          t2 += this.renderer.text(r);
           break;
         }
         default: {
@@ -53256,9 +53568,9 @@ var b = class l2 {
         }
       }
     }
-    return t;
+    return t2;
   }
-  parseInline(e, t = this.renderer) {
+  parseInline(e, t2 = this.renderer) {
     var _a2, _b;
     this.renderer.parser = this;
     let n = "";
@@ -53274,47 +53586,47 @@ var b = class l2 {
       let i = r;
       switch (i.type) {
         case "escape": {
-          n += t.text(i);
+          n += t2.text(i);
           break;
         }
         case "html": {
-          n += t.html(i);
+          n += t2.html(i);
           break;
         }
         case "link": {
-          n += t.link(i);
+          n += t2.link(i);
           break;
         }
         case "image": {
-          n += t.image(i);
+          n += t2.image(i);
           break;
         }
         case "checkbox": {
-          n += t.checkbox(i);
+          n += t2.checkbox(i);
           break;
         }
         case "strong": {
-          n += t.strong(i);
+          n += t2.strong(i);
           break;
         }
         case "em": {
-          n += t.em(i);
+          n += t2.em(i);
           break;
         }
         case "codespan": {
-          n += t.codespan(i);
+          n += t2.codespan(i);
           break;
         }
         case "br": {
-          n += t.br(i);
+          n += t2.br(i);
           break;
         }
         case "del": {
-          n += t.del(i);
+          n += t2.del(i);
           break;
         }
         case "text": {
-          n += t.text(i);
+          n += t2.text(i);
           break;
         }
         default: {
@@ -53368,57 +53680,57 @@ var q = class {
     __publicField(this, "Hooks", P);
     this.use(...e);
   }
-  walkTokens(e, t) {
+  walkTokens(e, t2) {
     var _a2, _b;
     let n = [];
     for (let s of e)
-      switch (n = n.concat(t.call(this, s)), s.type) {
+      switch (n = n.concat(t2.call(this, s)), s.type) {
         case "table": {
           let r = s;
           for (let i of r.header)
-            n = n.concat(this.walkTokens(i.tokens, t));
+            n = n.concat(this.walkTokens(i.tokens, t2));
           for (let i of r.rows)
             for (let o of i)
-              n = n.concat(this.walkTokens(o.tokens, t));
+              n = n.concat(this.walkTokens(o.tokens, t2));
           break;
         }
         case "list": {
           let r = s;
-          n = n.concat(this.walkTokens(r.items, t));
+          n = n.concat(this.walkTokens(r.items, t2));
           break;
         }
         default: {
           let r = s;
           ((_b = (_a2 = this.defaults.extensions) == null ? void 0 : _a2.childTokens) == null ? void 0 : _b[r.type]) ? this.defaults.extensions.childTokens[r.type].forEach((i) => {
             let o = r[i].flat(1 / 0);
-            n = n.concat(this.walkTokens(o, t));
-          }) : r.tokens && (n = n.concat(this.walkTokens(r.tokens, t)));
+            n = n.concat(this.walkTokens(o, t2));
+          }) : r.tokens && (n = n.concat(this.walkTokens(r.tokens, t2)));
         }
       }
     return n;
   }
   use(...e) {
-    let t = this.defaults.extensions || { renderers: {}, childTokens: {} };
+    let t2 = this.defaults.extensions || { renderers: {}, childTokens: {} };
     return e.forEach((n) => {
       let s = { ...n };
       if (s.async = this.defaults.async || s.async || false, n.extensions && (n.extensions.forEach((r) => {
         if (!r.name)
           throw new Error("extension name required");
         if ("renderer" in r) {
-          let i = t.renderers[r.name];
-          i ? t.renderers[r.name] = function(...o) {
+          let i = t2.renderers[r.name];
+          i ? t2.renderers[r.name] = function(...o) {
             let u = r.renderer.apply(this, o);
             return u === false && (u = i.apply(this, o)), u;
-          } : t.renderers[r.name] = r.renderer;
+          } : t2.renderers[r.name] = r.renderer;
         }
         if ("tokenizer" in r) {
           if (!r.level || r.level !== "block" && r.level !== "inline")
             throw new Error("extension level must be 'block' or 'inline'");
-          let i = t[r.level];
-          i ? i.unshift(r.tokenizer) : t[r.level] = [r.tokenizer], r.start && (r.level === "block" ? t.startBlock ? t.startBlock.push(r.start) : t.startBlock = [r.start] : r.level === "inline" && (t.startInline ? t.startInline.push(r.start) : t.startInline = [r.start]));
+          let i = t2[r.level];
+          i ? i.unshift(r.tokenizer) : t2[r.level] = [r.tokenizer], r.start && (r.level === "block" ? t2.startBlock ? t2.startBlock.push(r.start) : t2.startBlock = [r.start] : r.level === "inline" && (t2.startInline ? t2.startInline.push(r.start) : t2.startInline = [r.start]));
         }
-        "childTokens" in r && r.childTokens && (t.childTokens[r.name] = r.childTokens);
-      }), s.extensions = t), n.renderer) {
+        "childTokens" in r && r.childTokens && (t2.childTokens[r.name] = r.childTokens);
+      }), s.extensions = t2), n.renderer) {
         let r = this.defaults.renderer || new y(this.defaults);
         for (let i in n.renderer) {
           if (!(i in r))
@@ -53489,11 +53801,11 @@ var q = class {
   setOptions(e) {
     return this.defaults = { ...this.defaults, ...e }, this;
   }
-  lexer(e, t) {
-    return x.lex(e, t != null ? t : this.defaults);
+  lexer(e, t2) {
+    return x.lex(e, t2 != null ? t2 : this.defaults);
   }
-  parser(e, t) {
-    return b.parse(e, t != null ? t : this.defaults);
+  parser(e, t2) {
+    return b.parse(e, t2 != null ? t2 : this.defaults);
   }
   parseMarkdown(e) {
     return (n, s) => {
@@ -53522,14 +53834,14 @@ var q = class {
       }
     };
   }
-  onError(e, t) {
+  onError(e, t2) {
     return (n) => {
       if (n.message += `
 Please report this to https://github.com/markedjs/marked.`, e) {
         let s = "<p>An error occurred:</p><pre>" + O(n.message + "", true) + "</pre>";
-        return t ? Promise.resolve(s) : s;
+        return t2 ? Promise.resolve(s) : s;
       }
-      if (t)
+      if (t2)
         return Promise.reject(n);
       throw n;
     };
@@ -53613,6 +53925,19 @@ function convertToWeChatHtml(markdownText, theme) {
   let preprocessedMarkdown = markdownText;
   preprocessedMarkdown = preprocessedMarkdown.replace(/(\*\*|\*|~~)([“‘《「（【])/g, "$1\u200B$2");
   preprocessedMarkdown = preprocessedMarkdown.replace(/([”’》」）】])(\*\*|\*|~~)/g, "$1\u200B$2");
+  preprocessedMarkdown = preprocessedMarkdown.replace(/!\[\[([^\]|]+)(?:\|([^\]]*))?\]\]/g, (match, pathStr, rawParams) => {
+    const cleanPath = pathStr.trim();
+    let widthAttr = "";
+    if (rawParams) {
+      const params = rawParams.split("|");
+      const widthParam = params.find((p) => /^\d+(x\d+)?$/.test(p.trim()));
+      if (widthParam) {
+        const widthVal = widthParam.trim().split("x")[0];
+        widthAttr = ` style="width: ${widthVal}px; max-width: 100%; height: auto;"`;
+      }
+    }
+    return `<p style="text-align: center;"><img src="${cleanPath}" alt="${cleanPath}"${widthAttr} /></p>`;
+  });
   const { markdown: preparedMarkdown, footnotes } = preprocessWeChatFootnotes(preprocessedMarkdown);
   const renderer = new g.Renderer();
   renderer.code = function({ text, lang, escaped }) {
@@ -53620,7 +53945,14 @@ function convertToWeChatHtml(markdownText, theme) {
     const highlighted = es_default.highlight(text, { language: validLang }).value;
     return `<pre><code class="hljs language-${validLang}">${highlighted}</code></pre>`;
   };
+  renderer.image = function({ href, title, text }) {
+    return `<p style="text-align: center;"><img src="${href}" alt="${text}" title="${title || ""}" /></p>`;
+  };
   let rawHtml = g.parse(preparedMarkdown, { renderer, async: false });
+  rawHtml = rawHtml.replace(/(<(?:ul|ol)[^>]*>)\s*([\s\S]*?)\s*(<\/(?:ul|ol)>)/gi, (match, open, content, close) => {
+    const squashedContent = content.replace(/<\/li>\s*<li/gi, "</li><li");
+    return `${open}${squashedContent.trim()}${close}`;
+  });
   if (footnotes.length > 0) {
     let footnoteListHtml = `<div class="wechat-footnotes-section" style="margin-top: 3em; border-top: 1px solid #e1e1e8; padding-top: 1.5em; font-size: 13px; color: #666666;">`;
     footnoteListHtml += `<h4 style="font-size: 14px; font-weight: bold; margin-bottom: 1em; color: #444444;">\u53C2\u8003\u8D44\u6599:</h4>`;
@@ -53723,9 +54055,95 @@ function convertToWeChatHtml(markdownText, theme) {
   return container.outerHTML.replace(/\u200B/g, "");
 }
 
+// src/uploader.ts
+var import_obsidian3 = require("obsidian");
+function createMultipartBody(filename, fileData, contentType, boundary) {
+  const encoder = new TextEncoder();
+  const header = encoder.encode(
+    `--${boundary}\r
+Content-Disposition: form-data; name="media"; filename="${filename}"\r
+Content-Type: ${contentType}\r
+\r
+`
+  );
+  const footer = encoder.encode(`\r
+--${boundary}--\r
+`);
+  const totalLength = header.byteLength + fileData.byteLength + footer.byteLength;
+  const body = new Uint8Array(totalLength);
+  body.set(header, 0);
+  body.set(new Uint8Array(fileData), header.byteLength);
+  body.set(footer, header.byteLength + fileData.byteLength);
+  return body.buffer;
+}
+function getContentType(ext) {
+  const lower = ext.toLowerCase();
+  if (lower === "png")
+    return "image/png";
+  if (lower === "jpg" || lower === "jpeg")
+    return "image/jpeg";
+  if (lower === "gif")
+    return "image/gif";
+  if (lower === "webp")
+    return "image/webp";
+  return "application/octet-stream";
+}
+async function uploadImageToWeChat(app, file, accessToken) {
+  const fileData = await app.vault.readBinary(file);
+  const ext = file.extension;
+  const contentType = getContentType(ext);
+  const filename = file.name;
+  const boundary = `----ObsidianMd2WeChatBoundary${Math.random().toString(36).substring(2)}`;
+  const body = createMultipartBody(filename, fileData, contentType, boundary);
+  const url = `https://api.weixin.qq.com/cgi-bin/media/uploadimg?access_token=${accessToken}`;
+  const res = await (0, import_obsidian3.requestUrl)({
+    url,
+    method: "POST",
+    contentType: `multipart/form-data; boundary=${boundary}`,
+    body
+  });
+  if (res.status !== 200) {
+    throw new Error(`WeChat image upload failed with status ${res.status}`);
+  }
+  const data = JSON.parse(res.text);
+  if (data.errcode) {
+    throw new Error(`WeChat Upload Image Error: [${data.errcode}] ${data.errmsg}`);
+  }
+  if (!data.url) {
+    throw new Error(`WeChat image upload did not return a URL`);
+  }
+  return data.url;
+}
+async function uploadThumbToWeChat(app, file, accessToken) {
+  const fileData = await app.vault.readBinary(file);
+  const ext = file.extension;
+  const contentType = getContentType(ext);
+  const filename = file.name;
+  const boundary = `----ObsidianMd2WeChatBoundary${Math.random().toString(36).substring(2)}`;
+  const body = createMultipartBody(filename, fileData, contentType, boundary);
+  const url = `https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=${accessToken}&type=image`;
+  const res = await (0, import_obsidian3.requestUrl)({
+    url,
+    method: "POST",
+    contentType: `multipart/form-data; boundary=${boundary}`,
+    body
+  });
+  if (res.status !== 200) {
+    throw new Error(`WeChat permanent image upload failed with status ${res.status}`);
+  }
+  const data = JSON.parse(res.text);
+  if (data.errcode) {
+    throw new Error(`WeChat Upload Cover Error: [${data.errcode}] ${data.errmsg}`);
+  }
+  if (!data.media_id) {
+    throw new Error(`WeChat permanent image upload did not return a media_id`);
+  }
+  return data.media_id;
+}
+
 // src/view.ts
 var VIEW_TYPE_WECHAT_PREVIEW = "wechat-preview-view";
-var WeChatPreviewView = class extends import_obsidian3.ItemView {
+var WeChatPreviewView = class extends import_obsidian4.ItemView {
   constructor(leaf, plugin) {
     super(leaf);
     this.currentHtml = "";
@@ -53738,7 +54156,9 @@ var WeChatPreviewView = class extends import_obsidian3.ItemView {
     return VIEW_TYPE_WECHAT_PREVIEW;
   }
   getDisplayText() {
-    return "WeChat Format Sync";
+    var _a2, _b;
+    const lang = ((_b = (_a2 = this.plugin) == null ? void 0 : _a2.settings) == null ? void 0 : _b.lang) || "en";
+    return t("view_title", lang);
   }
   getIcon() {
     return "share-2";
@@ -53746,6 +54166,7 @@ var WeChatPreviewView = class extends import_obsidian3.ItemView {
   async onOpen() {
     const { contentEl } = this;
     contentEl.empty();
+    const lang = this.plugin.settings.lang;
     const container = contentEl.createDiv({ cls: "md2wechat-preview-container" });
     const toolbar = container.createDiv({ cls: "md2wechat-preview-toolbar" });
     const selector = toolbar.createEl("select", { cls: "md2wechat-style-select" });
@@ -53781,15 +54202,15 @@ var WeChatPreviewView = class extends import_obsidian3.ItemView {
       }
     };
     populateSelector();
-    const refreshBtn = toolbar.createEl("button", { text: "\u{1F504}" });
-    refreshBtn.title = "Refresh Themes & Preview";
-    const copyBtn = toolbar.createEl("button", { text: "Copy Rich Text" });
-    const syncBtn = toolbar.createEl("button", { text: "Sync to Draft" });
+    const refreshBtn = toolbar.createEl("button", { text: t("button_refresh", lang) });
+    refreshBtn.title = t("button_refresh_title", lang);
+    const copyBtn = toolbar.createEl("button", { text: t("button_copy", lang) });
+    const syncBtn = toolbar.createEl("button", { text: t("button_sync", lang) });
     syncBtn.addClass("mod-cta");
     const previewWrapper = container.createDiv({ cls: "md2wechat-preview-content-wrapper" });
     const previewArea = previewWrapper.createDiv({ cls: "md2wechat-preview-content" });
     const render = (onlyIfMarkdown = false) => {
-      const activeView = this.app.workspace.getActiveViewOfType(import_obsidian3.MarkdownView);
+      const activeView = this.app.workspace.getActiveViewOfType(import_obsidian4.MarkdownView);
       let markdownText = "";
       if (activeView) {
         markdownText = typeof activeView.setViewData === "function" ? activeView.data : activeView.editor.getValue();
@@ -53797,7 +54218,7 @@ var WeChatPreviewView = class extends import_obsidian3.ItemView {
         markdownText = this.lastMarkdown;
       } else {
         if (!onlyIfMarkdown) {
-          previewArea.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--text-muted);">Please open and select a markdown note first!</div>`;
+          previewArea.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--text-muted);">${t("view_empty_notice", lang)}</div>`;
         }
         return;
       }
@@ -53810,7 +54231,33 @@ var WeChatPreviewView = class extends import_obsidian3.ItemView {
         theme = THEMES[selectedVal] || THEMES.elegant;
       }
       this.currentHtml = convertToWeChatHtml(markdownText, theme);
-      previewArea.innerHTML = this.currentHtml;
+      let previewHtml = this.currentHtml;
+      const activeFile = activeView ? activeView.file : null;
+      try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(`<div>${previewHtml}</div>`, "text/html");
+        if (doc && doc.body && doc.body.firstElementChild) {
+          const imgElements = doc.querySelectorAll("img");
+          let hasLocalImages = false;
+          imgElements.forEach((img) => {
+            const src = img.getAttribute("src") || "";
+            if (src && !src.startsWith("http://") && !src.startsWith("https://")) {
+              const file = resolveImageToFile(src, activeFile);
+              if (file) {
+                const resourcePath = this.app.vault.adapter.getResourcePath(file.path);
+                img.setAttribute("src", resourcePath);
+                hasLocalImages = true;
+              }
+            }
+          });
+          if (hasLocalImages) {
+            previewHtml = doc.body.firstElementChild.innerHTML;
+          }
+        }
+      } catch (err) {
+        console.error("Failed to parse dynamic local images in preview:", err);
+      }
+      previewArea.innerHTML = previewHtml;
       this.lastMarkdown = markdownText;
       if (activeView) {
         this.lastTitle = activeView.file ? activeView.file.basename : "Untitled Note";
@@ -53829,7 +54276,7 @@ var WeChatPreviewView = class extends import_obsidian3.ItemView {
       await this.plugin.loadCustomThemes();
       populateSelector();
       render(false);
-      new import_obsidian3.Notice("Themes refreshed and preview updated!");
+      new import_obsidian4.Notice(t("notice_theme_refreshed", lang));
     });
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", () => {
@@ -53839,17 +54286,17 @@ var WeChatPreviewView = class extends import_obsidian3.ItemView {
     copyBtn.addEventListener("click", async () => {
       var _a2, _b;
       if (!this.currentHtml) {
-        new import_obsidian3.Notice("No rendered content to copy! Please open and select a markdown note first.");
+        new import_obsidian4.Notice(t("notice_no_content_copy", lang));
         return;
       }
       try {
         const blob = new Blob([this.currentHtml], { type: "text/html" });
         const data = [new ClipboardItem({ "text/html": blob, "text/plain": new Blob([this.lastMarkdown], { type: "text/plain" }) })];
         await navigator.clipboard.write(data);
-        new import_obsidian3.Notice("Rich text copied successfully! Ready to paste into WeChat editor.");
+        new import_obsidian4.Notice(t("notice_copy_success", lang));
       } catch (err) {
         console.error(err);
-        new import_obsidian3.Notice("Failed to copy to clipboard automatically. Trying fallback...");
+        new import_obsidian4.Notice("Failed to copy to clipboard automatically. Trying fallback...");
         const el = document.createElement("div");
         el.innerHTML = this.currentHtml;
         el.style.position = "fixed";
@@ -53862,26 +54309,39 @@ var WeChatPreviewView = class extends import_obsidian3.ItemView {
         (_b = window.getSelection()) == null ? void 0 : _b.addRange(range);
         document.execCommand("copy");
         document.body.removeChild(el);
-        new import_obsidian3.Notice("Copied as HTML successfully via fallback!");
+        new import_obsidian4.Notice(t("notice_copy_fallback_success", lang));
       }
     });
+    const resolveImageToFile = (pathStr, activeFile) => {
+      if (!pathStr)
+        return null;
+      const decodedPath = decodeURIComponent(pathStr).trim();
+      const file = this.app.metadataCache.getFirstLinkpathDest(decodedPath, activeFile ? activeFile.path : "");
+      if (file)
+        return file;
+      const allFiles = this.app.vault.getFiles();
+      const baseName = decodedPath.split("/").pop() || decodedPath;
+      const found = allFiles.find((f) => f.name === baseName || f.path === decodedPath);
+      return found || null;
+    };
     syncBtn.addEventListener("click", async () => {
+      var _a2;
       if (!this.currentHtml) {
-        new import_obsidian3.Notice("No rendered content to sync! Please open and select a markdown note first.");
+        new import_obsidian4.Notice(t("notice_no_content_sync", lang));
         return;
       }
-      const { appId, appSecret } = this.plugin.settings;
+      const { appId, appSecret, enableImgUpload } = this.plugin.settings;
       if (!appId || !appSecret) {
-        new import_obsidian3.Notice("Please configure WeChat AppID and AppSecret in the plugin settings first!");
+        new import_obsidian4.Notice(t("notice_configure_app", lang));
         return;
       }
       syncBtn.disabled = true;
-      syncBtn.setText("Syncing...");
-      new import_obsidian3.Notice("Acquiring WeChat access token...");
+      syncBtn.setText(t("button_syncing", lang));
+      new import_obsidian4.Notice(t("notice_acquiring_token", lang));
       try {
         console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u5F00\u59CB\u540C\u6B65\u6D41\u7A0B...");
         const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
-        const tokenRes = await (0, import_obsidian3.requestUrl)({ url: tokenUrl, method: "GET" });
+        const tokenRes = await (0, import_obsidian4.requestUrl)({ url: tokenUrl, method: "GET" });
         if (tokenRes.status !== 200) {
           throw new Error(`Token request failed with status ${tokenRes.status}`);
         }
@@ -53890,18 +54350,85 @@ var WeChatPreviewView = class extends import_obsidian3.ItemView {
           throw new Error(`WeChat Token Error: [${tokenData.errcode}] ${tokenData.errmsg}`);
         }
         const accessToken = tokenData.access_token;
-        new import_obsidian3.Notice("Token acquired! Creating Draft...");
+        let finalHtml = this.currentHtml;
+        let activeFile = ((_a2 = this.app.workspace.getActiveViewOfType(import_obsidian4.MarkdownView)) == null ? void 0 : _a2.file) || null;
+        let firstLocalImageFile = null;
+        if (enableImgUpload) {
+          new import_obsidian4.Notice(t("notice_uploading_cdn", lang));
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(`<div>${finalHtml}</div>`, "text/html");
+          const imgElements = doc.querySelectorAll("img");
+          let uploadCount = 0;
+          for (let i = 0; i < imgElements.length; i++) {
+            const img = imgElements[i];
+            const src = img.getAttribute("src") || "";
+            if (src.startsWith("http://") || src.startsWith("https://")) {
+              continue;
+            }
+            const file = resolveImageToFile(src, activeFile);
+            if (file) {
+              if (!firstLocalImageFile) {
+                firstLocalImageFile = file;
+              }
+              try {
+                new import_obsidian4.Notice(
+                  t("notice_uploading_inline_img", lang).replace("{current}", (i + 1).toString()).replace("{total}", imgElements.length.toString()).replace("{name}", file.name)
+                );
+                const wechatCdnUrl = await uploadImageToWeChat(this.app, file, accessToken);
+                img.setAttribute("src", wechatCdnUrl);
+                uploadCount++;
+              } catch (uploadErr) {
+                console.error(`Failed to upload ${file.name}:`, uploadErr);
+                new import_obsidian4.Notice(`Warning: Failed to upload ${file.name}. Staying with local path.`);
+              }
+            }
+          }
+          if (uploadCount > 0) {
+            new import_obsidian4.Notice(t("notice_upload_cdn_success", lang).replace("{count}", uploadCount.toString()));
+          }
+          finalHtml = doc.body.firstElementChild.innerHTML;
+        }
+        let thumbMediaId = this.plugin.settings.defaultThumbMediaId.trim();
+        if (enableImgUpload) {
+          if (!firstLocalImageFile) {
+            const imageRegex = /!\[.*?\]\((.*?)\)|!\[[[].*?]]/g;
+            let match;
+            while ((match = imageRegex.exec(this.lastMarkdown)) !== null) {
+              const imgPath = match[1] || match[2];
+              if (imgPath && !imgPath.startsWith("http://") && !imgPath.startsWith("https://")) {
+                const file = resolveImageToFile(imgPath, activeFile);
+                if (file) {
+                  firstLocalImageFile = file;
+                  break;
+                }
+              }
+            }
+          }
+          if (firstLocalImageFile) {
+            new import_obsidian4.Notice(t("notice_uploading_cover", lang).replace("{name}", firstLocalImageFile.name));
+            try {
+              const uploadedThumbId = await uploadThumbToWeChat(this.app, firstLocalImageFile, accessToken);
+              if (uploadedThumbId) {
+                thumbMediaId = uploadedThumbId;
+                new import_obsidian4.Notice(t("notice_cover_success", lang));
+              }
+            } catch (thumbErr) {
+              console.error("Failed to upload auto cover:", thumbErr);
+              new import_obsidian4.Notice(t("notice_cover_fallback_warning", lang));
+            }
+          }
+        }
+        if (!thumbMediaId) {
+          throw new Error("WeChat requires a cover image (thumb_media_id) to create draft. Please configure the 'Default Cover Media ID' in settings or include a local image in your note.");
+        }
+        new import_obsidian4.Notice(t("notice_syncing_draft", lang));
         const title = this.lastTitle || "Untitled Note";
         const digest = this.lastDigest || "";
-        const thumbMediaId = this.plugin.settings.defaultThumbMediaId.trim();
-        if (!thumbMediaId) {
-          throw new Error("WeChat requires a cover image (thumb_media_id) to create draft. Please configure the 'Default Cover Media ID' in plugin settings first!");
-        }
         const article = {
           title,
           author: "",
           digest,
-          content: this.currentHtml,
+          content: finalHtml,
           content_source_url: "",
           thumb_media_id: thumbMediaId,
           need_open_comment: 0,
@@ -53909,7 +54436,7 @@ var WeChatPreviewView = class extends import_obsidian3.ItemView {
         };
         const draftUrl = `https://api.weixin.qq.com/cgi-bin/draft/add?access_token=${accessToken}`;
         const requestPayload = { articles: [article] };
-        const draftRes = await (0, import_obsidian3.requestUrl)({
+        const draftRes = await (0, import_obsidian4.requestUrl)({
           url: draftUrl,
           method: "POST",
           contentType: "application/json",
@@ -53922,14 +54449,14 @@ var WeChatPreviewView = class extends import_obsidian3.ItemView {
           }
           throw new Error(`WeChat Sync Error: [${draftData.errcode}] ${draftData.errmsg}`);
         }
-        new import_obsidian3.Notice("Successfully synchronized draft to WeChat Official Account!");
+        new import_obsidian4.Notice(t("notice_sync_success", lang));
       } catch (err) {
         console.error("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u53D1\u751F\u5F02\u5E38\uFF0C\u8BE6\u7EC6\u5806\u6808\u5982\u4E0B\uFF1A");
         console.error(err);
-        new import_obsidian3.Notice(`Sync failed: ${err.message || err}`);
+        new import_obsidian4.Notice(`Sync failed: ${err.message || err}`);
       } finally {
         syncBtn.disabled = false;
-        syncBtn.setText("Sync to Draft");
+        syncBtn.setText(t("button_sync", lang));
       }
     });
   }
@@ -53939,6 +54466,7 @@ var WeChatPreviewView = class extends import_obsidian3.ItemView {
 
 // src/main.ts
 var DEFAULT_SETTINGS = {
+  lang: "en",
   appId: "",
   appSecret: "",
   defaultStyle: "elegant",
@@ -53949,7 +54477,7 @@ var DEFAULT_SETTINGS = {
   cachedMaterials: [],
   themeFolder: "wechat-format-themes"
 };
-var Md2WeChatPlugin = class extends import_obsidian4.Plugin {
+var Md2WeChatPlugin = class extends import_obsidian5.Plugin {
   constructor() {
     super(...arguments);
     this.customThemes = {};

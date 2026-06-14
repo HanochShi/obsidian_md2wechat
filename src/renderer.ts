@@ -48,7 +48,7 @@ export function preprocessWeChatFootnotes(markdown: string): { markdown: string;
 
 // Convert Obsidian Markdown to WeChat-ready inline HTML using Marked and DOM-based Inliner
 export function convertToWeChatHtml(markdownText: string, theme: ThemeStyle): string {
-	// Preprocess: Insert Zero-Width Space (\u200B) between formatting asterisks/tildes and Chinese punctuation marks
+	// Preprocess 1: Insert Zero-Width Space (\u200B) between formatting asterisks/tildes and Chinese punctuation marks
 	// This forces marked to recognize bold/italic boundaries next to full-width punctuation
 	let preprocessedMarkdown = markdownText;
 	
@@ -60,6 +60,26 @@ export function convertToWeChatHtml(markdownText: string, theme: ThemeStyle): st
 	// Covers close symbols: ” (right double quote), ’ (right single quote), 》 (right book quote), 」 (right corner bracket), ） (right parenthesis), 】 (right bracket)
 	preprocessedMarkdown = preprocessedMarkdown.replace(/([”’》」）】])(\*\*|\*|~~)/g, '$1\u200B$2');
 
+	// Preprocess 2: Convert Obsidian Wikilink-style image embeds ![[image.png]] or ![[image.png|500]] into standard HTML <img> tags
+	// We wrap them in a centered <p> tag so they inherit paragraph styling and margins naturally.
+	// Matches: ![[filename.ext]] or ![[filename.ext|width]] or ![[filename.ext|alt|width]]
+	preprocessedMarkdown = preprocessedMarkdown.replace(/!\[\[([^\]|]+)(?:\|([^\]]*))?\]\]/g, (match, pathStr, rawParams) => {
+		const cleanPath = pathStr.trim();
+		let widthAttr = '';
+		
+		if (rawParams) {
+			const params = rawParams.split('|');
+			// Look for numeric width like "500" or "500x300"
+			const widthParam = params.find((p: string) => /^\d+(x\d+)?$/.test(p.trim()));
+			if (widthParam) {
+				const widthVal = widthParam.trim().split('x')[0];
+				widthAttr = ` style="width: ${widthVal}px; max-width: 100%; height: auto;"`;
+			}
+		}
+		
+		return `<p style="text-align: center;"><img src="${cleanPath}" alt="${cleanPath}"${widthAttr} /></p>`;
+	});
+
 	const { markdown: preparedMarkdown, footnotes } = preprocessWeChatFootnotes(preprocessedMarkdown);
 
 	const renderer = new marked.Renderer();
@@ -68,8 +88,20 @@ export function convertToWeChatHtml(markdownText: string, theme: ThemeStyle): st
 		const highlighted = hljs.highlight(text, { language: validLang }).value;
 		return `<pre><code class="hljs language-${validLang}">${highlighted}</code></pre>`;
 	};
+	
+	// Wrap normal markdown images ![]() with centered paragraph too
+	renderer.image = function({ href, title, text }: { href: string; title: string | null; text: string }): string {
+		return `<p style="text-align: center;"><img src="${href}" alt="${text}" title="${title || ''}" /></p>`;
+	};
 
 	let rawHtml = marked.parse(preparedMarkdown, { renderer, async: false }) as string;
+
+	// Squash all whitespace and physical newlines between list elements to prevent WeChat Official Account editor 
+	// from misinterpreting list whitespace formatting into empty, blank <li></li> elements (2n+1 Bug).
+	rawHtml = rawHtml.replace(/(<(?:ul|ol)[^>]*>)\s*([\s\S]*?)\s*(<\/(?:ul|ol)>)/gi, (match, open, content, close) => {
+		const squashedContent = content.replace(/<\/li>\s*<li/gi, '</li><li');
+		return `${open}${squashedContent.trim()}${close}`;
+	});
 
 	if (footnotes.length > 0) {
 		let footnoteListHtml = `<div class="wechat-footnotes-section" style="margin-top: 3em; border-top: 1px solid #e1e1e8; padding-top: 1.5em; font-size: 13px; color: #666666;">`;
