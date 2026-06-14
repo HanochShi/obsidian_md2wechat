@@ -11,7 +11,7 @@
 然而，开发和维护本项目（尤其在频繁利用先进 AI 协作进行“Vibe Coding”时）消耗了大量的 API 消耗成本和时间精力。如果本插件为你节省了时间，提升了排版同步体验，不妨请我吃碗鸡腿饭！你的支持将直接用于回血 API token 成本，并持续驱动后续的功能更新！🚀
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/9f4ee71c-c8ad-4500-b612-ee53131836b1" width="250" margin-right="50" alt="微信收款码" />
+  <img src="https://github.com/user-attachments/assets/9f4ee71c-c8ad-4500-b612-ee53131836b1" width="250" alt="微信收款码" style="margin-right: 50px;"/>
   <img src="https://github.com/user-attachments/assets/b782068d-0f80-4a98-a4e3-1ca644627b21" width="250" alt="支付宝收款码" />
 </div>
 
@@ -76,7 +76,7 @@
 1. 登录 [微信公众平台](https://mp.weixin.qq.com/)。
 2. 侧边栏滑到最下方，点击 **设置与开发** -> **基本配置**。
 3. 获取你的 **AppID** 和 **AppSecret**（如果忘记，需重置并进行管理员扫码验证）。
-4. **【至关重要】** 在下方 **IP白名单** 中，将你当前电脑的公网 IP 地址添加进去，否则微信服务器会拒绝你的同步请求。（如果不知道自己的公网IP，可以访问[https://tool.lu/ip]查询）
+4. **【至关重要】** 在下方 **IP白名单** 中，将你当前电脑的公网 IP 地址添加进去，否则微信服务器会拒绝你的同步请求。（如果不知道自己的公网IP，可以访问[https://tool.lu/ip]查询
 5. 返回 Obsidian 设置中，填入 **AppID** 和 **AppSecret**。
 
 ### 第二步：配置微信备用默认封面
