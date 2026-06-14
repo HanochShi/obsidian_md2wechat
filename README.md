@@ -58,7 +58,7 @@
 ### 方法一：通过社区插件市场安装（推荐）
 1. 打开 Obsidian 的 **设置**。
 2. 进入 **第三场插件** -> **社区插件市场** -> **浏览 (Browse)**。
-3. 搜索 `Markdown to Wechat Sync` 或 `obsidian-md2wechat`。
+3. 搜索 `Markdown to WeChat MP Sync` 或 `obsidian-md2wechat`。
 4. 点击 **安装 (Install)** 并 **启用 (Enable)**。
 
 ### 方法二：手动安装

@@ -1,6 +1,6 @@
 {
-  "id": "obsidian-md2wechat",
-  "name": "Markdown to WeChat Sync",
+  "id": "md2wechat",
+  "name": "Markdown to WeChat MP Sync",
   "version": "1.0.0",
   "minAppVersion": "0.15.0",
   "description": "Render your markdown note with custom styles and sync directly to WeChat Official Account Drafts with one click.",
