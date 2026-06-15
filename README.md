@@ -1,5 +1,12 @@
 # Obsidian 微信一键同步排版助手 (Markdown to WeChat MP Sync)
 
+<p align="center">
+    <img src="https://img.shields.io/github/v/release/HanochShi/obsidian_md2wechat" alt="GitHub Release">
+    <img src="https://img.shields.io/github/downloads/HanochShi/obsidian_md2wechat/total?color=483699&logo=obsidian&logoColor=white" alt="Downloads">
+    <img src="https://img.shields.io/github/license/HanochShi/obsidian_md2wechat" alt=""License>
+</p>
+
+
 一键排版 Markdown 笔记并完美无缝同步至微信公众号草稿箱，包含图片自动上传微信 CDN、智能封面提取及自定义 CSS 主题支持。
 
 ---
