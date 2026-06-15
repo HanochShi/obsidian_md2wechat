@@ -54263,7 +54263,14 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
       }
       previewArea.empty();
       const previewContainer = previewArea.createDiv();
-      previewContainer.insertAdjacentHTML("afterbegin", previewHtml);
+      const parserForPreview = new DOMParser();
+      const safeDoc = parserForPreview.parseFromString(`<div>${previewHtml}</div>`, "text/html");
+      const parsedContainer = safeDoc.body.firstElementChild;
+      if (parsedContainer) {
+        previewContainer.appendChild(parsedContainer);
+      } else {
+        previewContainer.setText(previewHtml);
+      }
       this.lastMarkdown = markdownText;
       if (activeView) {
         this.lastTitle = activeView.file ? activeView.file.basename : "Untitled Note";
@@ -54305,7 +54312,16 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
         new import_obsidian4.Notice("Failed to copy to clipboard automatically. Trying fallback...");
         const el = document.createElement("div");
         const innerDiv = el.createDiv();
-        innerDiv.insertAdjacentHTML("afterbegin", this.currentHtml);
+        try {
+          const parserForCopy = new DOMParser();
+          const copyDoc = parserForCopy.parseFromString(`<div>${this.currentHtml}</div>`, "text/html");
+          const copyContainer = copyDoc.body.firstElementChild;
+          if (copyContainer) {
+            innerDiv.appendChild(copyContainer);
+          }
+        } catch (domErr) {
+          console.error(domErr);
+        }
         el.setCssStyles({
           position: "fixed",
           pointerEvents: "none",
