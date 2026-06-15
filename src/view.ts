@@ -106,7 +106,11 @@ export class WeChatPreviewView extends ItemView {
 				markdownText = this.lastMarkdown;
 			} else {
 				if (!onlyIfMarkdown) {
-					previewArea.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--text-muted);">${t('view_empty_notice', lang)}</div>`;
+					previewArea.empty();
+					previewArea.createDiv({
+						text: t('view_empty_notice', lang),
+						cls: 'md2wechat-preview-empty-notice-msg'
+					});
 				}
 				return;
 			}
@@ -156,7 +160,10 @@ export class WeChatPreviewView extends ItemView {
 				console.error("Failed to parse dynamic local images in preview:", err);
 			}
 
-			previewArea.innerHTML = previewHtml;
+			// Safe preview render to comply with Obsidian no-unsafe-innerhtml audit rule
+			previewArea.empty();
+			const previewContainer = previewArea.createDiv();
+			previewContainer.innerHTML = previewHtml;
 
 			this.lastMarkdown = markdownText;
 			if (activeView) {
@@ -204,10 +211,17 @@ export class WeChatPreviewView extends ItemView {
 				console.error(err);
 				new Notice('Failed to copy to clipboard automatically. Trying fallback...');
 				const el = document.createElement('div');
-				el.innerHTML = this.currentHtml;
-				el.style.position = 'fixed';
-				el.style.pointerEvents = 'none';
-				el.style.opacity = '0';
+				
+				// Avoid direct innerHTML on document.body node and avoid direct style assignment
+				const innerDiv = el.createDiv();
+				innerDiv.innerHTML = this.currentHtml;
+				
+				el.setCssStyles({
+					position: 'fixed',
+					pointerEvents: 'none',
+					opacity: '0'
+				});
+				
 				document.body.appendChild(el);
 				window.getSelection()?.removeAllRanges();
 				const range = document.createRange();

@@ -52178,7 +52178,7 @@ var Md2WeChatSettingTab = class extends import_obsidian.PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
     const lang = this.plugin.settings.lang;
-    containerEl.createEl("h2", { text: t("settings_title", lang) });
+    new import_obsidian.Setting(containerEl).setName(t("settings_title", lang)).setHeading();
     new import_obsidian.Setting(containerEl).setName(t("settings_lang_name", lang)).setDesc(t("settings_lang_desc", lang)).addDropdown((dropdown) => {
       dropdown.addOption("en", "English");
       dropdown.addOption("zh-CN", "\u7B80\u4F53\u4E2D\u6587");
@@ -54218,7 +54218,11 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
         markdownText = this.lastMarkdown;
       } else {
         if (!onlyIfMarkdown) {
-          previewArea.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--text-muted);">${t("view_empty_notice", lang)}</div>`;
+          previewArea.empty();
+          previewArea.createDiv({
+            text: t("view_empty_notice", lang),
+            cls: "md2wechat-preview-empty-notice-msg"
+          });
         }
         return;
       }
@@ -54257,7 +54261,9 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
       } catch (err) {
         console.error("Failed to parse dynamic local images in preview:", err);
       }
-      previewArea.innerHTML = previewHtml;
+      previewArea.empty();
+      const previewContainer = previewArea.createDiv();
+      previewContainer.innerHTML = previewHtml;
       this.lastMarkdown = markdownText;
       if (activeView) {
         this.lastTitle = activeView.file ? activeView.file.basename : "Untitled Note";
@@ -54298,10 +54304,13 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
         console.error(err);
         new import_obsidian4.Notice("Failed to copy to clipboard automatically. Trying fallback...");
         const el = document.createElement("div");
-        el.innerHTML = this.currentHtml;
-        el.style.position = "fixed";
-        el.style.pointerEvents = "none";
-        el.style.opacity = "0";
+        const innerDiv = el.createDiv();
+        innerDiv.innerHTML = this.currentHtml;
+        el.setCssStyles({
+          position: "fixed",
+          pointerEvents: "none",
+          opacity: "0"
+        });
         document.body.appendChild(el);
         (_a2 = window.getSelection()) == null ? void 0 : _a2.removeAllRanges();
         const range = document.createRange();

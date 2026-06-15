@@ -16,7 +16,9 @@ export class Md2WeChatSettingTab extends PluginSettingTab {
 		
 		const lang = this.plugin.settings.lang;
 
-		containerEl.createEl('h2', { text: t('settings_title', lang) });
+		new Setting(containerEl)
+			.setName(t('settings_title', lang))
+			.setHeading();
 
 		// Language Setting dropdown
 		new Setting(containerEl)
