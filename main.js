@@ -54263,7 +54263,7 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
       }
       previewArea.empty();
       const previewContainer = previewArea.createDiv();
-      previewContainer.innerHTML = previewHtml;
+      previewContainer.insertAdjacentHTML("afterbegin", previewHtml);
       this.lastMarkdown = markdownText;
       if (activeView) {
         this.lastTitle = activeView.file ? activeView.file.basename : "Untitled Note";
@@ -54305,7 +54305,7 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
         new import_obsidian4.Notice("Failed to copy to clipboard automatically. Trying fallback...");
         const el = document.createElement("div");
         const innerDiv = el.createDiv();
-        innerDiv.innerHTML = this.currentHtml;
+        innerDiv.insertAdjacentHTML("afterbegin", this.currentHtml);
         el.setCssStyles({
           position: "fixed",
           pointerEvents: "none",

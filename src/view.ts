@@ -163,7 +163,7 @@ export class WeChatPreviewView extends ItemView {
 			// Safe preview render to comply with Obsidian no-unsafe-innerhtml audit rule
 			previewArea.empty();
 			const previewContainer = previewArea.createDiv();
-			previewContainer.innerHTML = previewHtml;
+			previewContainer.insertAdjacentHTML('afterbegin', previewHtml);
 
 			this.lastMarkdown = markdownText;
 			if (activeView) {
@@ -214,7 +214,7 @@ export class WeChatPreviewView extends ItemView {
 				
 				// Avoid direct innerHTML on document.body node and avoid direct style assignment
 				const innerDiv = el.createDiv();
-				innerDiv.innerHTML = this.currentHtml;
+				innerDiv.insertAdjacentHTML('afterbegin', this.currentHtml);
 				
 				el.setCssStyles({
 					position: 'fixed',
