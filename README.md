@@ -1,9 +1,17 @@
 # Obsidian 微信一键同步排版助手 (Markdown to WeChat MP Sync)
 
-<p align="center">
+<p align="left">
     <img src="https://img.shields.io/github/v/release/HanochShi/obsidian_md2wechat" alt="GitHub Release">
-    <img src="https://img.shields.io/github/downloads/HanochShi/obsidian_md2wechat/total?color=483699&logo=obsidian&logoColor=white" alt="Downloads">
+    <img src="https://img.shields.io/github/downloads/HanochShi/obsidian_md2wechat/total?color=483699" alt="Downloads">
     <img src="https://img.shields.io/github/license/HanochShi/obsidian_md2wechat" alt=""License>
+</p>
+
+<p align="left">
+    简体中文
+    ｜
+    <a href="./README_zh-TW.md">繁體中文</a>
+    ｜
+    <a href="./README_en.md">English</a>
 </p>
 
 
@@ -11,7 +19,7 @@
 
 ---
 
-## 0 支持本项目 💖
+## 0 支持本项目
 
 本插件**100% 永久免费且开源**，未来也一直会是！
 
