@@ -54055,10 +54055,11 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
     const previewWrapper = container.createDiv({ cls: "md2wechat-preview-content-wrapper" });
     const previewArea = previewWrapper.createDiv({ cls: "md2wechat-preview-content" });
     const render = (onlyIfMarkdown = false) => {
+      console.log("render executed");
       const activeView = this.app.workspace.getActiveViewOfType(import_obsidian4.MarkdownView);
       let markdownText = "";
       if (activeView) {
-        markdownText = typeof activeView.setViewData === "function" ? activeView.data : activeView.editor.getValue();
+        markdownText = activeView.editor.getValue();
       } else if (this.lastMarkdown) {
         markdownText = this.lastMarkdown;
       } else {
@@ -54138,7 +54139,18 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
     });
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", () => {
+        console.log("active-leaf-change triggered");
         render(true);
+      })
+    );
+    const debouncedRender = (0, import_obsidian4.debounce)(() => {
+      console.log("debounceRender executed");
+      render(true);
+    }, 300, true);
+    this.registerEvent(
+      this.app.workspace.on("editor-change", () => {
+        console.log("editor-change triggered");
+        debouncedRender();
       })
     );
     copyBtn.addEventListener("click", async () => {

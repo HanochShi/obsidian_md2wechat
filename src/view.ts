@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, MarkdownView, Notice, requestUrl, TFile } from 'obsidian';
+import { ItemView, WorkspaceLeaf, MarkdownView, Notice, requestUrl, TFile, debounce } from 'obsidian';
 import Md2WeChatPlugin from './main';
 import { THEMES } from './themes';
 import { convertToWeChatHtml } from './renderer';
@@ -97,11 +97,13 @@ export class WeChatPreviewView extends ItemView {
 
 		// Render function
 		const render = (onlyIfMarkdown = false) => {
+			console.log("render executed");
+
 			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 			let markdownText = '';
 			
 			if (activeView) {
-				markdownText = typeof activeView.setViewData === 'function' ? activeView.data : activeView.editor.getValue();
+				markdownText = activeView.editor.getValue();
 			} else if (this.lastMarkdown) {
 				markdownText = this.lastMarkdown;
 			} else {
@@ -201,7 +203,21 @@ export class WeChatPreviewView extends ItemView {
 
 		this.registerEvent(
 			this.app.workspace.on('active-leaf-change', () => {
+				console.log('active-leaf-change triggered');
 				render(true);
+			})
+		);
+
+		// Debounced real-time preview on editor content change
+		const debouncedRender = debounce(() => {
+			console.log('debounceRender executed');
+			render(true);
+		}, 300, true);
+
+		this.registerEvent(
+			this.app.workspace.on('editor-change', () => {
+				console.log('editor-change triggered');
+				debouncedRender();
 			})
 		);
 
