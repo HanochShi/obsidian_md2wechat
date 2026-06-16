@@ -195,6 +195,41 @@ export function convertToWeChatHtml(markdownText: string, theme: ThemeStyle): st
 		el.setAttribute('style', `${baseStyle} letter-spacing: 0px !important; word-spacing: normal !important; tab-size: 4 !important; -moz-tab-size: 4 !important; -o-tab-size: 4 !important;`);
 	});
 
+	const allParagraphs = container.querySelectorAll('p');
+	allParagraphs.forEach(p => {
+		const html = p.innerHTML;
+		// Split multiple lines in all paragraphs using <br> into multiple sibling <p> tags for exact scroll matching.
+		// Sibling tags split from <br> inherit compact margins to visually look identical to raw <br> breaks.
+		if (html.includes('<br>')) {
+			const segments = html.split('<br>');
+			p.innerHTML = segments[0];
+			
+			// Adjust the first segment's margin-bottom to be compact since it has subsequent line-breaks
+			const existingStyle = p.getAttribute('style') || '';
+			p.setAttribute('style', `${existingStyle} margin-bottom: 0px !important;`);
+
+			let currentSibling = p;
+			for (let idx = 1; idx < segments.length; idx++) {
+				const newP = p.ownerDocument.createElement('p');
+				newP.innerHTML = segments[idx];
+				
+				// Inherit theme.p styling
+				let baseStyle = theme.p || '';
+				
+				// Apply zero margins to simulate exact <br> break effect, except the last segment
+				if (idx < segments.length - 1) {
+					baseStyle = `${baseStyle} margin-top: 0px !important; margin-bottom: 0px !important;`;
+				} else {
+					baseStyle = `${baseStyle} margin-top: 0px !important;`;
+				}
+				
+				newP.setAttribute('style', baseStyle);
+				p.parentElement?.insertBefore(newP, currentSibling.nextSibling);
+				currentSibling = newP;
+			}
+		}
+	});
+
 	const blockquoteParagraphs = container.querySelectorAll('blockquote p');
 	blockquoteParagraphs.forEach(p => {
 		const style = p.getAttribute('style') || '';

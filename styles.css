@@ -7,10 +7,12 @@
 
 .md2wechat-preview-toolbar {
     display: flex;
-    gap: 10px;
-    padding: 10px;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px;
     border-bottom: 1px solid var(--background-modifier-border);
     align-items: center;
+    background-color: var(--background-secondary);
 }
 
 .md2wechat-preview-content-wrapper {
@@ -41,9 +43,61 @@
 }
 
 .md2wechat-style-select {
-    padding: 4px 8px;
+    flex-grow: 1;
+    min-width: 80px;
+    height: 30px;
+    padding: 2px 6px;
     border-radius: 4px;
     background: var(--background-interface);
     color: var(--text-normal);
     border: 1px solid var(--background-modifier-border);
+    font-size: 13px;
+}
+
+/* Stylings for new responsive icon buttons */
+.md2wechat-preview-toolbar button.md2wechat-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    margin: 0;
+    border-radius: 4px;
+    background-color: transparent;
+    color: var(--text-muted);
+    border: none;
+    box-shadow: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.md2wechat-preview-toolbar button.md2wechat-icon-btn:hover {
+    background-color: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
+
+.md2wechat-preview-toolbar button.md2wechat-icon-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Mod CTA for Sync Button specifically to give subtle hint but align with design */
+.md2wechat-preview-toolbar button.md2wechat-icon-btn.mod-cta {
+    color: var(--text-accent);
+}
+
+.md2wechat-preview-toolbar button.md2wechat-icon-btn.mod-cta:hover {
+    background-color: var(--background-modifier-hover);
+    color: var(--text-accent-hover);
+}
+
+/* Highlighting scroll sync toggle state beautifully */
+.md2wechat-preview-toolbar button.md2wechat-scroll-sync-btn.is-active {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent) !important;
+}
+
+.md2wechat-preview-toolbar button.md2wechat-scroll-sync-btn.is-active:hover {
+    background-color: var(--interactive-accent-hover);
 }

@@ -14,7 +14,8 @@ const DEFAULT_SETTINGS: Md2WeChatSettings = {
 	imageHostingType: 'wechat',
 	defaultThumbMediaId: '',
 	cachedMaterials: [],
-	themeFolder: 'wechat-format-themes'
+	themeFolder: 'wechat-format-themes',
+	syncScroll: true
 };
 
 export default class Md2WeChatPlugin extends Plugin {

@@ -51835,6 +51835,7 @@ var TRANSLATIONS = {
     button_copy: "Copy Rich Text",
     button_sync: "Sync to Draft",
     button_syncing: "Syncing...",
+    button_scroll_sync: "Scroll Sync",
     // Notifications / Notices
     notice_no_content_copy: "No rendered content to copy! Please open and select a markdown note first.",
     notice_copy_success: "Rich text copied successfully! Ready to paste into WeChat editor.",
@@ -51884,6 +51885,7 @@ var TRANSLATIONS = {
     button_copy: "\u590D\u5236\u5BCC\u6587\u672C",
     button_sync: "\u540C\u6B65\u5230\u8349\u7A3F\u7BB1",
     button_syncing: "\u540C\u6B65\u4E2D...",
+    button_scroll_sync: "\u540C\u6B65\u6EDA\u52A8",
     notice_no_content_copy: "\u6CA1\u6709\u53EF\u590D\u5236\u7684\u5185\u5BB9\uFF01\u8BF7\u5148\u6253\u5F00\u5E76\u9009\u62E9\u4E00\u7BC7 Markdown \u7B14\u8BB0\u3002",
     notice_copy_success: "\u5BCC\u6587\u672C\u590D\u5236\u6210\u529F\uFF01\u53EF\u4EE5\u76F4\u63A5\u7C98\u8D34\u5230\u5FAE\u4FE1\u516C\u4F17\u53F7\u540E\u53F0\u7F16\u8F91\u5668\u4E86\u3002",
     notice_copy_fallback_success: "\u5DF2\u6210\u529F\u901A\u8FC7\u5907\u7528\u65B9\u6848\u590D\u5236\u4E3A HTML\uFF01",
@@ -51931,6 +51933,7 @@ var TRANSLATIONS = {
     button_copy: "\u8907\u88FD\u5BCC\u6587\u672C",
     button_sync: "\u540C\u6B65\u5230\u8349\u7A3F\u7BB1",
     button_syncing: "\u540C\u6B65\u4E2D...",
+    button_scroll_sync: "\u540C\u6B65\u6372\u52D5",
     notice_no_content_copy: "\u6C92\u6709\u53EF\u8907\u88FD\u7684\u5167\u5BB9\uFF01\u8ACB\u5148\u6253\u958B\u4E26\u9078\u64C7\u4E00\u7BC7 Markdown \u7B46\u8A18\u3002",
     notice_copy_success: "\u5BCC\u6587\u672C\u8907\u88FD\u6210\u529F\uFF01\u53EF\u4EE5\u76F4\u63A5\u7C98\u8CBC\u5230\u5FAE\u4FE1\u516C\u773E\u865F\u5F8C\u53F0\u7DE8\u8F2F\u5668\u4E86\u3002",
     notice_copy_fallback_success: "\u5DF2\u6210\u529F\u901A\u904E\u5099\u7528\u65B9\u6848\u8907\u88FD\u70BA HTML\uFF01",
@@ -51978,6 +51981,7 @@ var TRANSLATIONS = {
     button_copy: "Copiar texto enriquecido",
     button_sync: "Sincronizar borrador",
     button_syncing: "Sincronizando...",
+    button_scroll_sync: "Sincronizar desplazamiento",
     notice_no_content_copy: "\xA1No hay contenido para copiar! Abra y seleccione una nota primero.",
     notice_copy_success: "\xA1Texto copiado con \xE9xito! Listo para pegar en el editor de WeChat.",
     notice_copy_fallback_success: "\xA1Copiado como HTML con \xE9xito mediante alternativa!",
@@ -52062,7 +52066,8 @@ var TRANSLATIONS = {
     settings_notice_fetching: "R\xE9cup\xE9ration des images permanentes depuis WeChat...",
     settings_notice_no_img: "Aucune image permanente trouv\xE9e dans votre biblioth\xE8que WeChat !",
     settings_notice_loaded: "{count} m\xE9dias r\xE9cup\xE9r\xE9s avec succ\xE8s !",
-    settings_cover_select_placeholder: "-- S\xE9lectionner une image --"
+    settings_cover_select_placeholder: "-- S\xE9lectionner une image --",
+    button_scroll_sync: "Synchro d\xE9filement"
   },
   ja: {
     view_title: "WeChat\u8868\u793A\u540C\u671F",
@@ -52072,6 +52077,7 @@ var TRANSLATIONS = {
     button_copy: "\u30EA\u30C3\u30C1\u30C6\u30AD\u30B9\u30C8\u3092\u30B3\u30D4\u30FC",
     button_sync: "\u4E0B\u66F8\u304D\u3092\u540C\u671F",
     button_syncing: "\u540C\u671F\u4E2D...",
+    button_scroll_sync: "\u30B9\u30AF\u30ED\u30FC\u30EB\u540C\u671F",
     notice_no_content_copy: "\u30B3\u30D4\u30FC\u3059\u308B\u30B3\u30F3\u30C6\u30F3\u30C4\u304C\u3042\u308A\u307E\u305B\u3093\uFF01\u30CE\u30FC\u30C8\u3092\u958B\u3044\u3066\u304F\u3060\u3055\u3044\u3002",
     notice_copy_success: "\u30EA\u30C3\u30C1\u30C6\u30AD\u30B9\u30C8\u304C\u6B63\u5E38\u306B\u30B3\u30D4\u30FC\u3055\u308C\u307E\u3057\u305F\uFF01WeChat\u30A8\u30C7\u30A3\u30BF\u30FC\u306B\u8CBC\u308A\u4ED8\u3051\u53EF\u80FD\u3067\u3059\u3002",
     notice_copy_fallback_success: "\u30D5\u30A9\u30FC\u30EB\u30D0\u30C3\u30AF\u306B\u3088\u308AHTML\u3068\u3057\u3066\u6B63\u5E38\u306B\u30B3\u30D4\u30FC\u3055\u308C\u307E\u3057\u305F\uFF01",
@@ -53888,6 +53894,31 @@ function convertToWeChatHtml(markdownText, theme) {
     const baseStyle = theme.pre_code || "";
     el.setAttribute("style", `${baseStyle} letter-spacing: 0px !important; word-spacing: normal !important; tab-size: 4 !important; -moz-tab-size: 4 !important; -o-tab-size: 4 !important;`);
   });
+  const allParagraphs = container.querySelectorAll("p");
+  allParagraphs.forEach((p) => {
+    var _a2;
+    const html = p.innerHTML;
+    if (html.includes("<br>")) {
+      const segments = html.split("<br>");
+      p.innerHTML = segments[0];
+      const existingStyle = p.getAttribute("style") || "";
+      p.setAttribute("style", `${existingStyle} margin-bottom: 0px !important;`);
+      let currentSibling = p;
+      for (let idx = 1; idx < segments.length; idx++) {
+        const newP = p.ownerDocument.createElement("p");
+        newP.innerHTML = segments[idx];
+        let baseStyle = theme.p || "";
+        if (idx < segments.length - 1) {
+          baseStyle = `${baseStyle} margin-top: 0px !important; margin-bottom: 0px !important;`;
+        } else {
+          baseStyle = `${baseStyle} margin-top: 0px !important;`;
+        }
+        newP.setAttribute("style", baseStyle);
+        (_a2 = p.parentElement) == null ? void 0 : _a2.insertBefore(newP, currentSibling.nextSibling);
+        currentSibling = newP;
+      }
+    }
+  });
   const blockquoteParagraphs = container.querySelectorAll("blockquote p");
   blockquoteParagraphs.forEach((p) => {
     const style = p.getAttribute("style") || "";
@@ -54013,6 +54044,7 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
     return "messages-square";
   }
   async onOpen() {
+    var _a2;
     const { contentEl } = this;
     contentEl.empty();
     const lang = this.plugin.settings.lang;
@@ -54047,13 +54079,112 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
       }
     };
     populateSelector();
-    const refreshBtn = toolbar.createEl("button", { text: t("button_refresh", lang) });
+    const refreshBtn = toolbar.createEl("button", { cls: "md2wechat-icon-btn" });
+    (0, import_obsidian4.setIcon)(refreshBtn, "refresh-cw");
     refreshBtn.title = t("button_refresh_title", lang);
-    const copyBtn = toolbar.createEl("button", { text: t("button_copy", lang) });
-    const syncBtn = toolbar.createEl("button", { text: t("button_sync", lang) });
-    syncBtn.addClass("mod-cta");
+    const scrollSyncBtn = toolbar.createEl("button", {
+      cls: "md2wechat-icon-btn md2wechat-scroll-sync-btn"
+    });
+    (0, import_obsidian4.setIcon)(scrollSyncBtn, "link");
+    scrollSyncBtn.title = t("button_scroll_sync", lang);
+    if (this.plugin.settings.syncScroll) {
+      scrollSyncBtn.addClass("is-active");
+    }
+    const copyBtn = toolbar.createEl("button", { cls: "md2wechat-icon-btn" });
+    (0, import_obsidian4.setIcon)(copyBtn, "copy");
+    copyBtn.title = t("button_copy", lang);
+    const syncBtn = toolbar.createEl("button", { cls: "md2wechat-icon-btn mod-cta" });
+    (0, import_obsidian4.setIcon)(syncBtn, "upload-cloud");
+    syncBtn.title = t("button_sync", lang);
     const previewWrapper = container.createDiv({ cls: "md2wechat-preview-content-wrapper" });
     const previewArea = previewWrapper.createDiv({ cls: "md2wechat-preview-content" });
+    let isSyncingScroll = false;
+    let editorScrollMap = null;
+    const resolveImageToFile = (pathStr, activeFile) => {
+      if (!pathStr) return null;
+      const decodedPath = decodeURIComponent(pathStr).trim();
+      const file = this.app.metadataCache.getFirstLinkpathDest(decodedPath, activeFile ? activeFile.path : "");
+      if (file) return file;
+      const allFiles = this.app.vault.getFiles();
+      const baseName = decodedPath.split("/").pop() || decodedPath;
+      const found = allFiles.find((f) => f.name === baseName || f.path === decodedPath);
+      return found || null;
+    };
+    const buildScrollMap = () => {
+      var _a3, _b, _c;
+      if (!this.plugin.settings.syncScroll) {
+        editorScrollMap = null;
+        return;
+      }
+      const activeView = this.app.workspace.getActiveViewOfType(import_obsidian4.MarkdownView);
+      if (!activeView) {
+        editorScrollMap = null;
+        return;
+      }
+      const editorScroller = (_a3 = activeView.editor.cm) == null ? void 0 : _a3.scrollDOM;
+      const editorContent = (_b = activeView.editor.cm) == null ? void 0 : _b.contentDOM;
+      if (!editorScroller || !editorContent) {
+        editorScrollMap = null;
+        return;
+      }
+      const map = [];
+      const previewElements = previewArea.querySelectorAll("p, h1, h2, h3, h4, h5, h6, pre, li, hr, table");
+      const lineCount = activeView.editor.lineCount();
+      if (previewElements.length === 0 || lineCount === 0) {
+        editorScrollMap = null;
+        return;
+      }
+      const editorContentPaddingBottom = 360;
+      const maxEditorScroll = editorScroller.scrollHeight - editorContentPaddingBottom - editorScroller.clientHeight;
+      const maxPreviewScroll = previewWrapper.scrollHeight - previewWrapper.clientHeight;
+      if (maxEditorScroll <= 0 || maxPreviewScroll <= 0) {
+        editorScrollMap = null;
+        return;
+      }
+      map.push({ editorScrollTop: 0, previewScrollTop: 0 });
+      const nonEmptyLines = [];
+      for (let lineIndex = 0; lineIndex < lineCount; lineIndex++) {
+        const lineText = activeView.editor.getLine(lineIndex).trim();
+        if (lineText !== "") {
+          nonEmptyLines.push(lineIndex);
+        }
+      }
+      const totalPairs = Math.min(previewElements.length, nonEmptyLines.length);
+      console.log("previewElements.length:" + previewElements.length);
+      console.log("nonEmptyLines.length:" + nonEmptyLines.length);
+      for (let i = 0; i < totalPairs; i++) {
+        const pEl = previewElements[i];
+        if (!pEl) continue;
+        const lineNum = nonEmptyLines[i];
+        const lineStartOffset = activeView.editor.posToOffset({ line: lineNum, ch: 0 });
+        let editorScrollTop = 0;
+        try {
+          const lineBlock = (_c = activeView.editor.cm) == null ? void 0 : _c.lineBlockAt(lineStartOffset);
+          if (lineBlock) {
+            editorScrollTop = lineBlock.top;
+          } else {
+            editorScrollTop = lineNum / lineCount * maxEditorScroll;
+          }
+        } catch (err) {
+          editorScrollTop = lineNum / lineCount * maxEditorScroll;
+        }
+        const previewScrollTop = pEl.offsetTop - 65;
+        editorScrollTop = editorScrollTop + 73.59;
+        if (i == 0) {
+          console.log(JSON.stringify(pEl));
+          console.log(JSON.stringify(previewScrollTop));
+        }
+        map.push({
+          editorScrollTop: Math.max(0, Math.min(editorScrollTop, maxEditorScroll)),
+          previewScrollTop: Math.max(0, Math.min(previewScrollTop, maxPreviewScroll))
+        });
+      }
+      map.push({ editorScrollTop: maxEditorScroll, previewScrollTop: maxPreviewScroll });
+      map.sort((a, b2) => a.editorScrollTop - b2.editorScrollTop);
+      editorScrollMap = map;
+      console.log("editorScrollMap built!");
+      console.log(JSON.stringify(map));
+    };
     const render = (onlyIfMarkdown = false) => {
       console.log("render executed");
       const activeView = this.app.workspace.getActiveViewOfType(import_obsidian4.MarkdownView);
@@ -54126,6 +54257,11 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
         }
       }
       this.lastDigest = markdownText.substring(0, 120).replace(/[#*`>]/g, "").trim();
+      if (this.plugin.settings.syncScroll) {
+        buildScrollMap();
+      } else {
+        editorScrollMap = null;
+      }
     };
     render(false);
     selector.addEventListener("change", () => {
@@ -54136,6 +54272,17 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
       populateSelector();
       render(false);
       new import_obsidian4.Notice(t("notice_theme_refreshed", lang));
+    });
+    scrollSyncBtn.addEventListener("click", async () => {
+      this.plugin.settings.syncScroll = !this.plugin.settings.syncScroll;
+      await this.plugin.saveSettings();
+      if (this.plugin.settings.syncScroll) {
+        scrollSyncBtn.addClass("is-active");
+        buildScrollMap();
+      } else {
+        scrollSyncBtn.removeClass("is-active");
+        editorScrollMap = null;
+      }
     });
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", () => {
@@ -54153,8 +54300,126 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
         debouncedRender();
       })
     );
+    let handleEditorScroll = () => {
+    };
+    let handlePreviewScroll = () => {
+    };
+    previewWrapper.addEventListener("scroll", () => {
+      handlePreviewScroll();
+    });
+    const attachEditorScrollListener = () => {
+      var _a3;
+      const activeView = this.app.workspace.getActiveViewOfType(import_obsidian4.MarkdownView);
+      if (activeView) {
+        const scroller = (_a3 = activeView.editor.cm) == null ? void 0 : _a3.scrollDOM;
+        if (scroller) {
+          scroller.removeEventListener("scroll", handleEditorScroll);
+          scroller.addEventListener("scroll", handleEditorScroll);
+        }
+      }
+    };
+    this.registerEvent(
+      this.app.workspace.on("active-leaf-change", () => {
+        attachEditorScrollListener();
+        editorScrollMap = null;
+      })
+    );
+    const activeViewOnOpen = this.app.workspace.getActiveViewOfType(import_obsidian4.MarkdownView);
+    if (activeViewOnOpen) {
+      const scroller = (_a2 = activeViewOnOpen.editor.cm) == null ? void 0 : _a2.scrollDOM;
+      if (scroller) {
+        scroller.addEventListener("scroll", handleEditorScroll);
+      }
+    }
+    this.registerEvent(
+      this.app.workspace.on("editor-change", () => {
+        attachEditorScrollListener();
+      })
+    );
+    handleEditorScroll = () => {
+      var _a3;
+      if (!this.plugin.settings.syncScroll || isSyncingScroll) return;
+      const activeView = this.app.workspace.getActiveViewOfType(import_obsidian4.MarkdownView);
+      if (!activeView) return;
+      const editorScroller = (_a3 = activeView.editor.cm) == null ? void 0 : _a3.scrollDOM;
+      if (!editorScroller) return;
+      if (!editorScrollMap) {
+        buildScrollMap();
+      }
+      if (!editorScrollMap || editorScrollMap.length < 2) return;
+      isSyncingScroll = true;
+      const currentEditorScrollTop = editorScroller.scrollTop;
+      console.log("currentEditorScrollTop:" + currentEditorScrollTop);
+      console.log("currentPreviewScrollTop=" + previewWrapper.scrollTop);
+      let lowerAnchor = editorScrollMap[0];
+      let upperAnchor = editorScrollMap[editorScrollMap.length - 1];
+      for (let i = 0; i < editorScrollMap.length - 1; i++) {
+        const curr = editorScrollMap[i];
+        const next = editorScrollMap[i + 1];
+        if (currentEditorScrollTop >= curr.editorScrollTop && currentEditorScrollTop <= next.editorScrollTop) {
+          lowerAnchor = curr;
+          upperAnchor = next;
+          console.log("i=" + i);
+          break;
+        }
+      }
+      let targetPreviewScrollTop = lowerAnchor.previewScrollTop;
+      const editorRange = upperAnchor.editorScrollTop - lowerAnchor.editorScrollTop;
+      if (editorRange > 0) {
+        const interpolationFactor = (currentEditorScrollTop - lowerAnchor.editorScrollTop) / editorRange;
+        targetPreviewScrollTop = lowerAnchor.previewScrollTop + interpolationFactor * (upperAnchor.previewScrollTop - lowerAnchor.previewScrollTop);
+      }
+      previewWrapper.scrollTop = targetPreviewScrollTop;
+      console.log("handleEditorScroll executed");
+      console.log("lowerAnchor=" + JSON.stringify(lowerAnchor));
+      console.log("upperAnchor=" + JSON.stringify(upperAnchor));
+      setTimeout(() => {
+        isSyncingScroll = false;
+      }, 50);
+    };
+    handlePreviewScroll = () => {
+      var _a3;
+      if (!this.plugin.settings.syncScroll || isSyncingScroll) return;
+      const activeView = this.app.workspace.getActiveViewOfType(import_obsidian4.MarkdownView);
+      if (!activeView) return;
+      const editorScroller = (_a3 = activeView.editor.cm) == null ? void 0 : _a3.scrollDOM;
+      if (!editorScroller) return;
+      if (!editorScrollMap) {
+        buildScrollMap();
+      }
+      if (!editorScrollMap || editorScrollMap.length < 2) return;
+      isSyncingScroll = true;
+      const currentPreviewScrollTop = previewWrapper.scrollTop;
+      console.log("currentEditorScrollTop:" + editorScroller.scrollTop);
+      console.log("currentPreviewScrollTop=" + currentPreviewScrollTop);
+      let lowerAnchor = editorScrollMap[0];
+      let upperAnchor = editorScrollMap[editorScrollMap.length - 1];
+      for (let i = 0; i < editorScrollMap.length - 1; i++) {
+        const curr = editorScrollMap[i];
+        const next = editorScrollMap[i + 1];
+        if (currentPreviewScrollTop >= curr.previewScrollTop && currentPreviewScrollTop <= next.previewScrollTop) {
+          lowerAnchor = curr;
+          upperAnchor = next;
+          console.log("i=" + i);
+          break;
+        }
+      }
+      let targetEditorScrollTop = lowerAnchor.editorScrollTop;
+      const previewRange = upperAnchor.previewScrollTop - lowerAnchor.previewScrollTop;
+      if (previewRange > 0) {
+        const interpolationFactor = (currentPreviewScrollTop - lowerAnchor.previewScrollTop) / previewRange;
+        targetEditorScrollTop = lowerAnchor.editorScrollTop + interpolationFactor * (upperAnchor.editorScrollTop - lowerAnchor.editorScrollTop);
+      }
+      editorScroller.scrollTop = targetEditorScrollTop;
+      console.log("handlePreviewScroll executed");
+      console.log("lowerAnchor=" + JSON.stringify(lowerAnchor));
+      console.log("upperAnchor=" + JSON.stringify(upperAnchor));
+      setTimeout(() => {
+        isSyncingScroll = false;
+      }, 50);
+    };
     copyBtn.addEventListener("click", async () => {
-      var _a2, _b;
+      var _a3, _b;
       if (!this.currentHtml) {
         new import_obsidian4.Notice(t("notice_no_content_copy", lang));
         return;
@@ -54185,7 +54450,7 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
           opacity: "0"
         });
         document.body.appendChild(el);
-        (_a2 = window.getSelection()) == null ? void 0 : _a2.removeAllRanges();
+        (_a3 = window.getSelection()) == null ? void 0 : _a3.removeAllRanges();
         const range = document.createRange();
         range.selectNode(el);
         (_b = window.getSelection()) == null ? void 0 : _b.addRange(range);
@@ -54194,18 +54459,8 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
         new import_obsidian4.Notice(t("notice_copy_fallback_success", lang));
       }
     });
-    const resolveImageToFile = (pathStr, activeFile) => {
-      if (!pathStr) return null;
-      const decodedPath = decodeURIComponent(pathStr).trim();
-      const file = this.app.metadataCache.getFirstLinkpathDest(decodedPath, activeFile ? activeFile.path : "");
-      if (file) return file;
-      const allFiles = this.app.vault.getFiles();
-      const baseName = decodedPath.split("/").pop() || decodedPath;
-      const found = allFiles.find((f) => f.name === baseName || f.path === decodedPath);
-      return found || null;
-    };
     syncBtn.addEventListener("click", async () => {
-      var _a2;
+      var _a3;
       if (!this.currentHtml) {
         new import_obsidian4.Notice(t("notice_no_content_sync", lang));
         return;
@@ -54216,7 +54471,8 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
         return;
       }
       syncBtn.disabled = true;
-      syncBtn.setText(t("button_syncing", lang));
+      (0, import_obsidian4.setIcon)(syncBtn, "loader");
+      syncBtn.title = t("button_syncing", lang);
       new import_obsidian4.Notice(t("notice_acquiring_token", lang));
       try {
         console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u5F00\u59CB\u540C\u6B65\u6D41\u7A0B...");
@@ -54231,7 +54487,7 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
         }
         const accessToken = tokenData.access_token;
         let finalHtml = this.currentHtml;
-        let activeFile = ((_a2 = this.app.workspace.getActiveViewOfType(import_obsidian4.MarkdownView)) == null ? void 0 : _a2.file) || null;
+        let activeFile = ((_a3 = this.app.workspace.getActiveViewOfType(import_obsidian4.MarkdownView)) == null ? void 0 : _a3.file) || null;
         let firstLocalImageFile = null;
         if (enableImgUpload) {
           new import_obsidian4.Notice(t("notice_uploading_cdn", lang));
@@ -54336,7 +54592,8 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
         new import_obsidian4.Notice(`Sync failed: ${err.message || err}`);
       } finally {
         syncBtn.disabled = false;
-        syncBtn.setText(t("button_sync", lang));
+        (0, import_obsidian4.setIcon)(syncBtn, "upload-cloud");
+        syncBtn.title = t("button_sync", lang);
       }
     });
   }
@@ -54355,7 +54612,8 @@ var DEFAULT_SETTINGS = {
   imageHostingType: "wechat",
   defaultThumbMediaId: "",
   cachedMaterials: [],
-  themeFolder: "wechat-format-themes"
+  themeFolder: "wechat-format-themes",
+  syncScroll: true
 };
 var Md2WeChatPlugin = class extends import_obsidian5.Plugin {
   constructor() {

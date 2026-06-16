@@ -9,6 +9,7 @@ export interface Md2WeChatSettings {
 	defaultThumbMediaId: string;
 	cachedMaterials: Array<{ mediaId: string; name: string }>;
 	themeFolder: string;
+	syncScroll: boolean;
 }
 
 export interface ThemeStyle {

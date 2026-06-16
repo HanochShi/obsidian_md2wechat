@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, MarkdownView, Notice, requestUrl, TFile, debounce } from 'obsidian';
+import { ItemView, WorkspaceLeaf, MarkdownView, Notice, requestUrl, TFile, debounce, setIcon } from 'obsidian';
 import Md2WeChatPlugin from './main';
 import { THEMES } from './themes';
 import { convertToWeChatHtml } from './renderer';
@@ -85,15 +85,166 @@ export class WeChatPreviewView extends ItemView {
 		populateSelector();
 
 		// Buttons
-		const refreshBtn = toolbar.createEl('button', { text: t('button_refresh', lang) });
+		const refreshBtn = toolbar.createEl('button', { cls: 'md2wechat-icon-btn' });
+		setIcon(refreshBtn, 'refresh-cw');
 		refreshBtn.title = t('button_refresh_title', lang);
-		const copyBtn = toolbar.createEl('button', { text: t('button_copy', lang) });
-		const syncBtn = toolbar.createEl('button', { text: t('button_sync', lang) });
-		syncBtn.addClass('mod-cta');
+
+		// Scroll Sync Toggle Button
+		const scrollSyncBtn = toolbar.createEl('button', { 
+			cls: 'md2wechat-icon-btn md2wechat-scroll-sync-btn'
+		});
+		setIcon(scrollSyncBtn, 'link');
+		scrollSyncBtn.title = t('button_scroll_sync', lang);
+		if (this.plugin.settings.syncScroll) {
+			scrollSyncBtn.addClass('is-active');
+		}
+
+		const copyBtn = toolbar.createEl('button', { cls: 'md2wechat-icon-btn' });
+		setIcon(copyBtn, 'copy');
+		copyBtn.title = t('button_copy', lang);
+
+		const syncBtn = toolbar.createEl('button', { cls: 'md2wechat-icon-btn mod-cta' });
+		setIcon(syncBtn, 'upload-cloud');
+		syncBtn.title = t('button_sync', lang);
 
 		// Preview Wrapper
 		const previewWrapper = container.createDiv({ cls: 'md2wechat-preview-content-wrapper' });
 		const previewArea = previewWrapper.createDiv({ cls: 'md2wechat-preview-content' });
+
+		// Map bidirectional scroll events
+		let isSyncingScroll = false;
+		let editorScrollMap: Array<{ editorScrollTop: number, previewScrollTop: number }> | null = null;
+
+		// Helper to resolve Obsidian Wikilinks or Markdown images to TFile
+		const resolveImageToFile = (pathStr: string, activeFile: TFile | null): TFile | null => {
+			if (!pathStr) return null;
+			// Decode URI spaces and formatting
+			const decodedPath = decodeURIComponent(pathStr).trim();
+			
+			// 1. Try resolving using Obsidian metadata/firstMatch
+			const file = this.app.metadataCache.getFirstLinkpathDest(decodedPath, activeFile ? activeFile.path : '');
+			if (file) return file;
+
+			// 2. Fallback search by file name
+			const allFiles = this.app.vault.getFiles();
+			const baseName = decodedPath.split('/').pop() || decodedPath;
+			const found = allFiles.find(f => f.name === baseName || f.path === decodedPath);
+			return found || null;
+		};
+
+		// Build paragraph-level position map between Editor and Preview using absolute physical pixels
+		const buildScrollMap = () => {
+			if (!this.plugin.settings.syncScroll) {
+				editorScrollMap = null;
+				return;
+			}
+
+			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+			if (!activeView) {
+				editorScrollMap = null;
+				return;
+			}
+
+			// @ts-ignore
+			const editorScroller = activeView.editor.cm?.scrollDOM;
+			// @ts-ignore
+			const editorContent = activeView.editor.cm?.contentDOM;
+			if (!editorScroller || !editorContent) {
+				editorScrollMap = null;
+				return;
+			}
+
+			const map: Array<{ editorScrollTop: number, previewScrollTop: number }> = [];
+
+			// 1. Get preview paragraph-like child elements (excluding blockquote itself as it is a container shell)
+			const previewElements = previewArea.querySelectorAll('p, h1, h2, h3, h4, h5, h6, pre, li, hr, table');
+			
+			// 2. Obtain total lines in editor using Obsidian standard editor API to bypass CM6 Virtual DOM truncation
+			const lineCount = activeView.editor.lineCount();
+
+			if (previewElements.length === 0 || lineCount === 0) {
+				editorScrollMap = null;
+				return;
+			}
+
+			const editorContentPaddingBottom = 360;
+
+			const maxEditorScroll = editorScroller.scrollHeight - editorContentPaddingBottom - editorScroller.clientHeight;
+			const maxPreviewScroll = previewWrapper.scrollHeight - previewWrapper.clientHeight;
+
+			if (maxEditorScroll <= 0 || maxPreviewScroll <= 0) {
+				editorScrollMap = null;
+				return;
+			}
+
+			// Start anchor at (0, 0)
+			map.push({ editorScrollTop: 0, previewScrollTop: 0 });
+
+			// 3. Scan the document lines and filter out indices of non-blank lines
+			const nonEmptyLines: number[] = [];
+			for (let lineIndex = 0; lineIndex < lineCount; lineIndex++) {
+				const lineText = activeView.editor.getLine(lineIndex).trim();
+				if (lineText !== '') {
+					nonEmptyLines.push(lineIndex);
+				}
+			}
+
+			// 4. Map each corresponding real paragraph block on absolute physical px level using CM6 lineAtHeight API
+			const totalPairs = Math.min(previewElements.length, nonEmptyLines.length);
+			console.log("previewElements.length:" + previewElements.length);
+			console.log("nonEmptyLines.length:" + nonEmptyLines.length);
+
+
+			for (let i = 0; i < totalPairs; i++) {
+				const pEl = previewElements[i] as HTMLElement;
+				if (!pEl) continue;
+
+				// Fetch physical height dynamically using editor's document line coordinates
+				const lineNum = nonEmptyLines[i];
+				
+				// Get character offset of this line's start
+				const lineStartOffset = activeView.editor.posToOffset({ line: lineNum, ch: 0 });
+				
+				// Query CM6 coordinate system to get precise height of this line relative to scroller container
+				let editorScrollTop = 0;
+				try {
+					// @ts-ignore
+					const lineBlock = activeView.editor.cm?.lineBlockAt(lineStartOffset);
+					if (lineBlock) {
+						editorScrollTop = lineBlock.top;
+					} else {
+						// Fallback: Estimate editor scroll height fraction
+						editorScrollTop = (lineNum / lineCount) * maxEditorScroll;
+					}
+				} catch (err) {
+					editorScrollTop = (lineNum / lineCount) * maxEditorScroll;
+				}
+
+				const previewScrollTop = pEl.offsetTop - 65; // relative to viewport
+				editorScrollTop =  editorScrollTop + 73.59;
+
+				if(i == 0) {
+					console.log(JSON.stringify(pEl));
+					console.log(JSON.stringify(previewScrollTop));
+				}
+
+				map.push({
+					editorScrollTop: Math.max(0, Math.min(editorScrollTop, maxEditorScroll)),
+					previewScrollTop: Math.max(0, Math.min(previewScrollTop, maxPreviewScroll))
+				});
+			}
+
+			// End anchor at absolute max heights
+			map.push({ editorScrollTop: maxEditorScroll, previewScrollTop: maxPreviewScroll });
+
+			// Sort by absolute editor ScrollTop
+			map.sort((a, b) => a.editorScrollTop - b.editorScrollTop);
+			// @ts-ignore
+			editorScrollMap = map;
+
+			console.log("editorScrollMap built!");
+			console.log(JSON.stringify(map));
+		};
 
 		// Render function
 		const render = (onlyIfMarkdown = false) => {
@@ -186,6 +337,13 @@ export class WeChatPreviewView extends ItemView {
 				}
 			}
 			this.lastDigest = markdownText.substring(0, 120).replace(/[#*`>]/g, '').trim();
+
+			// Rebuild scroll index map when rendering completes, only if syncScroll is active
+			if (this.plugin.settings.syncScroll) {
+				buildScrollMap();
+			} else {
+				editorScrollMap = null;
+			}
 		};
 
 		render(false);
@@ -199,6 +357,20 @@ export class WeChatPreviewView extends ItemView {
 			populateSelector();
 			render(false);
 			new Notice(t('notice_theme_refreshed', lang));
+		});
+
+		// Scroll sync toggle handler
+		scrollSyncBtn.addEventListener('click', async () => {
+			this.plugin.settings.syncScroll = !this.plugin.settings.syncScroll;
+			await this.plugin.saveSettings();
+			
+			if (this.plugin.settings.syncScroll) {
+				scrollSyncBtn.addClass('is-active');
+				buildScrollMap();
+			} else {
+				scrollSyncBtn.removeClass('is-active');
+				editorScrollMap = null; // Free memory and stop mapping
+			}
 		});
 
 		this.registerEvent(
@@ -220,6 +392,175 @@ export class WeChatPreviewView extends ItemView {
 				debouncedRender();
 			})
 		);
+
+		// Map bidirectional scroll events
+		let handleEditorScroll = () => {};
+		let handlePreviewScroll = () => {};
+
+		// Register scroll listeners
+		previewWrapper.addEventListener('scroll', () => {
+			handlePreviewScroll();
+		});
+
+		// Dynamic event listener attachment for Editor scroll DOM
+		const attachEditorScrollListener = () => {
+			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+			if (activeView) {
+				// @ts-ignore
+				const scroller = activeView.editor.cm?.scrollDOM;
+				if (scroller) {
+					scroller.removeEventListener('scroll', handleEditorScroll);
+					scroller.addEventListener('scroll', handleEditorScroll);
+				}
+			}
+		};
+
+		this.registerEvent(
+			this.app.workspace.on('active-leaf-change', () => {
+				attachEditorScrollListener();
+				editorScrollMap = null;
+			})
+		);
+
+		// Initialize scroll listener on open
+		const activeViewOnOpen = this.app.workspace.getActiveViewOfType(MarkdownView);
+		if (activeViewOnOpen) {
+			// @ts-ignore
+			const scroller = activeViewOnOpen.editor.cm?.scrollDOM;
+			if (scroller) {
+				scroller.addEventListener('scroll', handleEditorScroll);
+			}
+		}
+
+		// Also listen to editor changes to re-attach scroll DOM listeners if CM6 scroller is reconstructed
+		this.registerEvent(
+			this.app.workspace.on('editor-change', () => {
+				attachEditorScrollListener();
+			})
+		);
+
+		// Define scroll sync implementation functions at the outer level of scope
+		handleEditorScroll = () => {
+			if (!this.plugin.settings.syncScroll || isSyncingScroll) return;
+			
+			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+			if (!activeView) return;
+
+			// @ts-ignore
+			const editorScroller = activeView.editor.cm?.scrollDOM;
+			if (!editorScroller) return;
+
+			if (!editorScrollMap) {
+				buildScrollMap();
+			}
+			// @ts-ignore
+			if (!editorScrollMap || editorScrollMap.length < 2) return;
+
+			isSyncingScroll = true;
+
+			const currentEditorScrollTop = editorScroller.scrollTop;
+
+			console.log("currentEditorScrollTop:"+currentEditorScrollTop);
+			console.log("currentPreviewScrollTop=" + previewWrapper.scrollTop);
+
+			// Find bounding anchors in the physical scroll map
+			// @ts-ignore
+			let lowerAnchor = editorScrollMap[0];
+			// @ts-ignore
+			let upperAnchor = editorScrollMap[editorScrollMap.length - 1];
+
+			// @ts-ignore
+			for (let i = 0; i < editorScrollMap.length - 1; i++) {
+				// @ts-ignore
+				const curr = editorScrollMap[i];
+				// @ts-ignore
+				const next = editorScrollMap[i + 1];
+				if (currentEditorScrollTop >= curr.editorScrollTop && currentEditorScrollTop <= next.editorScrollTop) {
+					lowerAnchor = curr;
+					upperAnchor = next;
+					console.log("i=" + i);
+					break;
+				}
+			}
+
+			// Linear interpolation based on pure absolute physical heights
+			let targetPreviewScrollTop = lowerAnchor.previewScrollTop;
+			const editorRange = upperAnchor.editorScrollTop - lowerAnchor.editorScrollTop;
+			if (editorRange > 0) {
+				const interpolationFactor = (currentEditorScrollTop - lowerAnchor.editorScrollTop) / editorRange;
+				targetPreviewScrollTop = lowerAnchor.previewScrollTop + interpolationFactor * (upperAnchor.previewScrollTop - lowerAnchor.previewScrollTop);
+			}
+
+			previewWrapper.scrollTop = targetPreviewScrollTop;
+			
+			console.log("handleEditorScroll executed");
+			console.log("lowerAnchor=" + JSON.stringify(lowerAnchor));
+			console.log("upperAnchor=" + JSON.stringify(upperAnchor));
+
+			// Reset sync lock
+			setTimeout(() => { isSyncingScroll = false; }, 50);
+		};
+
+		handlePreviewScroll = () => {
+			if (!this.plugin.settings.syncScroll || isSyncingScroll) return;
+
+			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+			if (!activeView) return;
+
+			// @ts-ignore
+			const editorScroller = activeView.editor.cm?.scrollDOM;
+			if (!editorScroller) return;
+
+			if (!editorScrollMap) {
+				buildScrollMap();
+			}
+			// @ts-ignore
+			if (!editorScrollMap || editorScrollMap.length < 2) return;
+
+			isSyncingScroll = true;
+
+			const currentPreviewScrollTop = previewWrapper.scrollTop;
+
+			console.log("currentEditorScrollTop:" + editorScroller.scrollTop);
+			console.log("currentPreviewScrollTop=" + currentPreviewScrollTop);
+
+			// Find bounding anchors in the physical scroll map
+			// @ts-ignore
+			let lowerAnchor = editorScrollMap[0];
+			// @ts-ignore
+			let upperAnchor = editorScrollMap[editorScrollMap.length - 1];
+
+			// @ts-ignore
+			for (let i = 0; i < editorScrollMap.length - 1; i++) {
+				// @ts-ignore
+				const curr = editorScrollMap[i];
+				// @ts-ignore
+				const next = editorScrollMap[i + 1];
+				if (currentPreviewScrollTop >= curr.previewScrollTop && currentPreviewScrollTop <= next.previewScrollTop) {
+					lowerAnchor = curr;
+					upperAnchor = next;
+					console.log("i=" + i);
+					break;
+				}
+			}
+
+			// Linear interpolation based on pure absolute physical heights
+			let targetEditorScrollTop = lowerAnchor.editorScrollTop;
+			const previewRange = upperAnchor.previewScrollTop - lowerAnchor.previewScrollTop;
+			if (previewRange > 0) {
+				const interpolationFactor = (currentPreviewScrollTop - lowerAnchor.previewScrollTop) / previewRange;
+				targetEditorScrollTop = lowerAnchor.editorScrollTop + interpolationFactor * (upperAnchor.editorScrollTop - lowerAnchor.editorScrollTop);
+			}
+
+			editorScroller.scrollTop = targetEditorScrollTop;
+
+			console.log("handlePreviewScroll executed");
+			console.log("lowerAnchor=" + JSON.stringify(lowerAnchor));
+			console.log("upperAnchor=" + JSON.stringify(upperAnchor));
+
+			// Reset sync lock
+			setTimeout(() => { isSyncingScroll = false; }, 50);
+		};
 
 		// Copy button handler
 		copyBtn.addEventListener('click', async () => {
@@ -269,23 +610,6 @@ export class WeChatPreviewView extends ItemView {
 			}
 		});
 
-		// Helper to resolve Obsidian Wikilinks or Markdown images to TFile
-		const resolveImageToFile = (pathStr: string, activeFile: TFile | null): TFile | null => {
-			if (!pathStr) return null;
-			// Decode URI spaces and formatting
-			const decodedPath = decodeURIComponent(pathStr).trim();
-			
-			// 1. Try resolving using Obsidian metadata/firstMatch
-			const file = this.app.metadataCache.getFirstLinkpathDest(decodedPath, activeFile ? activeFile.path : '');
-			if (file) return file;
-
-			// 2. Fallback search by file name
-			const allFiles = this.app.vault.getFiles();
-			const baseName = decodedPath.split('/').pop() || decodedPath;
-			const found = allFiles.find(f => f.name === baseName || f.path === decodedPath);
-			return found || null;
-		};
-
 		// Sync button handler
 		syncBtn.addEventListener('click', async () => {
 			if (!this.currentHtml) {
@@ -300,7 +624,8 @@ export class WeChatPreviewView extends ItemView {
 			}
 
 			syncBtn.disabled = true;
-			syncBtn.setText(t('button_syncing', lang));
+			setIcon(syncBtn, 'loader');
+			syncBtn.title = t('button_syncing', lang);
 			new Notice(t('notice_acquiring_token', lang));
 
 			try {
@@ -452,7 +777,8 @@ export class WeChatPreviewView extends ItemView {
 				new Notice(`Sync failed: ${err.message || err}`);
 			} finally {
 				syncBtn.disabled = false;
-				syncBtn.setText(t('button_sync', lang));
+				setIcon(syncBtn, 'upload-cloud');
+				syncBtn.title = t('button_sync', lang);
 			}
 		});
 	}
