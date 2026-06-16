@@ -1,0 +1,44 @@
+name: Release Obsidian Plugin
+
+# 触发条件：当你推送一个标签（Tag）到 GitHub 时，自动运行
+on:
+  push:
+    tags:
+      - "*"  # 监听任何标签，比如 1.0.0, v1.0.1 等
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 获取你的代码
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. 安装 Node.js 环境
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18' # 使用 Node 18
+
+      # 3. 安装项目依赖 (相当于运行 npm install)
+      - name: Install dependencies
+        run: npm install
+
+      # 4. 编译打包插件 (相当于运行 npm run build)
+      # 注意：确保你的 package.json 里有 build 这个脚本
+      - name: Build plugin
+        run: npm run build
+
+      # 5. 核心：创建 GitHub Release 并上传文件
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # 在此处列出需要上传到 Release 的文件
+          files: |
+            main.js
+            manifest.json
+            styles.css
+        env:
+          # GitHub 会自动提供这个 Token，不需要你手动配置密码
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
