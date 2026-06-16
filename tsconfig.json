@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "inlineSourceMap": true,
     "inlineSources": true,
     "module": "commonjs",
@@ -8,7 +7,7 @@
     "allowJs": true,
     "strict": true,
     "lib": ["DOM", "ES2020"],
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "isolatedModules": true,
     "esModuleInterop": true,
     "skipLibCheck": true
