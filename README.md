@@ -1,9 +1,10 @@
 # Obsidian 微信一键同步排版助手 (Markdown to WeChat MP Sync)
 
 <p align="left">
-    <img src="https://img.shields.io/github/v/release/HanochShi/obsidian_md2wechat" alt="GitHub Release">
-    <img src="https://img.shields.io/github/downloads/HanochShi/obsidian_md2wechat/total?color=483699" alt="Downloads">
-    <img src="https://img.shields.io/github/license/HanochShi/obsidian_md2wechat" alt=""License>
+    <img src="https://badgen.net/github/release/HanochShi/obsidian_md2wechat" alt="GitHub Release">
+    <img src="https://badgen.net/github/assets-dl/HanochShi/obsidian_md2wechat/" alt="Github Release Downloads">
+    <img src="https://badgen.net/static/license/AGPL-3.0/red" alt="License">
+    <img src="https://badgen.net/github/last-commit/HanochShi/obsidian_md2wechat" alt="Last Commit Time">
 </p>
 
 <p align="left">
