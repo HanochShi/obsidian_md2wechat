@@ -28,9 +28,6 @@ export class Md2WeChatSettingTab extends PluginSettingTab {
 				dropdown.addOption('en', 'English');
 				dropdown.addOption('zh-CN', '简体中文');
 				dropdown.addOption('zh-TW', '繁體中文');
-				dropdown.addOption('es', 'Español');
-				dropdown.addOption('fr', 'Français');
-				dropdown.addOption('ja', '日本語');
 				
 				dropdown.setValue(this.plugin.settings.lang);
 				dropdown.onChange(async (value: any) => {
