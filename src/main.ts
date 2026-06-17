@@ -1,4 +1,5 @@
-import { Plugin, WorkspaceLeaf } from 'obsidian';
+import { Plugin, WorkspaceLeaf, addIcon } from 'obsidian';
+import { WECHAT_MP_ICON } from './icons';
 import { Md2WeChatSettings, ThemeStyle } from './types';
 import { Md2WeChatSettingTab } from './settings';
 import { WeChatPreviewView, VIEW_TYPE_WECHAT_PREVIEW } from './view';
@@ -27,6 +28,9 @@ export default class Md2WeChatPlugin extends Plugin {
 		await this.initThemeDirectory();
 		await this.loadCustomThemes();
 
+		// Register custom WeChat MP icon
+		addIcon('wechat-mp', WECHAT_MP_ICON);
+
 		// Register Sidebar View
 		this.registerView(
 			VIEW_TYPE_WECHAT_PREVIEW,
@@ -34,7 +38,7 @@ export default class Md2WeChatPlugin extends Plugin {
 		);
 
 		// Add Ribbon icon for preview
-		this.addRibbonIcon('messages-square', 'WeChat Format & Sync', () => {
+		this.addRibbonIcon('wechat-mp', 'WeChat Format & Sync', () => {
 			this.activateView();
 		});
 
