@@ -73,6 +73,8 @@ jobs:
           label: release
           message: ${{ env.LATEST_TAG }}
           color: blue
+          logo: obsidian
+          logocolor: white
 
       # 生成 License 徽章
       - name: Generate License Badge
@@ -84,6 +86,8 @@ jobs:
           label: license
           message: ${{ env.LICENSE }}
           color: ea7233
+          logo: gplv3
+          logocolor: white
 
       # 生成 Last Commit 徽章
       - name: Generate Last Commit Badge
