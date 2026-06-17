@@ -47,9 +47,9 @@
   
 ### 1.3 实时预览 👀
 
-类似于mdnice的体验，左边是ob原生的笔记编辑区，右边是实时更新的渲染预览效果。
+类似于mdnice的体验，左边是ob原生的笔记编辑区，右边是实时更新的渲染预览效果，支持同步滚动。
 
-![左右分栏预览效果图](./assets/preview_screenshot.jpg)
+![左右分栏预览效果图](./assets/preview_scroll_screenshot.gif)
 
 ### 1.4 自定义CSS 🎨
 
