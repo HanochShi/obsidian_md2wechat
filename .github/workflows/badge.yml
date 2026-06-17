@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Fetch Data from GitHub API
         run: |
-          # 1. 抓取 Release 相关数据 (下载量和最新版本号)
+          # 1. 抓取 Release 相关数据
           REL_JSON=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases)
           TOTAL_DL=$(echo "$REL_JSON" | jq '[.[]?.assets[]?.download_count] | add // 0')
           LATEST_TAG=$(echo "$REL_JSON" | jq -r '.[0]?.tag_name // "unknown"')
@@ -23,9 +23,28 @@ jobs:
           REPO_JSON=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }})
           LICENSE=$(echo "$REPO_JSON" | jq -r '.license.spdx_id // "None"')
           
-          # 3. 抓取 Last Commit 数据 (截取 YYYY-MM-DD 格式)
+          # 3. 抓取 Last Commit 数据并计算“相对时间”
           COMMITS_JSON=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/commits/HEAD)
-          LAST_COMMIT=$(echo "$COMMITS_JSON" | jq -r '.commit.author.date' | cut -d'T' -f1)
+          COMMIT_DATE=$(echo "$COMMITS_JSON" | jq -r '.commit.author.date')
+          
+          # 动态生成一个简短的 Python 脚本，将绝对日期转换为 relative time
+          cat << 'EOF' > calc_time.py
+          import sys
+          from datetime import datetime, timezone
+          d = datetime.strptime(sys.argv[1], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+          diff = (datetime.now(timezone.utc).date() - d.date()).days
+          if diff == 0: print('today')
+          elif diff == 1: print('yesterday')
+          elif diff < 7: print(f'{diff} days ago')
+          elif diff < 14: print('last week')
+          elif diff < 30: print(f'{diff//7} weeks ago')
+          elif diff < 60: print('last month')
+          elif diff < 365: print(f'{diff//30} months ago')
+          elif diff < 730: print('last year')
+          else: print(f'{diff//365} years ago')
+          EOF
+          
+          LAST_COMMIT=$(python calc_time.py "$COMMIT_DATE")
           
           # 存入环境变量供后续步骤使用
           echo "TOTAL_DL=$TOTAL_DL" >> $GITHUB_ENV
@@ -42,7 +61,7 @@ jobs:
           filename: downloads.json
           label: downloads
           message: ${{ env.TOTAL_DL }}
-          color: brightgreen
+          color: 95991a
 
       # 生成 Release 徽章
       - name: Generate Release Badge
@@ -64,7 +83,7 @@ jobs:
           filename: license.json
           label: license
           message: ${{ env.LICENSE }}
-          color: green
+          color: ea7233
 
       # 生成 Last Commit 徽章
       - name: Generate Last Commit Badge
@@ -75,4 +94,4 @@ jobs:
           filename: last_commit.json
           label: last commit
           message: ${{ env.LAST_COMMIT }}
-          color: yellow
+          color: 4b0
