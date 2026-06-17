@@ -1,6 +1,6 @@
 {
   "name": "obsidian-md2wechat",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Render Obsidian markdown to beautiful WeChat format and sync to WeChat Official Account with one click.",
   "main": "main.js",
   "scripts": {
