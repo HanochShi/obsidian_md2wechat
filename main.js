@@ -53953,6 +53953,17 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
     const previewArea = previewWrapper.createDiv({ cls: "md2wechat-preview-content" });
     let isSyncingScroll = false;
     let editorScrollMap = null;
+    const getVisibleMarkdownView = () => {
+      const activeView = this.app.workspace.getActiveViewOfType(import_obsidian4.MarkdownView);
+      if (activeView) return activeView;
+      const leaves = this.app.workspace.getLeavesOfType("markdown");
+      for (const leaf of leaves) {
+        if (leaf.view instanceof import_obsidian4.MarkdownView && leaf.view.editor) {
+          return leaf.view;
+        }
+      }
+      return null;
+    };
     const resolveImageToFile = (pathStr, activeFile) => {
       if (!pathStr) return null;
       const decodedPath = decodeURIComponent(pathStr).trim();
@@ -53969,7 +53980,7 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
         editorScrollMap = null;
         return;
       }
-      const activeView = this.app.workspace.getActiveViewOfType(import_obsidian4.MarkdownView);
+      const activeView = getVisibleMarkdownView();
       if (!activeView) {
         editorScrollMap = null;
         return;
@@ -54162,9 +54173,9 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
     });
     const attachEditorScrollListener = () => {
       var _a3;
-      const activeView = this.app.workspace.getActiveViewOfType(import_obsidian4.MarkdownView);
-      if (activeView) {
-        const scroller = (_a3 = activeView.editor.cm) == null ? void 0 : _a3.scrollDOM;
+      const mdView = getVisibleMarkdownView();
+      if (mdView) {
+        const scroller = (_a3 = mdView.editor.cm) == null ? void 0 : _a3.scrollDOM;
         if (scroller) {
           scroller.removeEventListener("scroll", handleEditorScroll);
           scroller.addEventListener("scroll", handleEditorScroll);
@@ -54174,12 +54185,14 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", () => {
         attachEditorScrollListener();
-        editorScrollMap = null;
+        if (this.plugin.settings.syncScroll) {
+          buildScrollMap();
+        }
       })
     );
-    const activeViewOnOpen = this.app.workspace.getActiveViewOfType(import_obsidian4.MarkdownView);
-    if (activeViewOnOpen) {
-      const scroller = (_a2 = activeViewOnOpen.editor.cm) == null ? void 0 : _a2.scrollDOM;
+    const initialMdView = getVisibleMarkdownView();
+    if (initialMdView) {
+      const scroller = (_a2 = initialMdView.editor.cm) == null ? void 0 : _a2.scrollDOM;
       if (scroller) {
         scroller.addEventListener("scroll", handleEditorScroll);
       }
@@ -54192,9 +54205,9 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
     handleEditorScroll = () => {
       var _a3;
       if (!this.plugin.settings.syncScroll || isSyncingScroll) return;
-      const activeView = this.app.workspace.getActiveViewOfType(import_obsidian4.MarkdownView);
-      if (!activeView) return;
-      const editorScroller = (_a3 = activeView.editor.cm) == null ? void 0 : _a3.scrollDOM;
+      const mdView = getVisibleMarkdownView();
+      if (!mdView) return;
+      const editorScroller = (_a3 = mdView.editor.cm) == null ? void 0 : _a3.scrollDOM;
       if (!editorScroller) return;
       if (!editorScrollMap) {
         buildScrollMap();
@@ -54233,9 +54246,9 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
     handlePreviewScroll = () => {
       var _a3;
       if (!this.plugin.settings.syncScroll || isSyncingScroll) return;
-      const activeView = this.app.workspace.getActiveViewOfType(import_obsidian4.MarkdownView);
-      if (!activeView) return;
-      const editorScroller = (_a3 = activeView.editor.cm) == null ? void 0 : _a3.scrollDOM;
+      const mdView = getVisibleMarkdownView();
+      if (!mdView) return;
+      const editorScroller = (_a3 = mdView.editor.cm) == null ? void 0 : _a3.scrollDOM;
       if (!editorScroller) return;
       if (!editorScrollMap) {
         buildScrollMap();

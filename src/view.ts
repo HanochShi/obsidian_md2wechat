@@ -115,6 +115,21 @@ export class WeChatPreviewView extends ItemView {
 		let isSyncingScroll = false;
 		let editorScrollMap: Array<{ editorScrollTop: number, previewScrollTop: number }> | null = null;
 
+		// Helper: find a visible MarkdownView regardless of focus (scroll sync needs this)
+		const getVisibleMarkdownView = (): MarkdownView | null => {
+			// First try the active view (most reliable when editor has focus)
+			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+			if (activeView) return activeView;
+			// Fallback: scan all markdown leaves to find one that is visible
+			const leaves = this.app.workspace.getLeavesOfType('markdown');
+			for (const leaf of leaves) {
+				if (leaf.view instanceof MarkdownView && leaf.view.editor) {
+					return leaf.view;
+				}
+			}
+			return null;
+		};
+
 		// Helper to resolve Obsidian Wikilinks or Markdown images to TFile
 		const resolveImageToFile = (pathStr: string, activeFile: TFile | null): TFile | null => {
 			if (!pathStr) return null;
@@ -139,7 +154,7 @@ export class WeChatPreviewView extends ItemView {
 				return;
 			}
 
-			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+			const activeView = getVisibleMarkdownView();
 			if (!activeView) {
 				editorScrollMap = null;
 				return;
@@ -404,10 +419,10 @@ export class WeChatPreviewView extends ItemView {
 
 		// Dynamic event listener attachment for Editor scroll DOM
 		const attachEditorScrollListener = () => {
-			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-			if (activeView) {
+			const mdView = getVisibleMarkdownView();
+			if (mdView) {
 				// @ts-ignore
-				const scroller = activeView.editor.cm?.scrollDOM;
+				const scroller = mdView.editor.cm?.scrollDOM;
 				if (scroller) {
 					scroller.removeEventListener('scroll', handleEditorScroll);
 					scroller.addEventListener('scroll', handleEditorScroll);
@@ -418,15 +433,19 @@ export class WeChatPreviewView extends ItemView {
 		this.registerEvent(
 			this.app.workspace.on('active-leaf-change', () => {
 				attachEditorScrollListener();
-				editorScrollMap = null;
+				// Rebuild scroll map on leaf change rather than nullifying,
+				// so scroll sync continues working even when focus is not on the editor
+				if (this.plugin.settings.syncScroll) {
+					buildScrollMap();
+				}
 			})
 		);
 
 		// Initialize scroll listener on open
-		const activeViewOnOpen = this.app.workspace.getActiveViewOfType(MarkdownView);
-		if (activeViewOnOpen) {
+		const initialMdView = getVisibleMarkdownView();
+		if (initialMdView) {
 			// @ts-ignore
-			const scroller = activeViewOnOpen.editor.cm?.scrollDOM;
+			const scroller = initialMdView.editor.cm?.scrollDOM;
 			if (scroller) {
 				scroller.addEventListener('scroll', handleEditorScroll);
 			}
@@ -443,11 +462,11 @@ export class WeChatPreviewView extends ItemView {
 		handleEditorScroll = () => {
 			if (!this.plugin.settings.syncScroll || isSyncingScroll) return;
 			
-			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-			if (!activeView) return;
+			const mdView = getVisibleMarkdownView();
+			if (!mdView) return;
 
 			// @ts-ignore
-			const editorScroller = activeView.editor.cm?.scrollDOM;
+			const editorScroller = mdView.editor.cm?.scrollDOM;
 			if (!editorScroller) return;
 
 			if (!editorScrollMap) {
@@ -504,11 +523,11 @@ export class WeChatPreviewView extends ItemView {
 		handlePreviewScroll = () => {
 			if (!this.plugin.settings.syncScroll || isSyncingScroll) return;
 
-			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-			if (!activeView) return;
+			const mdView = getVisibleMarkdownView();
+			if (!mdView) return;
 
 			// @ts-ignore
-			const editorScroller = activeView.editor.cm?.scrollDOM;
+			const editorScroller = mdView.editor.cm?.scrollDOM;
 			if (!editorScroller) return;
 
 			if (!editorScrollMap) {
