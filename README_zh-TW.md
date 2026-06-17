@@ -45,9 +45,9 @@
   
 ### 1.3 即時預覽 👀
 
-類似於 mdnice 的體驗，左側是 Obsidian 原生的筆記編輯區，右側是即時更新的渲染預覽效果。
+類似mdnice的體驗，左邊是ob原生的筆記編輯區，右邊是即時更新的渲染預覽效果，支援同步捲動。
 
-![左右分欄預覽效果圖](./assets/preview_screenshot.jpg)
+![左右分欄預覽效果圖](./assets/preview_scroll_screenshot.gif)
 
 ### 1.4 自訂 CSS 🎨
 

@@ -45,9 +45,9 @@ It can automatically upload local images from your notes into the WeChat Officia
   
 ### 1.3 Real-time Preview 👀
 
-Similar to the mdnice experience, the left side is the native Obsidian note editing area, while the right side displays a real-time updated rendering preview.
+Similar to the mdnice experience, the left side is OB's native note-taking area, while the right side displays a real-time updated rendering preview, supporting synchronized scrolling.
 
-![Split-pane preview effect](./assets/preview_screenshot.jpg)
+![Screenshot of the split-screen preview](./assets/preview_scroll_screenshot.gif)
 
 ### 1.4 Custom CSS 🎨
 
