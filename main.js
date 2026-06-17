@@ -51819,13 +51819,13 @@ __export(main_exports, {
   default: () => Md2WeChatPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian6 = require("obsidian");
+var import_obsidian7 = require("obsidian");
 
 // src/icons.ts
 var WECHAT_MP_ICON = `<svg viewBox="0 0 34 34" x="0" y="0" width="100" height="100"><path fill-rule="evenodd" clip-rule="evenodd" d="M13.0967 8.3444C13.1902 8.27971 13.2837 8.20964 13.3772 8.13956C13.5641 7.99941 13.7511 7.85926 13.9381 7.76223C13.9381 7.76223 13.9848 7.76223 13.9848 7.71372C14.1784 7.57974 14.372 7.46889 14.581 7.34923L14.581 7.34922C14.6748 7.29557 14.7716 7.24014 14.8729 7.18006C14.8962 7.18006 14.9079 7.16793 14.9196 7.15581C14.9313 7.14368 14.943 7.13155 14.9663 7.13155C15.574 6.79195 16.1816 6.54938 16.836 6.30681C16.8593 6.30681 16.8827 6.29468 16.9061 6.28256C16.9294 6.27043 16.9528 6.2583 16.9762 6.2583C17.3034 6.16127 17.6305 6.06424 17.911 5.96722C17.9577 5.96722 18.0045 5.96722 18.0045 5.9187C18.2849 5.82167 18.6121 5.77316 18.9393 5.72465C18.986 5.72465 19.0328 5.72465 19.0795 5.67613L20.061 5.53059H20.248C20.5752 5.48208 20.9491 5.48208 21.2763 5.48208C21.6502 5.48208 22.0241 5.48208 22.3981 5.53059H22.585C22.772 5.55485 22.9473 5.5791 23.1225 5.60336C23.2978 5.62762 23.4731 5.65187 23.66 5.67613C23.7068 5.67613 23.8003 5.67613 23.847 5.72465C24.1742 5.77316 24.5481 5.87019 24.8753 5.96722C24.8987 5.96722 24.922 5.97934 24.9454 5.99147C24.9688 6.0036 24.9921 6.01573 25.0155 6.01573C25.3894 6.11276 25.7166 6.20978 26.0438 6.35533C25.9815 6.24212 25.9295 6.14508 25.8863 6.06422L25.8862 6.06419C25.7997 5.90251 25.7478 5.8055 25.7166 5.77316C23.5666 2.13461 19.8741 0 15.8544 0C13.4239 0 9.73144 0.873251 6.97376 4.31774C5.15089 6.64641 4.49652 9.36319 4.91719 12.0315C5.19763 13.875 6.17917 16.3492 7.62812 17.9016C8.09553 13.972 10.1521 10.576 13.0967 8.3444ZM29.8298 12.2741C26.9319 8.39296 21.9307 7.27714 17.4436 9.02364L17.8642 9.16918C24.5481 11.5464 28.1471 19.066 25.9036 25.955C25.296 27.7985 24.3611 29.3995 23.1926 30.7094C24.6416 30.2727 26.0905 29.6906 27.3525 28.6718C32.4472 24.6451 33.4755 17.174 29.8298 12.2741ZM12.863 24.354C13.7978 24.5966 14.7794 24.6936 15.8077 24.6936C18.9393 24.6936 21.3698 23.9659 23.7068 22.1709C23.66 23.1897 23.3796 24.354 23.0992 25.0817C20.9491 30.9034 14.6392 33.4261 8.04878 31.1945C2.29972 29.2539 -1.2058 22.2679 0.383372 16.4462C0.804034 14.8938 1.2247 13.8265 2.06602 12.4681C2.53343 16.2037 4.77696 19.8907 8.09552 22.1224C8.32922 22.3164 8.51618 22.6075 8.51618 22.9471C8.51618 23.0926 8.51618 23.1897 8.46944 23.2867C8.23574 24.257 7.90856 25.8094 7.90856 25.9065C7.90856 25.9792 7.89687 26.0399 7.88519 26.1005C7.8735 26.1611 7.86182 26.2218 7.86182 26.2946C7.86182 26.5856 8.09552 26.7797 8.37596 26.7797C8.46944 26.7797 8.56292 26.7312 8.6564 26.6827L11.7413 24.5966C11.975 24.4025 12.2087 24.3055 12.4891 24.3055C12.6293 24.3055 12.7695 24.3055 12.863 24.354Z" fill="currentColor"/></svg>`;
 
 // src/settings.ts
-var import_obsidian = require("obsidian");
+var import_obsidian2 = require("obsidian");
 
 // src/i18n.ts
 var TRANSLATIONS = {
@@ -51881,6 +51881,15 @@ var TRANSLATIONS = {
     settings_notice_no_img: "No permanent images found in your WeChat material library!",
     settings_notice_loaded: "Successfully loaded {count} materials!",
     settings_cover_select_placeholder: "-- Select an Image --",
+    cover_picker_title: "Select Cover Image",
+    cover_picker_confirm: "Confirm",
+    cover_picker_cancel: "Cancel",
+    cover_picker_empty: "No image materials available. Please fetch materials first.",
+    cover_current_preview: "Current cover:",
+    cover_picker_loading: "Loading...",
+    cover_picker_load_more: "Load More",
+    cover_picker_no_more: "No more images",
+    cover_picker_fetch_error: "Failed to load materials",
     // IP Whitelist Error Modal
     error_ip_whitelist_title: "\u26A0\uFE0F IP Whitelist Not Configured",
     error_ip_whitelist_desc: "Sync failed: Your current public IP address is not added to the WeChat Official Account platform's IP whitelist.",
@@ -51942,6 +51951,15 @@ var TRANSLATIONS = {
     settings_notice_no_img: "\u60A8\u7684\u5FAE\u4FE1\u6C38\u4E45\u7D20\u6750\u5E93\u4E2D\u6CA1\u6709\u627E\u5230\u4EFB\u4F55\u56FE\u7247\u7D20\u6750\uFF01",
     settings_notice_loaded: "\u6210\u529F\u52A0\u8F7D\u5E76\u540C\u6B65\u4E86 {count} \u4E2A\u56FE\u7247\u7D20\u6750\uFF01",
     settings_cover_select_placeholder: "-- \u8BF7\u9009\u62E9\u4E00\u5F20\u56FE\u7247 --",
+    cover_picker_title: "\u9009\u62E9\u5C01\u9762\u56FE",
+    cover_picker_confirm: "\u786E\u8BA4\u9009\u62E9",
+    cover_picker_cancel: "\u53D6\u6D88",
+    cover_picker_empty: "\u6682\u65E0\u56FE\u7247\u7D20\u6750\uFF0C\u8BF7\u5148\u62C9\u53D6\u7D20\u6750\u3002",
+    cover_current_preview: "\u5F53\u524D\u5C01\u9762\uFF1A",
+    cover_picker_loading: "\u52A0\u8F7D\u4E2D...",
+    cover_picker_load_more: "\u52A0\u8F7D\u66F4\u591A",
+    cover_picker_no_more: "\u6CA1\u6709\u66F4\u591A\u4E86",
+    cover_picker_fetch_error: "\u52A0\u8F7D\u7D20\u6750\u5931\u8D25",
     // IP 白名单错误弹窗
     error_ip_whitelist_title: "\u26A0\uFE0F IP \u767D\u540D\u5355\u672A\u914D\u7F6E",
     error_ip_whitelist_desc: "\u540C\u6B65\u5931\u8D25\u539F\u56E0\uFF1A\u60A8\u5F53\u524D\u7684\u516C\u7F51 IP \u5730\u5740\u672A\u6DFB\u52A0\u5230\u5FAE\u4FE1\u516C\u4F17\u53F7\u5F00\u53D1\u5E73\u53F0\u7684 IP \u767D\u540D\u5355\u4E2D\u3002",
@@ -52003,6 +52021,15 @@ var TRANSLATIONS = {
     settings_notice_no_img: "\u60A8\u7684\u5FAE\u4FE1\u6C38\u4E45\u7D20\u6750\u5EAB\u4E2D\u6C92\u6709\u627E\u5230\u4EFB\u4F55\u5716\u7247\u7D20\u6750\uFF01",
     settings_notice_loaded: "\u6210\u529F\u52A0\u8F09\u4E26\u540C\u6B65\u4E86 {count} \u500B\u5716\u7247\u7D20\u6750\uFF01",
     settings_cover_select_placeholder: "-- \u8ACB\u9078\u64C7\u4E00\u5F35\u5716\u7247 --",
+    cover_picker_title: "\u9078\u64C7\u5C01\u9762\u5716",
+    cover_picker_confirm: "\u78BA\u8A8D\u9078\u64C7",
+    cover_picker_cancel: "\u53D6\u6D88",
+    cover_picker_empty: "\u66AB\u7121\u5716\u7247\u7D20\u6750\uFF0C\u8ACB\u5148\u62C9\u53D6\u7D20\u6750\u3002",
+    cover_current_preview: "\u7576\u524D\u5C01\u9762\uFF1A",
+    cover_picker_loading: "\u8F09\u5165\u4E2D...",
+    cover_picker_load_more: "\u8F09\u5165\u66F4\u591A",
+    cover_picker_no_more: "\u6C92\u6709\u66F4\u591A\u4E86",
+    cover_picker_fetch_error: "\u8F09\u5165\u7D20\u6750\u5931\u6557",
     // IP 白名單錯誤彈窗
     error_ip_whitelist_title: "\u26A0\uFE0F IP \u767D\u540D\u55AE\u672A\u914D\u7F6E",
     error_ip_whitelist_desc: "\u540C\u6B65\u5931\u6557\u539F\u56E0\uFF1A\u60A8\u7576\u524D\u7684\u516C\u7DB2 IP \u5730\u5740\u672A\u6DFB\u52A0\u5230\u5FAE\u4FE1\u516C\u773E\u865F\u958B\u767C\u5E73\u53F0\u7684 IP \u767D\u540D\u55AE\u4E2D\u3002",
@@ -52022,8 +52049,190 @@ function t(key, lang) {
   return val || key;
 }
 
+// src/cover-picker-modal.ts
+var import_obsidian = require("obsidian");
+var PAGE_SIZE = 18;
+var CoverPickerModal = class extends import_obsidian.Modal {
+  constructor(app, appId, appSecret, currentMediaId, lang, onSelect, onUpdateCache) {
+    super(app);
+    this.allMaterials = [];
+    this.offset = 0;
+    this.hasMore = true;
+    this.isLoading = false;
+    this.appId = appId;
+    this.appSecret = appSecret;
+    this.currentMediaId = currentMediaId;
+    this.selectedMediaId = currentMediaId;
+    this.lang = lang;
+    this.onSelect = onSelect;
+    this.onUpdateCache = onUpdateCache;
+  }
+  onOpen() {
+    const { contentEl } = this;
+    contentEl.empty();
+    contentEl.addClass("md2wechat-cover-picker");
+    const title = contentEl.createDiv({ cls: "md2wechat-cover-picker-title" });
+    title.setText(t("cover_picker_title", this.lang));
+    this.loadingEl = contentEl.createDiv({ cls: "md2wechat-cover-picker-loading" });
+    this.loadingEl.setText(t("cover_picker_loading", this.lang));
+    this.scrollWrapper = contentEl.createDiv({ cls: "md2wechat-cover-picker-scroll" });
+    this.gridEl = this.scrollWrapper.createDiv({ cls: "md2wechat-cover-picker-grid" });
+    this.gridEl.style.display = "none";
+    this.loadMoreEl = this.scrollWrapper.createDiv({ cls: "md2wechat-cover-picker-load-more" });
+    this.loadMoreEl.setText(t("cover_picker_load_more", this.lang));
+    this.loadMoreEl.style.display = "none";
+    this.loadMoreEl.addEventListener("click", () => {
+      this.fetchNextPage();
+    });
+    this.statusEl = this.scrollWrapper.createDiv({ cls: "md2wechat-cover-picker-status" });
+    this.statusEl.style.display = "none";
+    this.footerEl = contentEl.createDiv({ cls: "md2wechat-cover-picker-footer" });
+    this.footerEl.style.display = "none";
+    const cancelBtn = this.footerEl.createEl("button", { cls: "md2wechat-cover-picker-cancel-btn" });
+    cancelBtn.setText(t("cover_picker_cancel", this.lang));
+    cancelBtn.addEventListener("click", () => {
+      this.close();
+    });
+    const confirmBtn = this.footerEl.createEl("button", { cls: "md2wechat-cover-picker-confirm-btn" });
+    confirmBtn.setText(t("cover_picker_confirm", this.lang));
+    confirmBtn.addEventListener("click", () => {
+      this.confirm();
+    });
+    this.fetchNextPage();
+  }
+  async fetchNextPage() {
+    var _a2;
+    if (this.isLoading || !this.hasMore) return;
+    this.isLoading = true;
+    if (this.offset === 0) {
+      this.loadingEl.style.display = "block";
+    } else {
+      this.loadMoreEl.setText(t("cover_picker_loading", this.lang));
+      this.loadMoreEl.addClass("is-loading");
+    }
+    try {
+      const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`;
+      const tokenRes = await (0, import_obsidian.requestUrl)({ url: tokenUrl, method: "GET" });
+      const tokenData = JSON.parse(tokenRes.text);
+      if (tokenData.errcode) {
+        throw new Error(tokenData.errmsg);
+      }
+      const token = tokenData.access_token;
+      const matUrl = `https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token=${token}`;
+      const matRes = await (0, import_obsidian.requestUrl)({
+        url: matUrl,
+        method: "POST",
+        contentType: "application/json",
+        body: JSON.stringify({
+          type: "image",
+          offset: this.offset,
+          count: PAGE_SIZE
+        })
+      });
+      const matData = JSON.parse(matRes.text);
+      if (matData.errcode) {
+        throw new Error(matData.errmsg);
+      }
+      const items = matData.item || [];
+      const newMaterials = items.map((item) => ({
+        mediaId: item.media_id,
+        name: item.name,
+        url: item.url || ""
+      }));
+      this.allMaterials = [...this.allMaterials, ...newMaterials];
+      this.offset += items.length;
+      if (items.length < PAGE_SIZE) {
+        this.hasMore = false;
+      }
+      if (this.allMaterials.length === 0) {
+        this.loadingEl.style.display = "none";
+        const empty = (_a2 = this.gridEl.parentElement) == null ? void 0 : _a2.createDiv({ cls: "md2wechat-cover-picker-empty" });
+        if (empty) empty.setText(t("cover_picker_empty", this.lang));
+        return;
+      }
+      this.onUpdateCache(this.allMaterials);
+      this.renderItems(newMaterials);
+      this.loadingEl.style.display = "none";
+      this.gridEl.style.display = "grid";
+      this.scrollWrapper.style.display = "block";
+      this.footerEl.style.display = "flex";
+      if (this.hasMore) {
+        this.loadMoreEl.style.display = "block";
+        this.loadMoreEl.setText(t("cover_picker_load_more", this.lang));
+        this.loadMoreEl.removeClass("is-loading");
+      } else {
+        this.loadMoreEl.style.display = "none";
+        this.statusEl.style.display = "block";
+        this.statusEl.setText(t("cover_picker_no_more", this.lang));
+      }
+    } catch (err) {
+      console.error("Failed to fetch materials:", err);
+      this.loadingEl.style.display = "none";
+      new import_obsidian.Notice(t("cover_picker_fetch_error", this.lang) + " " + (err.message || ""));
+      if (this.allMaterials.length > 0) {
+        this.footerEl.style.display = "flex";
+        this.loadMoreEl.setText(t("cover_picker_load_more", this.lang));
+        this.loadMoreEl.removeClass("is-loading");
+      }
+    } finally {
+      this.isLoading = false;
+    }
+  }
+  renderItems(materials) {
+    materials.forEach((mat) => {
+      const item = this.gridEl.createDiv({ cls: "md2wechat-cover-picker-item" });
+      if (mat.mediaId === this.selectedMediaId) {
+        item.addClass("is-selected");
+      }
+      const thumbWrap = item.createDiv({ cls: "md2wechat-cover-picker-thumb" });
+      if (mat.url) {
+        const img = thumbWrap.createEl("img", {
+          attr: {
+            src: mat.url,
+            loading: "lazy",
+            alt: mat.name
+          }
+        });
+        img.onerror = () => {
+          img.style.display = "none";
+          thumbWrap.addClass("is-broken");
+          const fallback = thumbWrap.createDiv({ cls: "md2wechat-cover-picker-thumb-fallback" });
+          fallback.setText("\u{1F5BC}\uFE0F");
+        };
+      } else {
+        thumbWrap.addClass("is-broken");
+        const fallback = thumbWrap.createDiv({ cls: "md2wechat-cover-picker-thumb-fallback" });
+        fallback.setText("\u{1F5BC}\uFE0F");
+      }
+      const nameEl = item.createDiv({ cls: "md2wechat-cover-picker-name" });
+      const displayName = mat.name.length > 20 ? mat.name.substring(0, 20) + "..." : mat.name;
+      nameEl.setText(displayName);
+      nameEl.title = mat.name;
+      item.addEventListener("click", () => {
+        this.gridEl.querySelectorAll(".md2wechat-cover-picker-item.is-selected").forEach((el) => {
+          el.removeClass("is-selected");
+        });
+        item.addClass("is-selected");
+        this.selectedMediaId = mat.mediaId;
+      });
+      item.addEventListener("dblclick", () => {
+        this.selectedMediaId = mat.mediaId;
+        this.confirm();
+      });
+    });
+  }
+  confirm() {
+    this.onSelect(this.selectedMediaId);
+    this.close();
+  }
+  onClose() {
+    const { contentEl } = this;
+    contentEl.empty();
+  }
+};
+
 // src/settings.ts
-var Md2WeChatSettingTab = class extends import_obsidian.PluginSettingTab {
+var Md2WeChatSettingTab = class extends import_obsidian2.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     this.plugin = plugin;
@@ -52032,8 +52241,8 @@ var Md2WeChatSettingTab = class extends import_obsidian.PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
     const lang = this.plugin.settings.lang;
-    new import_obsidian.Setting(containerEl).setName(t("settings_title", lang)).setHeading();
-    new import_obsidian.Setting(containerEl).setName(t("settings_lang_name", lang)).setDesc(t("settings_lang_desc", lang)).addDropdown((dropdown) => {
+    new import_obsidian2.Setting(containerEl).setName(t("settings_title", lang)).setHeading();
+    new import_obsidian2.Setting(containerEl).setName(t("settings_lang_name", lang)).setDesc(t("settings_lang_desc", lang)).addDropdown((dropdown) => {
       dropdown.addOption("en", "English");
       dropdown.addOption("zh-CN", "\u7B80\u4F53\u4E2D\u6587");
       dropdown.addOption("zh-TW", "\u7E41\u9AD4\u4E2D\u6587");
@@ -52050,15 +52259,15 @@ var Md2WeChatSettingTab = class extends import_obsidian.PluginSettingTab {
         this.display();
       });
     });
-    new import_obsidian.Setting(containerEl).setName(t("settings_appid_name", lang)).setDesc(t("settings_appid_desc", lang)).addText((text) => text.setPlaceholder("wx...").setValue(this.plugin.settings.appId).onChange(async (value) => {
+    new import_obsidian2.Setting(containerEl).setName(t("settings_appid_name", lang)).setDesc(t("settings_appid_desc", lang)).addText((text) => text.setPlaceholder("wx...").setValue(this.plugin.settings.appId).onChange(async (value) => {
       this.plugin.settings.appId = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian.Setting(containerEl).setName(t("settings_appsecret_name", lang)).setDesc(t("settings_appsecret_desc", lang)).addText((text) => text.setPlaceholder("Enter app secret").setValue(this.plugin.settings.appSecret).onChange(async (value) => {
+    new import_obsidian2.Setting(containerEl).setName(t("settings_appsecret_name", lang)).setDesc(t("settings_appsecret_desc", lang)).addText((text) => text.setPlaceholder("Enter app secret").setValue(this.plugin.settings.appSecret).onChange(async (value) => {
       this.plugin.settings.appSecret = value;
       await this.plugin.saveSettings();
     }));
-    const styleSetting = new import_obsidian.Setting(containerEl).setName(t("settings_theme_name", lang)).setDesc(t("settings_theme_desc", lang));
+    const styleSetting = new import_obsidian2.Setting(containerEl).setName(t("settings_theme_name", lang)).setDesc(t("settings_theme_desc", lang));
     styleSetting.addDropdown((dropdown) => {
       dropdown.addOption("elegant", "Elegant Green (\u96C5\u7EFF)");
       dropdown.addOption("warm", "Warm Gold (\u6696\u91D1)");
@@ -52072,89 +52281,67 @@ var Md2WeChatSettingTab = class extends import_obsidian.PluginSettingTab {
         await this.plugin.saveSettings();
       });
     });
-    new import_obsidian.Setting(containerEl).setName(t("settings_folder_name", lang)).setDesc(t("settings_folder_desc", lang)).addText((text) => text.setPlaceholder("wechat-format-themes").setValue(this.plugin.settings.themeFolder).onChange(async (value) => {
+    new import_obsidian2.Setting(containerEl).setName(t("settings_folder_name", lang)).setDesc(t("settings_folder_desc", lang)).addText((text) => text.setPlaceholder("wechat-format-themes").setValue(this.plugin.settings.themeFolder).onChange(async (value) => {
       this.plugin.settings.themeFolder = value.trim() || "wechat-format-themes";
       await this.plugin.saveSettings();
       await this.plugin.initThemeDirectory();
       await this.plugin.loadCustomThemes();
     }));
-    new import_obsidian.Setting(containerEl).setName(t("settings_upload_name", lang)).setDesc(t("settings_upload_desc", lang)).addToggle((toggle) => toggle.setValue(this.plugin.settings.enableImgUpload).onChange(async (value) => {
+    new import_obsidian2.Setting(containerEl).setName(t("settings_upload_name", lang)).setDesc(t("settings_upload_desc", lang)).addToggle((toggle) => toggle.setValue(this.plugin.settings.enableImgUpload).onChange(async (value) => {
       this.plugin.settings.enableImgUpload = value;
       await this.plugin.saveSettings();
     }));
-    const materialsSetting = new import_obsidian.Setting(containerEl).setName(t("settings_fetch_name", lang)).setDesc(t("settings_fetch_desc", lang)).addButton((btn) => btn.setButtonText(t("settings_fetch_btn", lang)).onClick(async () => {
-      const { appId, appSecret } = this.plugin.settings;
-      if (!appId || !appSecret) {
-        new import_obsidian.Notice(t("settings_notice_enter_api", lang));
-        return;
-      }
-      btn.setDisabled(true);
-      btn.setButtonText(t("settings_fetching_btn", lang));
-      new import_obsidian.Notice(t("settings_notice_fetching", lang));
-      try {
-        const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
-        const tokenRes = await (0, import_obsidian.requestUrl)({ url: tokenUrl, method: "GET" });
-        const tokenData = JSON.parse(tokenRes.text);
-        if (tokenData.errcode) {
-          throw new Error(tokenData.errmsg);
-        }
-        const token = tokenData.access_token;
-        const matUrl = `https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token=${token}`;
-        const matRes = await (0, import_obsidian.requestUrl)({
-          url: matUrl,
-          method: "POST",
-          contentType: "application/json",
-          body: JSON.stringify({
-            type: "image",
-            offset: 0,
-            count: 20
-          })
-        });
-        const matData = JSON.parse(matRes.text);
-        if (matData.errcode) {
-          throw new Error(matData.errmsg);
-        }
-        const items = matData.item || [];
-        if (items.length === 0) {
-          new import_obsidian.Notice(t("settings_notice_no_img", lang));
+    const materialsSetting = new import_obsidian2.Setting(containerEl).setName(t("settings_fetch_name", lang)).setDesc(t("settings_fetch_desc", lang)).addButton(
+      (btn) => btn.setButtonText(t("cover_picker_title", lang)).onClick(() => {
+        const { appId, appSecret } = this.plugin.settings;
+        if (!appId || !appSecret) {
+          new import_obsidian2.Notice(t("settings_notice_enter_api", lang));
           return;
         }
-        this.plugin.settings.cachedMaterials = items.map((item) => ({
-          mediaId: item.media_id,
-          name: item.name
-        }));
-        await this.plugin.saveSettings();
-        new import_obsidian.Notice(t("settings_notice_loaded", lang).replace("{count}", items.length.toString()));
-        this.display();
-      } catch (err) {
-        console.error(err);
-        new import_obsidian.Notice(`Failed to fetch: ${err.message || err}`);
-      } finally {
-        btn.setDisabled(false);
-        btn.setButtonText(t("settings_fetch_btn", lang));
-      }
-    }));
+        const modal = new CoverPickerModal(
+          this.app,
+          appId,
+          appSecret,
+          this.plugin.settings.defaultThumbMediaId,
+          lang,
+          async (mediaId) => {
+            this.plugin.settings.defaultThumbMediaId = mediaId;
+            await this.plugin.saveSettings();
+            this.display();
+          },
+          async (materials) => {
+            this.plugin.settings.cachedMaterials = materials;
+            await this.plugin.saveSettings();
+          }
+        );
+        modal.open();
+      })
+    );
     if (this.plugin.settings.cachedMaterials && this.plugin.settings.cachedMaterials.length > 0) {
-      materialsSetting.addDropdown((dropdown) => {
-        dropdown.addOption("", t("settings_cover_select_placeholder", lang));
-        this.plugin.settings.cachedMaterials.forEach((m2) => {
-          dropdown.addOption(m2.mediaId, m2.name.substring(0, 30));
+      const currentCover = this.plugin.settings.cachedMaterials.find(
+        (m2) => m2.mediaId === this.plugin.settings.defaultThumbMediaId
+      );
+      if (currentCover && currentCover.url) {
+        const previewContainer = materialsSetting.controlEl.createDiv({ cls: "md2wechat-cover-preview-container" });
+        const previewLabel = previewContainer.createDiv({ cls: "md2wechat-cover-preview-label" });
+        previewLabel.setText(t("cover_current_preview", lang));
+        const previewImg = previewContainer.createEl("img", {
+          cls: "md2wechat-cover-preview-img",
+          attr: { src: currentCover.url, alt: currentCover.name }
         });
-        dropdown.setValue(this.plugin.settings.defaultThumbMediaId);
-        dropdown.onChange(async (val) => {
-          this.plugin.settings.defaultThumbMediaId = val;
-          await this.plugin.saveSettings();
-        });
-      });
+        previewImg.onerror = () => {
+          previewImg.style.display = "none";
+        };
+      }
     }
   }
 };
 
 // src/view.ts
-var import_obsidian5 = require("obsidian");
+var import_obsidian6 = require("obsidian");
 
 // src/themes.ts
-var import_obsidian2 = require("obsidian");
+var import_obsidian3 = require("obsidian");
 var THEMES = {
   elegant: {
     name: "Elegant Green (\u96C5\u7EFF)",
@@ -52266,7 +52453,7 @@ async function writeThemeWithConflictCheck(adapter, folderPath, baseName, conten
     const candidateExists = await adapter.exists(candidatePath);
     if (!candidateExists) {
       await adapter.write(candidatePath, content);
-      new import_obsidian2.Notice(`\u68C0\u6D4B\u5230\u60A8\u81EA\u5B9A\u4E49\u4E86\u9ED8\u8BA4\u793A\u4F8B\uFF0C\u5DF2\u81EA\u52A8\u5C06\u6700\u65B0\u7684\u5168\u9762\u6807\u8BB0\u6A21\u7248\u4FDD\u5B58\u4E3A "${baseName} (${index}).css"\uFF01`);
+      new import_obsidian3.Notice(`\u68C0\u6D4B\u5230\u60A8\u81EA\u5B9A\u4E49\u4E86\u9ED8\u8BA4\u793A\u4F8B\uFF0C\u5DF2\u81EA\u52A8\u5C06\u6700\u65B0\u7684\u5168\u9762\u6807\u8BB0\u6A21\u7248\u4FDD\u5B58\u4E3A "${baseName} (${index}).css"\uFF01`);
       console.log(`\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u68C0\u6D4B\u5230\u51B2\u7A81\uFF0C\u5DF2\u5C06\u6700\u65B0\u793A\u4F8B\u6A21\u7248\u5907\u4EFD\u5230: ${candidatePath}`);
       return;
     }
@@ -53835,7 +54022,7 @@ function convertToWeChatHtml(markdownText, theme) {
 }
 
 // src/uploader.ts
-var import_obsidian3 = require("obsidian");
+var import_obsidian4 = require("obsidian");
 function createMultipartBody(filename, fileData, contentType, boundary) {
   const encoder = new TextEncoder();
   const header = encoder.encode(
@@ -53871,7 +54058,7 @@ async function uploadImageToWeChat(app, file, accessToken) {
   const boundary = `----ObsidianMd2WeChatBoundary${Math.random().toString(36).substring(2)}`;
   const body = createMultipartBody(filename, fileData, contentType, boundary);
   const url = `https://api.weixin.qq.com/cgi-bin/media/uploadimg?access_token=${accessToken}`;
-  const res = await (0, import_obsidian3.requestUrl)({
+  const res = await (0, import_obsidian4.requestUrl)({
     url,
     method: "POST",
     contentType: `multipart/form-data; boundary=${boundary}`,
@@ -53897,7 +54084,7 @@ async function uploadThumbToWeChat(app, file, accessToken) {
   const boundary = `----ObsidianMd2WeChatBoundary${Math.random().toString(36).substring(2)}`;
   const body = createMultipartBody(filename, fileData, contentType, boundary);
   const url = `https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=${accessToken}&type=image`;
-  const res = await (0, import_obsidian3.requestUrl)({
+  const res = await (0, import_obsidian4.requestUrl)({
     url,
     method: "POST",
     contentType: `multipart/form-data; boundary=${boundary}`,
@@ -53917,8 +54104,8 @@ async function uploadThumbToWeChat(app, file, accessToken) {
 }
 
 // src/error-modal.ts
-var import_obsidian4 = require("obsidian");
-var IpWhitelistErrorModal = class extends import_obsidian4.Modal {
+var import_obsidian5 = require("obsidian");
+var IpWhitelistErrorModal = class extends import_obsidian5.Modal {
   constructor(app, ipAddress, lang) {
     super(app);
     this.ipAddress = ipAddress;
@@ -53942,7 +54129,7 @@ var IpWhitelistErrorModal = class extends import_obsidian4.Modal {
     const copyIpBtn = ipRow.createEl("button", { cls: "md2wechat-error-modal-copy-btn", text: t("error_ip_whitelist_copy_ip", lang) });
     copyIpBtn.addEventListener("click", () => {
       navigator.clipboard.writeText(this.ipAddress).then(() => {
-        new import_obsidian4.Notice(t("error_ip_whitelist_ip_copied", lang));
+        new import_obsidian5.Notice(t("error_ip_whitelist_ip_copied", lang));
       }).catch(() => {
         const textArea = document.createElement("textarea");
         textArea.value = this.ipAddress;
@@ -53950,7 +54137,7 @@ var IpWhitelistErrorModal = class extends import_obsidian4.Modal {
         textArea.select();
         document.execCommand("copy");
         document.body.removeChild(textArea);
-        new import_obsidian4.Notice(t("error_ip_whitelist_ip_copied", lang));
+        new import_obsidian5.Notice(t("error_ip_whitelist_ip_copied", lang));
       });
     });
     const guideRow = container.createDiv({ cls: "md2wechat-error-modal-guide" });
@@ -53992,7 +54179,7 @@ var IpWhitelistErrorModal = class extends import_obsidian4.Modal {
 
 // src/view.ts
 var VIEW_TYPE_WECHAT_PREVIEW = "wechat-preview-view";
-var WeChatPreviewView = class extends import_obsidian5.ItemView {
+var WeChatPreviewView = class extends import_obsidian6.ItemView {
   constructor(leaf, plugin) {
     super(leaf);
     this.currentHtml = "";
@@ -54050,12 +54237,12 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
     };
     populateSelector();
     const refreshBtn = toolbarLeft.createEl("button", { cls: "md2wechat-icon-btn" });
-    (0, import_obsidian5.setIcon)(refreshBtn, "refresh-cw");
+    (0, import_obsidian6.setIcon)(refreshBtn, "refresh-cw");
     refreshBtn.title = t("button_refresh_title", lang);
     const scrollSyncBtn = toolbarLeft.createEl("button", {
       cls: "md2wechat-icon-btn md2wechat-scroll-sync-btn"
     });
-    (0, import_obsidian5.setIcon)(scrollSyncBtn, "link");
+    (0, import_obsidian6.setIcon)(scrollSyncBtn, "link");
     scrollSyncBtn.title = t("button_scroll_sync", lang);
     if (this.plugin.settings.syncScroll) {
       scrollSyncBtn.addClass("is-active");
@@ -54063,21 +54250,21 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
     toolbar.createDiv({ cls: "md2wechat-toolbar-spacer" });
     const toolbarRight = toolbar.createDiv({ cls: "md2wechat-toolbar-right" });
     const copyBtn = toolbarRight.createEl("button", { cls: "md2wechat-icon-btn" });
-    (0, import_obsidian5.setIcon)(copyBtn, "copy");
+    (0, import_obsidian6.setIcon)(copyBtn, "copy");
     copyBtn.title = t("button_copy", lang);
     const syncBtn = toolbarRight.createEl("button", { cls: "md2wechat-icon-btn mod-cta" });
-    (0, import_obsidian5.setIcon)(syncBtn, "upload-cloud");
+    (0, import_obsidian6.setIcon)(syncBtn, "upload-cloud");
     syncBtn.title = t("button_sync", lang);
     const previewWrapper = container.createDiv({ cls: "md2wechat-preview-content-wrapper" });
     const previewArea = previewWrapper.createDiv({ cls: "md2wechat-preview-content" });
     let isSyncingScroll = false;
     let editorScrollMap = null;
     const getVisibleMarkdownView = () => {
-      const activeView = this.app.workspace.getActiveViewOfType(import_obsidian5.MarkdownView);
+      const activeView = this.app.workspace.getActiveViewOfType(import_obsidian6.MarkdownView);
       if (activeView) return activeView;
       const leaves = this.app.workspace.getLeavesOfType("markdown");
       for (const leaf of leaves) {
-        if (leaf.view instanceof import_obsidian5.MarkdownView && leaf.view.editor) {
+        if (leaf.view instanceof import_obsidian6.MarkdownView && leaf.view.editor) {
           return leaf.view;
         }
       }
@@ -54170,7 +54357,7 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
     };
     const render = (onlyIfMarkdown = false) => {
       console.log("render executed");
-      const activeView = this.app.workspace.getActiveViewOfType(import_obsidian5.MarkdownView);
+      const activeView = this.app.workspace.getActiveViewOfType(import_obsidian6.MarkdownView);
       let markdownText = "";
       if (activeView) {
         markdownText = activeView.editor.getValue();
@@ -54181,7 +54368,7 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
           previewArea.empty();
           const emptyMsg = previewArea.createDiv({ cls: "md2wechat-preview-empty-notice-msg" });
           const emptyIcon = emptyMsg.createDiv({ cls: "md2wechat-empty-icon" });
-          (0, import_obsidian5.setIcon)(emptyIcon, "file-text");
+          (0, import_obsidian6.setIcon)(emptyIcon, "file-text");
           emptyMsg.createDiv({ text: t("view_empty_notice", lang) });
         }
         return;
@@ -54254,7 +54441,7 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
       await this.plugin.loadCustomThemes();
       populateSelector();
       render(false);
-      new import_obsidian5.Notice(t("notice_theme_refreshed", lang));
+      new import_obsidian6.Notice(t("notice_theme_refreshed", lang));
     });
     scrollSyncBtn.addEventListener("click", async () => {
       this.plugin.settings.syncScroll = !this.plugin.settings.syncScroll;
@@ -54262,11 +54449,11 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
       if (this.plugin.settings.syncScroll) {
         scrollSyncBtn.addClass("is-active");
         buildScrollMap();
-        new import_obsidian5.Notice(t("notice_scroll_sync_enabled", lang));
+        new import_obsidian6.Notice(t("notice_scroll_sync_enabled", lang));
       } else {
         scrollSyncBtn.removeClass("is-active");
         editorScrollMap = null;
-        new import_obsidian5.Notice(t("notice_scroll_sync_disabled", lang));
+        new import_obsidian6.Notice(t("notice_scroll_sync_disabled", lang));
       }
     });
     this.registerEvent(
@@ -54275,7 +54462,7 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
         render(true);
       })
     );
-    const debouncedRender = (0, import_obsidian5.debounce)(() => {
+    const debouncedRender = (0, import_obsidian6.debounce)(() => {
       console.log("debounceRender executed");
       render(true);
     }, 300, true);
@@ -54424,7 +54611,7 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
     };
     const embedLocalImagesAsBase64 = async (html) => {
       var _a3;
-      const activeFile = ((_a3 = this.app.workspace.getActiveViewOfType(import_obsidian5.MarkdownView)) == null ? void 0 : _a3.file) || null;
+      const activeFile = ((_a3 = this.app.workspace.getActiveViewOfType(import_obsidian6.MarkdownView)) == null ? void 0 : _a3.file) || null;
       try {
         const parser = new DOMParser();
         const doc = parser.parseFromString(`<div>${html}</div>`, "text/html");
@@ -54461,7 +54648,7 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
     copyBtn.addEventListener("click", async () => {
       var _a3, _b;
       if (!this.currentHtml) {
-        new import_obsidian5.Notice(t("notice_no_content_copy", lang));
+        new import_obsidian6.Notice(t("notice_no_content_copy", lang));
         return;
       }
       try {
@@ -54469,10 +54656,10 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
         const blob = new Blob([htmlWithImages], { type: "text/html" });
         const data = [new ClipboardItem({ "text/html": blob, "text/plain": new Blob([this.lastMarkdown], { type: "text/plain" }) })];
         await navigator.clipboard.write(data);
-        new import_obsidian5.Notice(t("notice_copy_success", lang));
+        new import_obsidian6.Notice(t("notice_copy_success", lang));
       } catch (err) {
         console.error(err);
-        new import_obsidian5.Notice("Failed to copy to clipboard automatically. Trying fallback...");
+        new import_obsidian6.Notice("Failed to copy to clipboard automatically. Trying fallback...");
         const htmlWithImages = await embedLocalImagesAsBase64(this.currentHtml);
         const el = document.createElement("div");
         const innerDiv = el.createDiv();
@@ -54498,30 +54685,30 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
         (_b = window.getSelection()) == null ? void 0 : _b.addRange(range);
         document.execCommand("copy");
         document.body.removeChild(el);
-        new import_obsidian5.Notice(t("notice_copy_fallback_success", lang));
+        new import_obsidian6.Notice(t("notice_copy_fallback_success", lang));
       }
     });
     syncBtn.addEventListener("click", async () => {
       var _a3;
       if (!this.currentHtml) {
-        new import_obsidian5.Notice(t("notice_no_content_sync", lang));
+        new import_obsidian6.Notice(t("notice_no_content_sync", lang));
         return;
       }
       const { appId, appSecret, enableImgUpload } = this.plugin.settings;
       if (!appId || !appSecret) {
-        new import_obsidian5.Notice(t("notice_configure_app", lang));
+        new import_obsidian6.Notice(t("notice_configure_app", lang));
         return;
       }
       syncBtn.disabled = true;
-      (0, import_obsidian5.setIcon)(syncBtn, "loader");
+      (0, import_obsidian6.setIcon)(syncBtn, "loader");
       const loaderSvg = syncBtn.querySelector("svg");
       if (loaderSvg) loaderSvg.addClass("rotate-spin");
       syncBtn.title = t("button_syncing", lang);
-      new import_obsidian5.Notice(t("notice_acquiring_token", lang));
+      new import_obsidian6.Notice(t("notice_acquiring_token", lang));
       try {
         console.log("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u5F00\u59CB\u540C\u6B65\u6D41\u7A0B...");
         const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
-        const tokenRes = await (0, import_obsidian5.requestUrl)({ url: tokenUrl, method: "GET" });
+        const tokenRes = await (0, import_obsidian6.requestUrl)({ url: tokenUrl, method: "GET" });
         if (tokenRes.status !== 200) {
           throw new Error(`Token request failed with status ${tokenRes.status}`);
         }
@@ -54531,10 +54718,10 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
         }
         const accessToken = tokenData.access_token;
         let finalHtml = this.currentHtml;
-        let activeFile = ((_a3 = this.app.workspace.getActiveViewOfType(import_obsidian5.MarkdownView)) == null ? void 0 : _a3.file) || null;
+        let activeFile = ((_a3 = this.app.workspace.getActiveViewOfType(import_obsidian6.MarkdownView)) == null ? void 0 : _a3.file) || null;
         let firstLocalImageFile = null;
         if (enableImgUpload) {
-          new import_obsidian5.Notice(t("notice_uploading_cdn", lang));
+          new import_obsidian6.Notice(t("notice_uploading_cdn", lang));
           const parser = new DOMParser();
           const doc = parser.parseFromString(`<div>${finalHtml}</div>`, "text/html");
           const imgElements = doc.querySelectorAll("img");
@@ -54551,7 +54738,7 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
                 firstLocalImageFile = file;
               }
               try {
-                new import_obsidian5.Notice(
+                new import_obsidian6.Notice(
                   t("notice_uploading_inline_img", lang).replace("{current}", (i + 1).toString()).replace("{total}", imgElements.length.toString()).replace("{name}", file.name)
                 );
                 const wechatCdnUrl = await uploadImageToWeChat(this.app, file, accessToken);
@@ -54559,12 +54746,12 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
                 uploadCount++;
               } catch (uploadErr) {
                 console.error(`Failed to upload ${file.name}:`, uploadErr);
-                new import_obsidian5.Notice(`Warning: Failed to upload ${file.name}. Staying with local path.`);
+                new import_obsidian6.Notice(`Warning: Failed to upload ${file.name}. Staying with local path.`);
               }
             }
           }
           if (uploadCount > 0) {
-            new import_obsidian5.Notice(t("notice_upload_cdn_success", lang).replace("{count}", uploadCount.toString()));
+            new import_obsidian6.Notice(t("notice_upload_cdn_success", lang).replace("{count}", uploadCount.toString()));
           }
           finalHtml = doc.body.firstElementChild.innerHTML;
         }
@@ -54585,23 +54772,23 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
             }
           }
           if (firstLocalImageFile) {
-            new import_obsidian5.Notice(t("notice_uploading_cover", lang).replace("{name}", firstLocalImageFile.name));
+            new import_obsidian6.Notice(t("notice_uploading_cover", lang).replace("{name}", firstLocalImageFile.name));
             try {
               const uploadedThumbId = await uploadThumbToWeChat(this.app, firstLocalImageFile, accessToken);
               if (uploadedThumbId) {
                 thumbMediaId = uploadedThumbId;
-                new import_obsidian5.Notice(t("notice_cover_success", lang));
+                new import_obsidian6.Notice(t("notice_cover_success", lang));
               }
             } catch (thumbErr) {
               console.error("Failed to upload auto cover:", thumbErr);
-              new import_obsidian5.Notice(t("notice_cover_fallback_warning", lang));
+              new import_obsidian6.Notice(t("notice_cover_fallback_warning", lang));
             }
           }
         }
         if (!thumbMediaId) {
           throw new Error("WeChat requires a cover image (thumb_media_id) to create draft. Please configure the 'Default Cover Media ID' in settings or include a local image in your note.");
         }
-        new import_obsidian5.Notice(t("notice_syncing_draft", lang));
+        new import_obsidian6.Notice(t("notice_syncing_draft", lang));
         const title = this.lastTitle || "Untitled Note";
         const digest = this.lastDigest || "";
         const article = {
@@ -54616,7 +54803,7 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
         };
         const draftUrl = `https://api.weixin.qq.com/cgi-bin/draft/add?access_token=${accessToken}`;
         const requestPayload = { articles: [article] };
-        const draftRes = await (0, import_obsidian5.requestUrl)({
+        const draftRes = await (0, import_obsidian6.requestUrl)({
           url: draftUrl,
           method: "POST",
           contentType: "application/json",
@@ -54629,7 +54816,7 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
           }
           throw new Error(`WeChat Sync Error: [${draftData.errcode}] ${draftData.errmsg}`);
         }
-        new import_obsidian5.Notice(t("notice_sync_success", lang));
+        new import_obsidian6.Notice(t("notice_sync_success", lang));
       } catch (err) {
         console.error("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u53D1\u751F\u5F02\u5E38\uFF0C\u8BE6\u7EC6\u5806\u6808\u5982\u4E0B\uFF1A");
         console.error(err);
@@ -54640,11 +54827,11 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
           const modal = new IpWhitelistErrorModal(this.app, detectedIp, lang);
           modal.open();
         } else {
-          new import_obsidian5.Notice(`Sync failed: ${errMsg}`);
+          new import_obsidian6.Notice(`Sync failed: ${errMsg}`);
         }
       } finally {
         syncBtn.disabled = false;
-        (0, import_obsidian5.setIcon)(syncBtn, "upload-cloud");
+        (0, import_obsidian6.setIcon)(syncBtn, "upload-cloud");
         syncBtn.title = t("button_sync", lang);
       }
     });
@@ -54667,7 +54854,7 @@ var DEFAULT_SETTINGS = {
   themeFolder: "wechat-format-themes",
   syncScroll: true
 };
-var Md2WeChatPlugin = class extends import_obsidian6.Plugin {
+var Md2WeChatPlugin = class extends import_obsidian7.Plugin {
   constructor() {
     super(...arguments);
     this.customThemes = {};
@@ -54676,7 +54863,7 @@ var Md2WeChatPlugin = class extends import_obsidian6.Plugin {
     await this.loadSettings();
     await this.initThemeDirectory();
     await this.loadCustomThemes();
-    (0, import_obsidian6.addIcon)("wechat-mp", WECHAT_MP_ICON);
+    (0, import_obsidian7.addIcon)("wechat-mp", WECHAT_MP_ICON);
     this.registerView(
       VIEW_TYPE_WECHAT_PREVIEW,
       (leaf) => new WeChatPreviewView(leaf, this)

@@ -53,6 +53,15 @@ export const TRANSLATIONS = {
 		settings_notice_no_img: "No permanent images found in your WeChat material library!",
 		settings_notice_loaded: "Successfully loaded {count} materials!",
 		settings_cover_select_placeholder: "-- Select an Image --",
+		cover_picker_title: "Select Cover Image",
+		cover_picker_confirm: "Confirm",
+		cover_picker_cancel: "Cancel",
+		cover_picker_empty: "No image materials available. Please fetch materials first.",
+		cover_current_preview: "Current cover:",
+		cover_picker_loading: "Loading...",
+		cover_picker_load_more: "Load More",
+		cover_picker_no_more: "No more images",
+		cover_picker_fetch_error: "Failed to load materials",
 		
 		// IP Whitelist Error Modal
 		error_ip_whitelist_title: "⚠️ IP Whitelist Not Configured",
@@ -117,6 +126,15 @@ export const TRANSLATIONS = {
 		settings_notice_no_img: "您的微信永久素材库中没有找到任何图片素材！",
 		settings_notice_loaded: "成功加载并同步了 {count} 个图片素材！",
 		settings_cover_select_placeholder: "-- 请选择一张图片 --",
+		cover_picker_title: "选择封面图",
+		cover_picker_confirm: "确认选择",
+		cover_picker_cancel: "取消",
+		cover_picker_empty: "暂无图片素材，请先拉取素材。",
+		cover_current_preview: "当前封面：",
+		cover_picker_loading: "加载中...",
+		cover_picker_load_more: "加载更多",
+		cover_picker_no_more: "没有更多了",
+		cover_picker_fetch_error: "加载素材失败",
 		
 		// IP 白名单错误弹窗
 		error_ip_whitelist_title: "⚠️ IP 白名单未配置",
@@ -181,6 +199,15 @@ export const TRANSLATIONS = {
 		settings_notice_no_img: "您的微信永久素材庫中沒有找到任何圖片素材！",
 		settings_notice_loaded: "成功加載並同步了 {count} 個圖片素材！",
 		settings_cover_select_placeholder: "-- 請選擇一張圖片 --",
+		cover_picker_title: "選擇封面圖",
+		cover_picker_confirm: "確認選擇",
+		cover_picker_cancel: "取消",
+		cover_picker_empty: "暫無圖片素材，請先拉取素材。",
+		cover_current_preview: "當前封面：",
+		cover_picker_loading: "載入中...",
+		cover_picker_load_more: "載入更多",
+		cover_picker_no_more: "沒有更多了",
+		cover_picker_fetch_error: "載入素材失敗",
 		
 		// IP 白名單錯誤彈窗
 		error_ip_whitelist_title: "⚠️ IP 白名單未配置",

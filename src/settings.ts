@@ -1,6 +1,7 @@
-import { App, PluginSettingTab, Setting, Notice, requestUrl } from 'obsidian';
+import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
 import Md2WeChatPlugin from './main';
 import { t } from './i18n';
+import { CoverPickerModal } from './cover-picker-modal';
 
 export class Md2WeChatSettingTab extends PluginSettingTab {
 	plugin: Md2WeChatPlugin;
@@ -113,83 +114,57 @@ export class Md2WeChatSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
-		// Fetch & Select Materials Setting
+		// Cover Image Setting — opens CoverPickerModal with pagination
 		const materialsSetting = new Setting(containerEl)
 			.setName(t('settings_fetch_name', lang))
 			.setDesc(t('settings_fetch_desc', lang))
 			.addButton(btn => btn
-				.setButtonText(t('settings_fetch_btn', lang))
-				.onClick(async () => {
+				.setButtonText(t('cover_picker_title', lang))
+				.onClick(() => {
 					const { appId, appSecret } = this.plugin.settings;
 					if (!appId || !appSecret) {
 						new Notice(t('settings_notice_enter_api', lang));
 						return;
 					}
-					btn.setDisabled(true);
-					btn.setButtonText(t('settings_fetching_btn', lang));
-					new Notice(t('settings_notice_fetching', lang));
-
-					try {
-						// Get Access Token
-						const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
-						const tokenRes = await requestUrl({ url: tokenUrl, method: 'GET' });
-						const tokenData = JSON.parse(tokenRes.text);
-						if (tokenData.errcode) {
-							throw new Error(tokenData.errmsg);
+					const modal = new CoverPickerModal(
+						this.app,
+						appId,
+						appSecret,
+						this.plugin.settings.defaultThumbMediaId,
+						lang,
+						async (mediaId: string) => {
+							this.plugin.settings.defaultThumbMediaId = mediaId;
+							await this.plugin.saveSettings();
+							this.display(); // Redraw to update preview
+						},
+						async (materials) => {
+							// Sync cache from modal to plugin settings
+							this.plugin.settings.cachedMaterials = materials;
+							await this.plugin.saveSettings();
 						}
-						const token = tokenData.access_token;
+					);
+					modal.open();
+				})
+			);
 
-						// Fetch Materials list
-						const matUrl = `https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token=${token}`;
-						const matRes = await requestUrl({
-							url: matUrl,
-							method: 'POST',
-							contentType: 'application/json',
-							body: JSON.stringify({
-								type: 'image',
-								offset: 0,
-								count: 20
-							})
-						});
-						const matData = JSON.parse(matRes.text);
-						if (matData.errcode) {
-							throw new Error(matData.errmsg);
-						}
-
-						const items = matData.item || [];
-						if (items.length === 0) {
-							new Notice(t('settings_notice_no_img', lang));
-							return;
-						}
-
-						this.plugin.settings.cachedMaterials = items.map((item: any) => ({
-							mediaId: item.media_id,
-							name: item.name
-						}));
-						await this.plugin.saveSettings();
-						new Notice(t('settings_notice_loaded', lang).replace('{count}', items.length.toString()));
-						this.display(); // Redraw settings tab to populate dropdown
-					} catch (err: any) {
-						console.error(err);
-						new Notice(`Failed to fetch: ${err.message || err}`);
-					} finally {
-						btn.setDisabled(false);
-						btn.setButtonText(t('settings_fetch_btn', lang));
-					}
-				}));
-
+		// Current cover preview (if cached)
 		if (this.plugin.settings.cachedMaterials && this.plugin.settings.cachedMaterials.length > 0) {
-			materialsSetting.addDropdown(dropdown => {
-				dropdown.addOption('', t('settings_cover_select_placeholder', lang));
-				this.plugin.settings.cachedMaterials.forEach((m: any) => {
-					dropdown.addOption(m.mediaId, m.name.substring(0, 30));
+			const currentCover = this.plugin.settings.cachedMaterials.find(
+				(m: any) => m.mediaId === this.plugin.settings.defaultThumbMediaId
+			);
+			
+			if (currentCover && currentCover.url) {
+				const previewContainer = materialsSetting.controlEl.createDiv({ cls: 'md2wechat-cover-preview-container' });
+				const previewLabel = previewContainer.createDiv({ cls: 'md2wechat-cover-preview-label' });
+				previewLabel.setText(t('cover_current_preview', lang));
+				const previewImg = previewContainer.createEl('img', {
+					cls: 'md2wechat-cover-preview-img',
+					attr: { src: currentCover.url, alt: currentCover.name }
 				});
-				dropdown.setValue(this.plugin.settings.defaultThumbMediaId);
-				dropdown.onChange(async (val) => {
-					this.plugin.settings.defaultThumbMediaId = val;
-					await this.plugin.saveSettings();
-				});
-			});
+				previewImg.onerror = () => {
+					previewImg.style.display = 'none';
+				};
+			}
 		}
 	}
 }

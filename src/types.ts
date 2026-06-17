@@ -7,7 +7,7 @@ export interface Md2WeChatSettings {
 	enableImgUpload: boolean;
 	imageHostingType: 'wechat' | 'none';
 	defaultThumbMediaId: string;
-	cachedMaterials: Array<{ mediaId: string; name: string }>;
+	cachedMaterials: Array<{ mediaId: string; name: string; url: string }>;
 	themeFolder: string;
 	syncScroll: boolean;
 }
