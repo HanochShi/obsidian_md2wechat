@@ -562,6 +562,69 @@ export class WeChatPreviewView extends ItemView {
 			setTimeout(() => { isSyncingScroll = false; }, 50);
 		};
 
+		// Helper: convert ArrayBuffer to base64 string
+		const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
+			let binary = '';
+			const bytes = new Uint8Array(buffer);
+			for (let i = 0; i < bytes.byteLength; i++) {
+				binary += String.fromCharCode(bytes[i]);
+			}
+			return btoa(binary);
+		};
+
+		// Helper: get MIME type from file extension
+		const getMimeType = (ext: string): string => {
+			const lower = ext.toLowerCase();
+			if (lower === 'png') return 'image/png';
+			if (lower === 'jpg' || lower === 'jpeg') return 'image/jpeg';
+			if (lower === 'gif') return 'image/gif';
+			if (lower === 'webp') return 'image/webp';
+			if (lower === 'svg') return 'image/svg+xml';
+			return 'image/png'; // default fallback
+		};
+
+		// Helper: embed local images as base64 Data URIs into HTML for clipboard copy
+		const embedLocalImagesAsBase64 = async (html: string): Promise<string> => {
+			const activeFile = this.app.workspace.getActiveViewOfType(MarkdownView)?.file || null;
+			try {
+				const parser = new DOMParser();
+				const doc = parser.parseFromString(`<div>${html}</div>`, 'text/html');
+				if (!doc || !doc.body || !doc.body.firstElementChild) return html;
+
+				const imgElements = doc.querySelectorAll('img');
+				let hasLocalImages = false;
+
+				for (let i = 0; i < imgElements.length; i++) {
+					const img = imgElements[i];
+					const src = img.getAttribute('src') || '';
+					// Skip external URLs and already-embedded data URIs
+					if (!src || src.startsWith('http://') || src.startsWith('https://') || src.startsWith('data:')) {
+						continue;
+					}
+
+					const file = resolveImageToFile(src, activeFile);
+					if (file) {
+						try {
+							const binaryData = await this.app.vault.readBinary(file);
+							const base64 = arrayBufferToBase64(binaryData);
+							const mimeType = getMimeType(file.extension);
+							img.setAttribute('src', `data:${mimeType};base64,${base64}`);
+							hasLocalImages = true;
+						} catch (readErr) {
+							console.error(`Failed to read image ${file.name} for base64 embedding:`, readErr);
+						}
+					}
+				}
+
+				if (hasLocalImages) {
+					return (doc.body.firstElementChild as HTMLElement).innerHTML;
+				}
+			} catch (err) {
+				console.error("Failed to embed local images as base64:", err);
+			}
+			return html;
+		};
+
 		// Copy button handler
 		copyBtn.addEventListener('click', async () => {
 			if (!this.currentHtml) {
@@ -570,21 +633,24 @@ export class WeChatPreviewView extends ItemView {
 			}
 
 			try {
-				const blob = new Blob([this.currentHtml], { type: 'text/html' });
+				// Embed local images as base64 Data URIs so they survive clipboard paste
+				const htmlWithImages = await embedLocalImagesAsBase64(this.currentHtml);
+				const blob = new Blob([htmlWithImages], { type: 'text/html' });
 				const data = [new ClipboardItem({ 'text/html': blob, 'text/plain': new Blob([this.lastMarkdown], { type: 'text/plain' }) })];
 				await navigator.clipboard.write(data);
 				new Notice(t('notice_copy_success', lang));
 			} catch (err) {
 				console.error(err);
 				new Notice('Failed to copy to clipboard automatically. Trying fallback...');
+				
+				// Embed local images as base64 for fallback copy as well
+				const htmlWithImages = await embedLocalImagesAsBase64(this.currentHtml);
 				const el = document.createElement('div');
 				
-				// Avoid direct innerHTML on document.body node and avoid direct style assignment
-				// Using DOMParser appendChild to fully eliminate innerHTML and insertAdjacentHTML warnings
 				const innerDiv = el.createDiv();
 				try {
 					const parserForCopy = new DOMParser();
-					const copyDoc = parserForCopy.parseFromString(`<div>${this.currentHtml}</div>`, 'text/html');
+					const copyDoc = parserForCopy.parseFromString(`<div>${htmlWithImages}</div>`, 'text/html');
 					const copyContainer = copyDoc.body.firstElementChild;
 					if (copyContainer) {
 						innerDiv.appendChild(copyContainer);

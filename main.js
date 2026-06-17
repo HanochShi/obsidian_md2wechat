@@ -54271,6 +54271,59 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
         isSyncingScroll = false;
       }, 50);
     };
+    const arrayBufferToBase64 = (buffer) => {
+      let binary = "";
+      const bytes = new Uint8Array(buffer);
+      for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return btoa(binary);
+    };
+    const getMimeType = (ext) => {
+      const lower = ext.toLowerCase();
+      if (lower === "png") return "image/png";
+      if (lower === "jpg" || lower === "jpeg") return "image/jpeg";
+      if (lower === "gif") return "image/gif";
+      if (lower === "webp") return "image/webp";
+      if (lower === "svg") return "image/svg+xml";
+      return "image/png";
+    };
+    const embedLocalImagesAsBase64 = async (html) => {
+      var _a3;
+      const activeFile = ((_a3 = this.app.workspace.getActiveViewOfType(import_obsidian4.MarkdownView)) == null ? void 0 : _a3.file) || null;
+      try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(`<div>${html}</div>`, "text/html");
+        if (!doc || !doc.body || !doc.body.firstElementChild) return html;
+        const imgElements = doc.querySelectorAll("img");
+        let hasLocalImages = false;
+        for (let i = 0; i < imgElements.length; i++) {
+          const img = imgElements[i];
+          const src = img.getAttribute("src") || "";
+          if (!src || src.startsWith("http://") || src.startsWith("https://") || src.startsWith("data:")) {
+            continue;
+          }
+          const file = resolveImageToFile(src, activeFile);
+          if (file) {
+            try {
+              const binaryData = await this.app.vault.readBinary(file);
+              const base64 = arrayBufferToBase64(binaryData);
+              const mimeType = getMimeType(file.extension);
+              img.setAttribute("src", `data:${mimeType};base64,${base64}`);
+              hasLocalImages = true;
+            } catch (readErr) {
+              console.error(`Failed to read image ${file.name} for base64 embedding:`, readErr);
+            }
+          }
+        }
+        if (hasLocalImages) {
+          return doc.body.firstElementChild.innerHTML;
+        }
+      } catch (err) {
+        console.error("Failed to embed local images as base64:", err);
+      }
+      return html;
+    };
     copyBtn.addEventListener("click", async () => {
       var _a3, _b;
       if (!this.currentHtml) {
@@ -54278,18 +54331,20 @@ var WeChatPreviewView = class extends import_obsidian4.ItemView {
         return;
       }
       try {
-        const blob = new Blob([this.currentHtml], { type: "text/html" });
+        const htmlWithImages = await embedLocalImagesAsBase64(this.currentHtml);
+        const blob = new Blob([htmlWithImages], { type: "text/html" });
         const data = [new ClipboardItem({ "text/html": blob, "text/plain": new Blob([this.lastMarkdown], { type: "text/plain" }) })];
         await navigator.clipboard.write(data);
         new import_obsidian4.Notice(t("notice_copy_success", lang));
       } catch (err) {
         console.error(err);
         new import_obsidian4.Notice("Failed to copy to clipboard automatically. Trying fallback...");
+        const htmlWithImages = await embedLocalImagesAsBase64(this.currentHtml);
         const el = document.createElement("div");
         const innerDiv = el.createDiv();
         try {
           const parserForCopy = new DOMParser();
-          const copyDoc = parserForCopy.parseFromString(`<div>${this.currentHtml}</div>`, "text/html");
+          const copyDoc = parserForCopy.parseFromString(`<div>${htmlWithImages}</div>`, "text/html");
           const copyContainer = copyDoc.body.firstElementChild;
           if (copyContainer) {
             innerDiv.appendChild(copyContainer);
