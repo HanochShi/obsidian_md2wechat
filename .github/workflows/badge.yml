@@ -1,0 +1,29 @@
+name: Update Downloads Badge
+on:
+  schedule:
+    - cron: '0 */12 * * *' # 每 12 小时自动更新一次数据
+  workflow_dispatch: # 允许你在网页上手动点击运行
+
+jobs:
+  update-badge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Total Downloads
+        id: fetch
+        # 这里用一小行代码，使用你仓库自带的免费额度去查下载量
+        run: |
+          RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/你的用户名/你的仓库名/releases)
+          TOTAL=$(echo $RESPONSE | jq '[.[]?.assets[]?.download_count] | add // 0')
+          echo "total=$TOTAL" >> $GITHUB_ENV
+
+      - name: Update Gist and Generate Badge
+        uses: Schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: d935d42d690b43d86400fd86e365fc52
+          filename: downloads.json
+          label: Downloads
+          message: ${{ env.total }}
+          color: 483699
+          namedLogo: obsidian
+          logoColor: white
