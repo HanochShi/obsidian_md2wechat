@@ -12,7 +12,7 @@ jobs:
         id: fetch
         # 这里用一小行代码，使用你仓库自带的免费额度去查下载量
         run: |
-          RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/你的用户名/你的仓库名/releases)
+          RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/HanochShi/obsidian_md2wechat/releases)
           TOTAL=$(echo $RESPONSE | jq '[.[]?.assets[]?.download_count] | add // 0')
           echo "total=$TOTAL" >> $GITHUB_ENV
 
