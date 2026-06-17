@@ -4,6 +4,7 @@ import { THEMES } from './themes';
 import { convertToWeChatHtml } from './renderer';
 import { uploadImageToWeChat, uploadThumbToWeChat } from './uploader';
 import { t } from './i18n';
+import { IpWhitelistErrorModal } from './error-modal';
 
 export const VIEW_TYPE_WECHAT_PREVIEW = "wechat-preview-view";
 
@@ -30,7 +31,7 @@ export class WeChatPreviewView extends ItemView {
 	}
 
 	getIcon(): string {
-		return "messages-square";
+		return "wechat-mp";
 	}
 
 	async onOpen() {
@@ -859,7 +860,17 @@ export class WeChatPreviewView extends ItemView {
 			} catch (err: any) {
 				console.error("【微信同步】发生异常，详细堆栈如下：");
 				console.error(err);
-				new Notice(`Sync failed: ${err.message || err}`);
+				
+				// Detect IP whitelist error (errcode 40164) and show a helpful modal
+				const errMsg = err.message || '';
+				const ipMatch = errMsg.match(/invalid ip\s+([\d.]+)/i);
+				if (errMsg.includes('40164') && ipMatch) {
+					const detectedIp = ipMatch[1];
+					const modal = new IpWhitelistErrorModal(this.app, detectedIp, lang);
+					modal.open();
+				} else {
+					new Notice(`Sync failed: ${errMsg}`);
+				}
 			} finally {
 				syncBtn.disabled = false;
 				setIcon(syncBtn, 'upload-cloud');

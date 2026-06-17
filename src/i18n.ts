@@ -51,6 +51,18 @@ export const TRANSLATIONS = {
 		settings_notice_no_img: "No permanent images found in your WeChat material library!",
 		settings_notice_loaded: "Successfully loaded {count} materials!",
 		settings_cover_select_placeholder: "-- Select an Image --",
+		
+		// IP Whitelist Error Modal
+		error_ip_whitelist_title: "⚠️ IP Whitelist Not Configured",
+		error_ip_whitelist_desc: "Sync failed: Your current public IP address is not added to the WeChat Official Account platform's IP whitelist.",
+		error_ip_whitelist_your_ip: "Your current public IP:",
+		error_ip_whitelist_copy_ip: "Copy",
+		error_ip_whitelist_ip_copied: "IP address copied to clipboard!",
+		error_ip_whitelist_guide_prefix: "For detailed steps to add IP whitelist, please refer to: ",
+		error_ip_whitelist_guide_link_text: "Setup Guide",
+		error_ip_whitelist_tip: "Tip: If you use a proxy or VPN, your IP may change frequently. You'll need to update the whitelist each time it changes.",
+		error_ip_whitelist_check_ip_prefix: "Check your current public IP: ",
+		error_ip_whitelist_got_it: "Got it",
 	},
 	"zh-CN": {
 		view_title: "微信一键排版同步",
@@ -101,6 +113,18 @@ export const TRANSLATIONS = {
 		settings_notice_no_img: "您的微信永久素材库中没有找到任何图片素材！",
 		settings_notice_loaded: "成功加载并同步了 {count} 个图片素材！",
 		settings_cover_select_placeholder: "-- 请选择一张图片 --",
+		
+		// IP 白名单错误弹窗
+		error_ip_whitelist_title: "⚠️ IP 白名单未配置",
+		error_ip_whitelist_desc: "同步失败原因：您当前的公网 IP 地址未添加到微信公众号开发平台的 IP 白名单中。",
+		error_ip_whitelist_your_ip: "您当前的公网 IP：",
+		error_ip_whitelist_copy_ip: "复制",
+		error_ip_whitelist_ip_copied: "IP 地址已复制到剪贴板！",
+		error_ip_whitelist_guide_prefix: "添加 IP 白名单的详细操作步骤，请参考：",
+		error_ip_whitelist_guide_link_text: "配置教程",
+		error_ip_whitelist_tip: "提示：如果您使用了代理或 VPN，公网 IP 可能会频繁变化，每次变化后需要重新添加到白名单。",
+		error_ip_whitelist_check_ip_prefix: "查询当前公网 IP：",
+		error_ip_whitelist_got_it: "知道了",
 	},
 	"zh-TW": {
 		view_title: "微信一鍵排版同步",
@@ -151,6 +175,18 @@ export const TRANSLATIONS = {
 		settings_notice_no_img: "您的微信永久素材庫中沒有找到任何圖片素材！",
 		settings_notice_loaded: "成功加載並同步了 {count} 個圖片素材！",
 		settings_cover_select_placeholder: "-- 請選擇一張圖片 --",
+		
+		// IP 白名單錯誤彈窗
+		error_ip_whitelist_title: "⚠️ IP 白名單未配置",
+		error_ip_whitelist_desc: "同步失敗原因：您當前的公網 IP 地址未添加到微信公眾號開發平台的 IP 白名單中。",
+		error_ip_whitelist_your_ip: "您當前的公網 IP：",
+		error_ip_whitelist_copy_ip: "複製",
+		error_ip_whitelist_ip_copied: "IP 地址已複製到剪貼板！",
+		error_ip_whitelist_guide_prefix: "添加 IP 白名單的詳細操作步驟，請參考：",
+		error_ip_whitelist_guide_link_text: "配置教程",
+		error_ip_whitelist_tip: "提示：如果您使用了代理或 VPN，公網 IP 可能會頻繁變化，每次變化後需要重新添加到白名單。",
+		error_ip_whitelist_check_ip_prefix: "查詢當前公網 IP：",
+		error_ip_whitelist_got_it: "知道了",
 	}
 };
 
