@@ -46,8 +46,11 @@ export class WeChatPreviewView extends ItemView {
 		// Toolbar
 		const toolbar = container.createDiv({ cls: 'md2wechat-preview-toolbar' });
 
+		// Left group: theme selector + refresh
+		const toolbarLeft = toolbar.createDiv({ cls: 'md2wechat-toolbar-left' });
+
 		// Theme selector
-		const selector = toolbar.createEl('select', { cls: 'md2wechat-style-select' });
+		const selector = toolbarLeft.createEl('select', { cls: 'md2wechat-style-select' });
 		
 		// Function to rebuild options dynamically including custom themes
 		const populateSelector = () => {
@@ -85,13 +88,13 @@ export class WeChatPreviewView extends ItemView {
 
 		populateSelector();
 
-		// Buttons
-		const refreshBtn = toolbar.createEl('button', { cls: 'md2wechat-icon-btn' });
+		// Refresh button (in left group)
+		const refreshBtn = toolbarLeft.createEl('button', { cls: 'md2wechat-icon-btn' });
 		setIcon(refreshBtn, 'refresh-cw');
 		refreshBtn.title = t('button_refresh_title', lang);
 
-		// Scroll Sync Toggle Button
-		const scrollSyncBtn = toolbar.createEl('button', { 
+		// Scroll Sync Toggle Button (in left group)
+		const scrollSyncBtn = toolbarLeft.createEl('button', { 
 			cls: 'md2wechat-icon-btn md2wechat-scroll-sync-btn'
 		});
 		setIcon(scrollSyncBtn, 'link');
@@ -100,11 +103,17 @@ export class WeChatPreviewView extends ItemView {
 			scrollSyncBtn.addClass('is-active');
 		}
 
-		const copyBtn = toolbar.createEl('button', { cls: 'md2wechat-icon-btn' });
+		// Spacer
+		toolbar.createDiv({ cls: 'md2wechat-toolbar-spacer' });
+
+		// Right group: copy + sync
+		const toolbarRight = toolbar.createDiv({ cls: 'md2wechat-toolbar-right' });
+
+		const copyBtn = toolbarRight.createEl('button', { cls: 'md2wechat-icon-btn' });
 		setIcon(copyBtn, 'copy');
 		copyBtn.title = t('button_copy', lang);
 
-		const syncBtn = toolbar.createEl('button', { cls: 'md2wechat-icon-btn mod-cta' });
+		const syncBtn = toolbarRight.createEl('button', { cls: 'md2wechat-icon-btn mod-cta' });
 		setIcon(syncBtn, 'upload-cloud');
 		syncBtn.title = t('button_sync', lang);
 
@@ -276,10 +285,10 @@ export class WeChatPreviewView extends ItemView {
 			} else {
 				if (!onlyIfMarkdown) {
 					previewArea.empty();
-					previewArea.createDiv({
-						text: t('view_empty_notice', lang),
-						cls: 'md2wechat-preview-empty-notice-msg'
-					});
+					const emptyMsg = previewArea.createDiv({ cls: 'md2wechat-preview-empty-notice-msg' });
+					const emptyIcon = emptyMsg.createDiv({ cls: 'md2wechat-empty-icon' });
+					setIcon(emptyIcon, 'file-text');
+					emptyMsg.createDiv({ text: t('view_empty_notice', lang) });
 				}
 				return;
 			}
@@ -383,9 +392,11 @@ export class WeChatPreviewView extends ItemView {
 			if (this.plugin.settings.syncScroll) {
 				scrollSyncBtn.addClass('is-active');
 				buildScrollMap();
+				new Notice(t('notice_scroll_sync_enabled', lang));
 			} else {
 				scrollSyncBtn.removeClass('is-active');
 				editorScrollMap = null; // Free memory and stop mapping
+				new Notice(t('notice_scroll_sync_disabled', lang));
 			}
 		});
 
@@ -710,8 +721,11 @@ export class WeChatPreviewView extends ItemView {
 			}
 
 			syncBtn.disabled = true;
-			setIcon(syncBtn, 'loader');
-			syncBtn.title = t('button_syncing', lang);
+				setIcon(syncBtn, 'loader');
+				// Add spin animation to the loader icon
+				const loaderSvg = syncBtn.querySelector('svg');
+				if (loaderSvg) loaderSvg.addClass('rotate-spin');
+				syncBtn.title = t('button_syncing', lang);
 			new Notice(t('notice_acquiring_token', lang));
 
 			try {

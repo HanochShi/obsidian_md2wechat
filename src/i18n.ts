@@ -9,6 +9,8 @@ export const TRANSLATIONS = {
 		button_sync: "Sync to Draft",
 		button_syncing: "Syncing...",
 		button_scroll_sync: "Scroll Sync",
+		notice_scroll_sync_enabled: "🔗 Scroll sync enabled",
+		notice_scroll_sync_disabled: "🔓 Scroll sync disabled",
 		
 		// Notifications / Notices
 		notice_no_content_copy: "No rendered content to copy! Please open and select a markdown note first.",
@@ -73,6 +75,8 @@ export const TRANSLATIONS = {
 		button_sync: "同步到草稿箱",
 		button_syncing: "同步中...",
 		button_scroll_sync: "同步滚动",
+		notice_scroll_sync_enabled: "🔗 同步滚动已开启",
+		notice_scroll_sync_disabled: "🔓 同步滚动已关闭",
 		
 		notice_no_content_copy: "没有可复制的内容！请先打开并选择一篇 Markdown 笔记。",
 		notice_copy_success: "富文本复制成功！可以直接粘贴到微信公众号后台编辑器了。",
@@ -135,6 +139,8 @@ export const TRANSLATIONS = {
 		button_sync: "同步到草稿箱",
 		button_syncing: "同步中...",
 		button_scroll_sync: "同步捲動",
+		notice_scroll_sync_enabled: "🔗 同步捲動已開啟",
+		notice_scroll_sync_disabled: "🔓 同步捲動已關閉",
 		
 		notice_no_content_copy: "沒有可複製的內容！請先打開並選擇一篇 Markdown 筆記。",
 		notice_copy_success: "富文本複製成功！可以直接粘貼到微信公眾號後台編輯器了。",

@@ -51839,6 +51839,8 @@ var TRANSLATIONS = {
     button_sync: "Sync to Draft",
     button_syncing: "Syncing...",
     button_scroll_sync: "Scroll Sync",
+    notice_scroll_sync_enabled: "\u{1F517} Scroll sync enabled",
+    notice_scroll_sync_disabled: "\u{1F513} Scroll sync disabled",
     // Notifications / Notices
     notice_no_content_copy: "No rendered content to copy! Please open and select a markdown note first.",
     notice_copy_success: "Rich text copied successfully! Ready to paste into WeChat editor.",
@@ -51900,6 +51902,8 @@ var TRANSLATIONS = {
     button_sync: "\u540C\u6B65\u5230\u8349\u7A3F\u7BB1",
     button_syncing: "\u540C\u6B65\u4E2D...",
     button_scroll_sync: "\u540C\u6B65\u6EDA\u52A8",
+    notice_scroll_sync_enabled: "\u{1F517} \u540C\u6B65\u6EDA\u52A8\u5DF2\u5F00\u542F",
+    notice_scroll_sync_disabled: "\u{1F513} \u540C\u6B65\u6EDA\u52A8\u5DF2\u5173\u95ED",
     notice_no_content_copy: "\u6CA1\u6709\u53EF\u590D\u5236\u7684\u5185\u5BB9\uFF01\u8BF7\u5148\u6253\u5F00\u5E76\u9009\u62E9\u4E00\u7BC7 Markdown \u7B14\u8BB0\u3002",
     notice_copy_success: "\u5BCC\u6587\u672C\u590D\u5236\u6210\u529F\uFF01\u53EF\u4EE5\u76F4\u63A5\u7C98\u8D34\u5230\u5FAE\u4FE1\u516C\u4F17\u53F7\u540E\u53F0\u7F16\u8F91\u5668\u4E86\u3002",
     notice_copy_fallback_success: "\u5DF2\u6210\u529F\u901A\u8FC7\u5907\u7528\u65B9\u6848\u590D\u5236\u4E3A HTML\uFF01",
@@ -51959,6 +51963,8 @@ var TRANSLATIONS = {
     button_sync: "\u540C\u6B65\u5230\u8349\u7A3F\u7BB1",
     button_syncing: "\u540C\u6B65\u4E2D...",
     button_scroll_sync: "\u540C\u6B65\u6372\u52D5",
+    notice_scroll_sync_enabled: "\u{1F517} \u540C\u6B65\u6372\u52D5\u5DF2\u958B\u555F",
+    notice_scroll_sync_disabled: "\u{1F513} \u540C\u6B65\u6372\u52D5\u5DF2\u95DC\u9589",
     notice_no_content_copy: "\u6C92\u6709\u53EF\u8907\u88FD\u7684\u5167\u5BB9\uFF01\u8ACB\u5148\u6253\u958B\u4E26\u9078\u64C7\u4E00\u7BC7 Markdown \u7B46\u8A18\u3002",
     notice_copy_success: "\u5BCC\u6587\u672C\u8907\u88FD\u6210\u529F\uFF01\u53EF\u4EE5\u76F4\u63A5\u7C98\u8CBC\u5230\u5FAE\u4FE1\u516C\u773E\u865F\u5F8C\u53F0\u7DE8\u8F2F\u5668\u4E86\u3002",
     notice_copy_fallback_success: "\u5DF2\u6210\u529F\u901A\u904E\u5099\u7528\u65B9\u6848\u8907\u88FD\u70BA HTML\uFF01",
@@ -54013,7 +54019,8 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
     const lang = this.plugin.settings.lang;
     const container = contentEl.createDiv({ cls: "md2wechat-preview-container" });
     const toolbar = container.createDiv({ cls: "md2wechat-preview-toolbar" });
-    const selector = toolbar.createEl("select", { cls: "md2wechat-style-select" });
+    const toolbarLeft = toolbar.createDiv({ cls: "md2wechat-toolbar-left" });
+    const selector = toolbarLeft.createEl("select", { cls: "md2wechat-style-select" });
     const populateSelector = () => {
       const currentlySelected = selector.value;
       selector.empty();
@@ -54042,10 +54049,10 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
       }
     };
     populateSelector();
-    const refreshBtn = toolbar.createEl("button", { cls: "md2wechat-icon-btn" });
+    const refreshBtn = toolbarLeft.createEl("button", { cls: "md2wechat-icon-btn" });
     (0, import_obsidian5.setIcon)(refreshBtn, "refresh-cw");
     refreshBtn.title = t("button_refresh_title", lang);
-    const scrollSyncBtn = toolbar.createEl("button", {
+    const scrollSyncBtn = toolbarLeft.createEl("button", {
       cls: "md2wechat-icon-btn md2wechat-scroll-sync-btn"
     });
     (0, import_obsidian5.setIcon)(scrollSyncBtn, "link");
@@ -54053,10 +54060,12 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
     if (this.plugin.settings.syncScroll) {
       scrollSyncBtn.addClass("is-active");
     }
-    const copyBtn = toolbar.createEl("button", { cls: "md2wechat-icon-btn" });
+    toolbar.createDiv({ cls: "md2wechat-toolbar-spacer" });
+    const toolbarRight = toolbar.createDiv({ cls: "md2wechat-toolbar-right" });
+    const copyBtn = toolbarRight.createEl("button", { cls: "md2wechat-icon-btn" });
     (0, import_obsidian5.setIcon)(copyBtn, "copy");
     copyBtn.title = t("button_copy", lang);
-    const syncBtn = toolbar.createEl("button", { cls: "md2wechat-icon-btn mod-cta" });
+    const syncBtn = toolbarRight.createEl("button", { cls: "md2wechat-icon-btn mod-cta" });
     (0, import_obsidian5.setIcon)(syncBtn, "upload-cloud");
     syncBtn.title = t("button_sync", lang);
     const previewWrapper = container.createDiv({ cls: "md2wechat-preview-content-wrapper" });
@@ -54170,10 +54179,10 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
       } else {
         if (!onlyIfMarkdown) {
           previewArea.empty();
-          previewArea.createDiv({
-            text: t("view_empty_notice", lang),
-            cls: "md2wechat-preview-empty-notice-msg"
-          });
+          const emptyMsg = previewArea.createDiv({ cls: "md2wechat-preview-empty-notice-msg" });
+          const emptyIcon = emptyMsg.createDiv({ cls: "md2wechat-empty-icon" });
+          (0, import_obsidian5.setIcon)(emptyIcon, "file-text");
+          emptyMsg.createDiv({ text: t("view_empty_notice", lang) });
         }
         return;
       }
@@ -54253,9 +54262,11 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
       if (this.plugin.settings.syncScroll) {
         scrollSyncBtn.addClass("is-active");
         buildScrollMap();
+        new import_obsidian5.Notice(t("notice_scroll_sync_enabled", lang));
       } else {
         scrollSyncBtn.removeClass("is-active");
         editorScrollMap = null;
+        new import_obsidian5.Notice(t("notice_scroll_sync_disabled", lang));
       }
     });
     this.registerEvent(
@@ -54503,6 +54514,8 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
       }
       syncBtn.disabled = true;
       (0, import_obsidian5.setIcon)(syncBtn, "loader");
+      const loaderSvg = syncBtn.querySelector("svg");
+      if (loaderSvg) loaderSvg.addClass("rotate-spin");
       syncBtn.title = t("button_syncing", lang);
       new import_obsidian5.Notice(t("notice_acquiring_token", lang));
       try {
