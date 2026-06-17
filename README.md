@@ -2,7 +2,7 @@
 
 <p align="left">
     <img src="https://badgen.net/github/release/HanochShi/obsidian_md2wechat" alt="GitHub Release">
-    <img src="https://badgen.net/github/assets-dl/HanochShi/obsidian_md2wechat/" alt="Github Release Downloads">
+    <img src="https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/HanochShi/d935d42d690b43d86400fd86e365fc52/raw/downloads.json">
     <img src="https://badgen.net/static/license/AGPL-3.0/red" alt="License">
     <img src="https://badgen.net/github/last-commit/HanochShi/obsidian_md2wechat" alt="Last Commit Time">
 </p>
@@ -14,7 +14,6 @@
     ｜
     <a href="./README_en.md">English</a>
 </p>
-
 
 一键排版 Markdown 笔记并完美无缝同步至微信公众号草稿箱，包含图片自动上传微信 CDN、智能封面提取及自定义 CSS 主题支持。
 

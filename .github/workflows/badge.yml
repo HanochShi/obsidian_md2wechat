@@ -1,29 +1,78 @@
-name: Update Downloads Badge
+name: Update Dynamic Badges
 on:
+  push:
+    branches: [ "main", "master" ] # 每次你 push 代码到主分支时触发（更新 Last Commit）
+  release:
+    types: [published]             # 每次你发布新 Release 版本时触发（更新 Release 和 Downloads）
   schedule:
-    - cron: '0 */12 * * *' # 每 12 小时自动更新一次数据
-  workflow_dispatch: # 允许你在网页上手动点击运行
+    - cron: '0 0 * * *'            # 每天凌晨自动对齐一次数据作为兜底
+  workflow_dispatch:               # 允许手动点击运行
 
 jobs:
-  update-badge:
+  update-badges:
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch Total Downloads
-        id: fetch
-        # 这里用一小行代码，使用你仓库自带的免费额度去查下载量
+      - name: Fetch Data from GitHub API
         run: |
-          RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/HanochShi/obsidian_md2wechat/releases)
-          TOTAL=$(echo $RESPONSE | jq '[.[]?.assets[]?.download_count] | add // 0')
-          echo "total=$TOTAL" >> $GITHUB_ENV
+          # 1. 抓取 Release 相关数据 (下载量和最新版本号)
+          REL_JSON=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases)
+          TOTAL_DL=$(echo "$REL_JSON" | jq '[.[]?.assets[]?.download_count] | add // 0')
+          LATEST_TAG=$(echo "$REL_JSON" | jq -r '.[0]?.tag_name // "unknown"')
+          
+          # 2. 抓取 License 数据
+          REPO_JSON=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }})
+          LICENSE=$(echo "$REPO_JSON" | jq -r '.license.spdx_id // "None"')
+          
+          # 3. 抓取 Last Commit 数据 (截取 YYYY-MM-DD 格式)
+          COMMITS_JSON=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/commits/HEAD)
+          LAST_COMMIT=$(echo "$COMMITS_JSON" | jq -r '.commit.author.date' | cut -d'T' -f1)
+          
+          # 存入环境变量供后续步骤使用
+          echo "TOTAL_DL=$TOTAL_DL" >> $GITHUB_ENV
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
+          echo "LICENSE=$LICENSE" >> $GITHUB_ENV
+          echo "LAST_COMMIT=$LAST_COMMIT" >> $GITHUB_ENV
 
-      - name: Update Gist and Generate Badge
+      # 生成 Downloads 徽章
+      - name: Generate Downloads Badge
         uses: Schneegans/dynamic-badges-action@v1.7.0
         with:
           auth: ${{ secrets.GIST_TOKEN }}
           gistID: d935d42d690b43d86400fd86e365fc52
           filename: downloads.json
-          label: Downloads
-          message: ${{ env.total }}
-          color: 483699
-          namedLogo: obsidian
-          logoColor: white
+          label: downloads
+          message: ${{ env.TOTAL_DL }}
+          color: brightgreen
+
+      # 生成 Release 徽章
+      - name: Generate Release Badge
+        uses: Schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: d935d42d690b43d86400fd86e365fc52
+          filename: release.json
+          label: release
+          message: ${{ env.LATEST_TAG }}
+          color: blue
+
+      # 生成 License 徽章
+      - name: Generate License Badge
+        uses: Schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: d935d42d690b43d86400fd86e365fc52
+          filename: license.json
+          label: license
+          message: ${{ env.LICENSE }}
+          color: green
+
+      # 生成 Last Commit 徽章
+      - name: Generate Last Commit Badge
+        uses: Schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: d935d42d690b43d86400fd86e365fc52
+          filename: last_commit.json
+          label: last commit
+          message: ${{ env.LAST_COMMIT }}
+          color: yellow
