@@ -1,7 +1,7 @@
 {
 	"id": "md-to-wechat",
 	"name": "Markdown to WeChat MP Sync",
-	"version": "1.3.3",
+	"version": "1.4.0",
 	"minAppVersion": "1.7.2",
 	"description": "Render your markdown note with custom styles and sync directly to WeChat Official Account Drafts with one click. Free forever.",
 	"author": "Li Shi",
