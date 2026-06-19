@@ -30,7 +30,19 @@ jobs:
       - name: Build plugin
         run: npm run build
 
-      # 5. 核心：创建 GitHub Release 并上传文件
+      # 5. 打压缩包
+      - name: Package Plugin into Zip
+        run: |
+          # 1. 创建名为 md-to-wechat 的文件夹
+          mkdir md-to-wechat
+          
+          # 2. 将编译好的三个文件复制进该文件夹
+          cp main.js manifest.json styles.css md-to-wechat/
+          
+          # 3. 将整个文件夹压缩成 md-to-wechat.zip
+          zip -r md-to-wechat.zip md-to-wechat
+
+      # 6. 核心：创建 GitHub Release 并上传文件
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
@@ -39,6 +51,7 @@ jobs:
             main.js
             manifest.json
             styles.css
+            md-to-wechat.zip
         env:
           # GitHub 会自动提供这个 Token，不需要你手动配置密码
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
