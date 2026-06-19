@@ -2,8 +2,6 @@ name: Update Dynamic Badges
 on:
   push:
     branches: [ "main", "master" ] # 每次你 push 代码到主分支时触发（更新 Last Commit）
-  release:
-    types: [published]             # 每次你发布新 Release 版本时触发（更新 Release 和 Downloads）
   schedule:
     - cron: '0 0 * * *'            # 每天凌晨自动对齐一次数据作为兜底
   workflow_dispatch:               # 允许手动点击运行
@@ -62,19 +60,6 @@ jobs:
           label: downloads
           message: ${{ env.TOTAL_DL }}
           color: 95991a
-
-      # 生成 Release 徽章
-      - name: Generate Release Badge
-        uses: Schneegans/dynamic-badges-action@v1.7.0
-        with:
-          auth: ${{ secrets.GIST_TOKEN }}
-          gistID: d935d42d690b43d86400fd86e365fc52
-          filename: release.json
-          label: release
-          message: ${{ env.LATEST_TAG }}
-          color: blue
-          namedLogo: obsidian
-          logoColor: white
 
       # 生成 License 徽章
       - name: Generate License Badge
