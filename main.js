@@ -52296,6 +52296,84 @@ var THEMES = {
     td: "border: 1px solid #dddddd; padding: 8px 12px; color: #222222;",
     pre: "background-color: #1a1a1a; padding: 12px 16px; border-radius: 6px; overflow-x: auto; margin: 1.5em 0; line-height: 1.6; color: #abb2bf; font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; tab-size: 4; -moz-tab-size: 4; -o-tab-size: 4;",
     pre_code: "font-family: inherit; font-size: 13px; background-color: transparent; border: 0; padding: 0; color: inherit; line-height: inherit; word-wrap: normal;"
+  },
+  yfqm: {
+    name: "\u8FDC\u65B9\u9752\u6728",
+    container: "padding: 0 8px; font-family: 'PingFang SC NEW',system-ui,-apple-system,BlinkMacSystemFont,'Helvetica Neue','Hiragino Sans GB','Microsoft YaHei UI','Microsoft YaHei',Arial,sans-serif; font-size: 17px; letter-spacing: 0.034em; color: rgba(0, 0, 0, 0.9); line-height: 1.6; text-align: justify;",
+    h1: "font-size: 22px; color: rgb(123, 12, 0); text-align: center; margin-bottom: 24px;",
+    h2: "font-size: 20px; padding-left: 10px; border-left: 4px solid rgb(123, 12, 0);",
+    h3: "font-size: 18px; border-bottom: 1px dashed rgba(123, 12, 0, 0.3); padding-bottom: 6px;",
+    h4: "font-size: 17px;",
+    h5: "font-size: 16px; color: rgba(0, 0, 0, 0.7);",
+    h6: "font-size: 16px; color: rgba(0, 0, 0, 0.5); font-weight: normal;",
+    p: 'margin-top: 0; margin-bottom: 24px; font-family: mp-quote, "PingFang SC", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", Arial, sans-serif;',
+    code: 'font-family: Consolas, Monaco, "Courier New", monospace; font-size: 15px; color: rgb(123, 12, 0); background-color: rgba(0, 0, 0, 0.04); padding: 2px 4px; border-radius: 4px; word-break: break-all;',
+    blockquote: "margin: 0 0 24px 0; padding: 16px; background-color: rgba(123, 12, 0, 0.05); border-left: 3px solid rgb(123, 12, 0); border-radius: 0 4px 4px 0;",
+    ul: "margin-top: 0; margin-bottom: 24px; padding-left: 24px;",
+    ol: "margin-top: 0; margin-bottom: 24px; padding-left: 24px;",
+    li: "margin-bottom: 8px; line-height: 1.6;",
+    strong: "color: rgb(123, 12, 0); font-weight: bold;",
+    link: "color: rgb(123, 12, 0); text-decoration: none; border-bottom: 1px solid rgba(123, 12, 0, 0.4);",
+    em: "font-style: italic; color: rgba(0, 0, 0, 0.7);",
+    del: "text-decoration: line-through; color: rgba(0, 0, 0, 0.4);",
+    hr: "margin: 32px 0; border: none; border-top: 1px solid rgba(123, 12, 0, 0.15);",
+    table: "width: 100%; margin-bottom: 24px; border-collapse: collapse; font-size: 15px;",
+    th: "word-break: break-all;",
+    td: "word-break: break-all;",
+    pre: "margin-top: 0; margin-bottom: 24px; padding: 16px; background-color: #f6f6f6; border-radius: 6px; overflow-x: auto;",
+    pre_code: "background-color: transparent; color: rgba(0, 0, 0, 0.8); font-size: 14px; padding: 0; border-radius: 0; white-space: pre;"
+  },
+  klx: {
+    name: "\u770B\u7406\u60F3",
+    container: "padding: 0 8px; font-family: 'PingFang SC NEW', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Hiragino Sans GB', 'Microsoft YaHei UI', 'Microsoft YaHei', Arial, sans-serif; font-size: 16px; font-style: normal; letter-spacing: .034em; color: rgba(0, 0, 0, 0.9); line-height: 1.6; text-align: justify;",
+    h1: "color: rgb(86, 124, 162); font-size: 20px; font-weight: bold; letter-spacing: 1px; line-height: 1.6em; text-align: center; margin-top: 20px; margin-bottom: 28.5px;",
+    h2: "color: rgb(86, 124, 162); font-size: 16px; font-weight: bold; letter-spacing: 0.5px; line-height: 1.75em; text-align: center; margin-bottom: 28.5px;",
+    h3: "color: rgba(0, 0, 0, 0.9); font-size: 16px; font-weight: bold; letter-spacing: 0.5px; line-height: 1.75em; text-align: left; margin-bottom: 20px; padding-left: 10px; border-left: 4px solid rgb(86, 124, 162);",
+    h4: "color: rgba(0, 0, 0, 0.9); font-size: 15px; font-weight: bold; letter-spacing: 0.5px; line-height: 1.75em; margin-bottom: 15px;",
+    h5: "font-weight: normal; font-size: 13px; color: #888888; text-align: center; letter-spacing: 0.5px; line-height: 1.75em; margin-top: 10px; margin-bottom: 20px;",
+    h6: "font-weight: normal; font-size: 12px; color: #888888; text-align: center; letter-spacing: 0.5px; line-height: 1.75em; margin-top: -28.5px; margin-bottom: 28.5px;",
+    p: "line-height: 1.75em; letter-spacing: 0.5px; font-family: 'Optima-Regular', 'PingFangTC-light'; font-size: 16px; font-weight: normal; margin-bottom: 28.5px; margin-top: 0;",
+    code: 'font-family: Consolas, Monaco, "Courier New", monospace; font-size: 14px; color: rgb(86, 124, 162); background-color: #f7f7f7; padding: 2px 6px; border-radius: 4px; word-break: break-all;',
+    blockquote: "margin: 0 0 28.5px 0; padding: 16px 20px; background-color: rgba(86, 124, 162, 0.05); border-left: 3px solid rgb(86, 124, 162); border-radius: 0 4px 4px 0;",
+    ul: "margin-top: 0; margin-bottom: 28.5px; padding-left: 32px; color: rgba(0, 0, 0, 0.9);",
+    ol: "margin-top: 0; margin-bottom: 28.5px; padding-left: 32px; color: rgba(0, 0, 0, 0.9);",
+    li: "font-family: 'Optima-Regular', 'PingFangTC-light'; font-size: 16px; line-height: 1.75em; letter-spacing: 0.5px; margin-bottom: 8px;",
+    strong: "font-weight: bold;",
+    link: "color: rgb(86, 124, 162); text-decoration: none; border-bottom: 1px solid rgba(86, 124, 162, 0.4); padding-bottom: 1px;",
+    em: "font-style: italic; color: rgb(86, 124, 162);",
+    del: "text-decoration: line-through; color: #888888;",
+    hr: "border: none; height: 12px; margin: 30px 0; background-image:			radial-gradient(circle, #d9d9d9 4.5px, transparent 5px),			radial-gradient(circle, #d9d9d9 4.5px, transparent 5px),			linear-gradient(to right, #d9d9d9, #d9d9d9),			linear-gradient(to right, #d9d9d9, #d9d9d9); background-size:			12px 12px,			12px 12px,			calc(50% - 25px) 1px,			calc(50% - 25px) 1px; background-position:			calc(50% - 8px) center,			calc(50% + 8px) center,			left center,			right center; background-repeat: no-repeat;",
+    table: "width: 100%; border-collapse: collapse; margin-bottom: 28.5px; font-size: 14px; color: rgba(0, 0, 0, 0.9);",
+    th: "font-weight: bold; background-color: rgba(86, 124, 162, 0.1); color: rgb(86, 124, 162);",
+    td: "border: 1px solid #d9d9d9; padding: 10px 12px; text-align: left; line-height: 1.6em;",
+    pre: "background-color: #f7f7f7; padding: 16px; border-radius: 6px; overflow-x: auto; margin-top: 0; margin-bottom: 28.5px; border: 1px solid #eeeeee;",
+    pre_code: "background-color: transparent; color: #333333; font-size: 13px; padding: 0; border-radius: 0; white-space: pre; line-height: 1.6em;"
+  },
+  dlts: {
+    name: "\u5927\u6D6A\u6DD8\u6C99",
+    container: "padding: 0 8px; font-family: '\u6587\u9F0E\u5927\u989C\u6977','PingFang SC NEW',system-ui,-apple-system,BlinkMacSystemFont,'Helvetica Neue','Hiragino Sans GB','Microsoft YaHei UI','Microsoft YaHei',Arial,sans-serif; font-size: 16px; letter-spacing: 0.034em; color: rgba(0, 0, 0, 0.9); line-height: 1.6; text-align: justify;",
+    h1: "font-size: 18px; letter-spacing: 2px; line-height: 2em; text-align: center; margin-bottom: 24px; font-weight: bold; color: rgba(0, 0, 0, 0.95);",
+    h2: "font-size: 16px; letter-spacing: 2px; line-height: 2em; text-align: center; margin-bottom: 24px;",
+    h3: "font-size: 16px; letter-spacing: 2px; line-height: 2em; margin-bottom: 16px; font-weight: bold; color: rgba(0, 0, 0, 0.9);",
+    h4: "font-size: 15px; letter-spacing: 1.5px; line-height: 2em; margin-bottom: 16px; font-weight: bold; color: rgba(0, 0, 0, 0.8);",
+    h5: "font-size: 14px; letter-spacing: 1.5px; line-height: 1.8em; margin-bottom: 12px; font-weight: bold; color: rgba(0, 0, 0, 0.7);",
+    h6: "font-size: 14px; letter-spacing: 1.5px; line-height: 1.8em; margin-bottom: 12px; font-weight: normal; color: rgba(0, 0, 0, 0.55);",
+    p: "font-family: '\u6587\u9F0E\u5927\u989C\u6977','PingFang SC NEW',system-ui,-apple-system,BlinkMacSystemFont,'Helvetica Neue','Hiragino Sans GB','Microsoft YaHei UI','Microsoft YaHei',Arial,sans-serif; font-size: 16px; letter-spacing: 2px; line-height: 2em; margin-bottom: 24px;",
+    code: "font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; background-color: rgba(0, 0, 0, 0.04); padding: 2px 6px; margin: 0 2px; border-radius: 4px; font-size: 14px; color: rgba(0, 0, 0, 0.8); letter-spacing: 0;",
+    blockquote: "-webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 1em 0px; padding: 4px 0px 0px 10px; outline: 0px; border-left: 3px solid rgb(219, 219, 219); color: rgba(0, 0, 0, .55); font-size: 15px; text-indent: 0px; max-width: 100%; box-sizing: border-box !important; overflow-wrap: break-word !important; font-family: 'PingFang SC', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Hiragino Sans GB', 'Microsoft YaHei UI', 'Microsoft YaHei', Arial, sans-serif; font-style: normal; font-weight: 400; letter-spacing: 0.544px; orphans: 2; text-align: justify; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255);",
+    ul: "margin-top: 0; margin-bottom: 24px; padding-left: 28px; font-size: 16px; letter-spacing: 2px; line-height: 2em; color: rgba(0, 0, 0, 0.9);",
+    ol: "margin-top: 0; margin-bottom: 24px; padding-left: 28px; font-size: 16px; letter-spacing: 2px; line-height: 2em; color: rgba(0, 0, 0, 0.9);",
+    li: "margin-bottom: 8px;",
+    strong: "font-weight: bold; color: #000000;",
+    link: "color: #576b95; text-decoration: none; border-bottom: 1px solid rgba(87, 107, 149, 0.3);",
+    em: "font-style: italic; color: rgba(0, 0, 0, 0.7);",
+    del: "text-decoration: line-through; color: rgba(0, 0, 0, 0.4);",
+    hr: "border: none; border-top: 1px solid rgb(219, 219, 219); margin: 32px 0 24px 0;",
+    table: "width: 100%; border-collapse: collapse; margin-bottom: 24px; font-family: 'PingFang SC', system-ui, -apple-system, sans-serif; font-size: 14px; letter-spacing: 0.5px; line-height: 1.6;",
+    th: "background-color: rgb(249, 249, 249); font-weight: bold; color: rgba(0, 0, 0, 0.8);",
+    td: "border: 1px solid rgb(219, 219, 219); padding: 10px 8px; text-align: left;",
+    pre: "background-color: rgb(249, 249, 249); border: 1px solid rgb(219, 219, 219); border-radius: 4px; padding: 16px; margin-bottom: 24px; overflow-x: auto; -webkit-overflow-scrolling: touch;",
+    pre_code: "background-color: transparent; padding: 0; margin: 0; font-size: 13px; color: rgba(0, 0, 0, 0.8); letter-spacing: 0; line-height: 1.6;"
   }
 };
 async function initThemeDirectory(adapter, folderPath, templateCss) {
@@ -54012,17 +54090,14 @@ var IpWhitelistErrorModal = class extends import_obsidian4.Modal {
     ipValue.setText(this.ipAddress);
     const copyIpBtn = ipRow.createEl("button", { cls: "md2wechat-error-modal-copy-btn", text: t("error_ip_whitelist_copy_ip", lang) });
     copyIpBtn.addEventListener("click", () => {
-      void navigator.clipboard.writeText(this.ipAddress).then(() => {
-        new import_obsidian4.Notice(t("error_ip_whitelist_ip_copied", lang));
-      }).catch(() => {
-        const textArea = activeDocument.createElement("textarea");
-        textArea.value = this.ipAddress;
-        activeDocument.body.appendChild(textArea);
-        textArea.select();
-        activeDocument.execCommand("copy");
-        activeDocument.body.removeChild(textArea);
-        new import_obsidian4.Notice(t("error_ip_whitelist_ip_copied", lang));
-      });
+      void (async () => {
+        try {
+          await navigator.clipboard.writeText(this.ipAddress);
+          new import_obsidian4.Notice(t("error_ip_whitelist_ip_copied", lang));
+        } catch (e) {
+          new import_obsidian4.Notice(`IP Address: ${this.ipAddress} (Please copy manually)`);
+        }
+      })();
     });
     const guideRow = container.createDiv({ cls: "md2wechat-error-modal-guide" });
     guideRow.createSpan({ text: t("error_ip_whitelist_guide_prefix", lang) });
@@ -54316,24 +54391,28 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
     selector.addEventListener("change", () => {
       render(false);
     });
-    refreshBtn.addEventListener("click", async () => {
-      await this.plugin.loadCustomThemes();
-      populateSelector();
-      render(false);
-      new import_obsidian5.Notice(t("notice_theme_refreshed", lang));
+    refreshBtn.addEventListener("click", () => {
+      void (async () => {
+        await this.plugin.loadCustomThemes();
+        populateSelector();
+        render(false);
+        new import_obsidian5.Notice(t("notice_theme_refreshed", lang));
+      })();
     });
-    scrollSyncBtn.addEventListener("click", async () => {
-      this.plugin.settings.syncScroll = !this.plugin.settings.syncScroll;
-      await this.plugin.saveSettings();
-      if (this.plugin.settings.syncScroll) {
-        scrollSyncBtn.addClass("is-active");
-        buildScrollMap();
-        new import_obsidian5.Notice(t("notice_scroll_sync_enabled", lang));
-      } else {
-        scrollSyncBtn.removeClass("is-active");
-        editorScrollMap = null;
-        new import_obsidian5.Notice(t("notice_scroll_sync_disabled", lang));
-      }
+    scrollSyncBtn.addEventListener("click", () => {
+      void (async () => {
+        this.plugin.settings.syncScroll = !this.plugin.settings.syncScroll;
+        await this.plugin.saveSettings();
+        if (this.plugin.settings.syncScroll) {
+          scrollSyncBtn.addClass("is-active");
+          buildScrollMap();
+          new import_obsidian5.Notice(t("notice_scroll_sync_enabled", lang));
+        } else {
+          scrollSyncBtn.removeClass("is-active");
+          editorScrollMap = null;
+          new import_obsidian5.Notice(t("notice_scroll_sync_disabled", lang));
+        }
+      })();
     });
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", () => {
@@ -54507,190 +54586,168 @@ var WeChatPreviewView = class extends import_obsidian5.ItemView {
       }
       return html;
     };
-    copyBtn.addEventListener("click", async () => {
-      var _a3, _b;
-      if (!this.currentHtml) {
-        new import_obsidian5.Notice(t("notice_no_content_copy", lang));
-        return;
-      }
-      try {
-        const htmlWithImages = await embedLocalImagesAsBase64(this.currentHtml);
-        const blob = new Blob([htmlWithImages], { type: "text/html" });
-        const data = [new ClipboardItem({ "text/html": blob, "text/plain": new Blob([this.lastMarkdown], { type: "text/plain" }) })];
-        void navigator.clipboard.write(data);
-        new import_obsidian5.Notice(t("notice_copy_success", lang));
-      } catch (e) {
-        new import_obsidian5.Notice("Failed to copy to clipboard automatically. Trying fallback...");
-        const htmlWithImages = await embedLocalImagesAsBase64(this.currentHtml);
-        const el = activeDocument.createElement("div");
-        const innerDiv = el.createDiv();
+    copyBtn.addEventListener("click", () => {
+      void (async () => {
+        if (!this.currentHtml) {
+          new import_obsidian5.Notice(t("notice_no_content_copy", lang));
+          return;
+        }
         try {
-          const parserForCopy = new DOMParser();
-          const copyDoc = parserForCopy.parseFromString(`<div>${htmlWithImages}</div>`, "text/html");
-          const copyContainer = copyDoc.body.firstElementChild;
-          if (copyContainer) {
-            innerDiv.appendChild(copyContainer);
-          }
-        } catch (e2) {
+          const htmlWithImages = await embedLocalImagesAsBase64(this.currentHtml);
+          const blob = new Blob([htmlWithImages], { type: "text/html" });
+          const data = [new ClipboardItem({ "text/html": blob, "text/plain": new Blob([this.lastMarkdown], { type: "text/plain" }) })];
+          void navigator.clipboard.write(data);
+          new import_obsidian5.Notice(t("notice_copy_success", lang));
+        } catch (e) {
+          new import_obsidian5.Notice("Copy failed. Please select and copy content manually.");
         }
-        el.setCssStyles({
-          position: "fixed",
-          pointerEvents: "none",
-          opacity: "0"
-        });
-        activeDocument.body.appendChild(el);
-        (_a3 = window.getSelection()) == null ? void 0 : _a3.removeAllRanges();
-        const range = activeDocument.createRange();
-        range.selectNode(el);
-        (_b = window.getSelection()) == null ? void 0 : _b.addRange(range);
-        activeDocument.execCommand("copy");
-        activeDocument.body.removeChild(el);
-        new import_obsidian5.Notice(t("notice_copy_fallback_success", lang));
-      }
+      })();
     });
-    syncBtn.addEventListener("click", async () => {
-      var _a3;
-      if (!this.currentHtml) {
-        new import_obsidian5.Notice(t("notice_no_content_sync", lang));
-        return;
-      }
-      const { appId, appSecret, enableImgUpload } = this.plugin.settings;
-      if (!appId || !appSecret) {
-        new import_obsidian5.Notice(t("notice_configure_app", lang));
-        return;
-      }
-      syncBtn.disabled = true;
-      (0, import_obsidian5.setIcon)(syncBtn, "loader");
-      const loaderSvg = syncBtn.querySelector("svg");
-      if (loaderSvg) loaderSvg.addClass("rotate-spin");
-      syncBtn.title = t("button_syncing", lang);
-      new import_obsidian5.Notice(t("notice_acquiring_token", lang));
-      try {
-        const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
-        const tokenRes = await (0, import_obsidian5.requestUrl)({ url: tokenUrl, method: "GET" });
-        if (tokenRes.status !== 200) {
-          throw new Error(`Token request failed with status ${tokenRes.status}`);
+    syncBtn.addEventListener("click", () => {
+      void (async () => {
+        var _a3;
+        if (!this.currentHtml) {
+          new import_obsidian5.Notice(t("notice_no_content_sync", lang));
+          return;
         }
-        const tokenData = JSON.parse(tokenRes.text);
-        if (tokenData.errcode) {
-          throw new Error(`WeChat Token Error: [${tokenData.errcode}] ${tokenData.errmsg}`);
+        const { appId, appSecret, enableImgUpload } = this.plugin.settings;
+        if (!appId || !appSecret) {
+          new import_obsidian5.Notice(t("notice_configure_app", lang));
+          return;
         }
-        const accessToken = tokenData.access_token;
-        let finalHtml = this.currentHtml;
-        const activeFile = ((_a3 = this.app.workspace.getActiveViewOfType(import_obsidian5.MarkdownView)) == null ? void 0 : _a3.file) || null;
-        let firstLocalImageFile = null;
-        if (enableImgUpload) {
-          new import_obsidian5.Notice(t("notice_uploading_cdn", lang));
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(`<div>${finalHtml}</div>`, "text/html");
-          const imgElements = doc.querySelectorAll("img");
-          let uploadCount = 0;
-          for (let i = 0; i < imgElements.length; i++) {
-            const img = imgElements[i];
-            const src = img.getAttribute("src") || "";
-            if (src.startsWith("http://") || src.startsWith("https://")) {
-              continue;
-            }
-            const file = resolveImageToFile(src, activeFile);
-            if (file) {
-              if (!firstLocalImageFile) {
-                firstLocalImageFile = file;
-              }
-              try {
-                new import_obsidian5.Notice(
-                  t("notice_uploading_inline_img", lang).replace("{current}", (i + 1).toString()).replace("{total}", imgElements.length.toString()).replace("{name}", file.name)
-                );
-                const wechatCdnUrl = await uploadImageToWeChat(this.app, file, accessToken);
-                img.setAttribute("src", wechatCdnUrl);
-                uploadCount++;
-              } catch (uploadErr) {
-                console.error(`Failed to upload ${file.name}:`, uploadErr);
-                new import_obsidian5.Notice(`Warning: Failed to upload ${file.name}. Staying with local path.`);
-              }
-            }
+        syncBtn.disabled = true;
+        (0, import_obsidian5.setIcon)(syncBtn, "loader");
+        const loaderSvg = syncBtn.querySelector("svg");
+        if (loaderSvg) loaderSvg.addClass("rotate-spin");
+        syncBtn.title = t("button_syncing", lang);
+        new import_obsidian5.Notice(t("notice_acquiring_token", lang));
+        try {
+          const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
+          const tokenRes = await (0, import_obsidian5.requestUrl)({ url: tokenUrl, method: "GET" });
+          if (tokenRes.status !== 200) {
+            throw new Error(`Token request failed with status ${tokenRes.status}`);
           }
-          if (uploadCount > 0) {
-            new import_obsidian5.Notice(t("notice_upload_cdn_success", lang).replace("{count}", uploadCount.toString()));
+          const tokenData = JSON.parse(tokenRes.text);
+          if (tokenData.errcode) {
+            throw new Error(`WeChat Token Error: [${tokenData.errcode}] ${tokenData.errmsg}`);
           }
-          finalHtml = doc.body.firstElementChild.innerHTML;
-        }
-        let thumbMediaId = this.plugin.settings.defaultThumbMediaId.trim();
-        if (enableImgUpload) {
-          if (!firstLocalImageFile) {
-            const imageRegex = /!\[.*?\]\((.*?)\)|!\[[[].*?]]/g;
-            let match;
-            while ((match = imageRegex.exec(this.lastMarkdown)) !== null) {
-              const imgPath = match[1] || match[2];
-              if (imgPath && !imgPath.startsWith("http://") && !imgPath.startsWith("https://")) {
-                const file = resolveImageToFile(imgPath, activeFile);
-                if (file) {
+          const accessToken = tokenData.access_token;
+          let finalHtml = this.currentHtml;
+          const activeFile = ((_a3 = this.app.workspace.getActiveViewOfType(import_obsidian5.MarkdownView)) == null ? void 0 : _a3.file) || null;
+          let firstLocalImageFile = null;
+          if (enableImgUpload) {
+            new import_obsidian5.Notice(t("notice_uploading_cdn", lang));
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(`<div>${finalHtml}</div>`, "text/html");
+            const imgElements = doc.querySelectorAll("img");
+            let uploadCount = 0;
+            for (let i = 0; i < imgElements.length; i++) {
+              const img = imgElements[i];
+              const src = img.getAttribute("src") || "";
+              if (src.startsWith("http://") || src.startsWith("https://")) {
+                continue;
+              }
+              const file = resolveImageToFile(src, activeFile);
+              if (file) {
+                if (!firstLocalImageFile) {
                   firstLocalImageFile = file;
-                  break;
+                }
+                try {
+                  new import_obsidian5.Notice(
+                    t("notice_uploading_inline_img", lang).replace("{current}", (i + 1).toString()).replace("{total}", imgElements.length.toString()).replace("{name}", file.name)
+                  );
+                  const wechatCdnUrl = await uploadImageToWeChat(this.app, file, accessToken);
+                  img.setAttribute("src", wechatCdnUrl);
+                  uploadCount++;
+                } catch (uploadErr) {
+                  console.error(`Failed to upload ${file.name}:`, uploadErr);
+                  new import_obsidian5.Notice(`Warning: Failed to upload ${file.name}. Staying with local path.`);
                 }
               }
             }
+            if (uploadCount > 0) {
+              new import_obsidian5.Notice(t("notice_upload_cdn_success", lang).replace("{count}", uploadCount.toString()));
+            }
+            finalHtml = doc.body.firstElementChild.innerHTML;
           }
-          if (firstLocalImageFile) {
-            new import_obsidian5.Notice(t("notice_uploading_cover", lang).replace("{name}", firstLocalImageFile.name));
-            try {
-              const uploadedThumbId = await uploadThumbToWeChat(this.app, firstLocalImageFile, accessToken);
-              if (uploadedThumbId) {
-                thumbMediaId = uploadedThumbId;
-                new import_obsidian5.Notice(t("notice_cover_success", lang));
+          let thumbMediaId = this.plugin.settings.defaultThumbMediaId.trim();
+          if (enableImgUpload) {
+            if (!firstLocalImageFile) {
+              const imageRegex = /!\[.*?\]\((.*?)\)|!\[[[].*?]]/g;
+              let match;
+              while ((match = imageRegex.exec(this.lastMarkdown)) !== null) {
+                const imgPath = match[1] || match[2];
+                if (imgPath && !imgPath.startsWith("http://") && !imgPath.startsWith("https://")) {
+                  const file = resolveImageToFile(imgPath, activeFile);
+                  if (file) {
+                    firstLocalImageFile = file;
+                    break;
+                  }
+                }
               }
-            } catch (e) {
-              new import_obsidian5.Notice(t("notice_cover_fallback_warning", lang));
+            }
+            if (firstLocalImageFile) {
+              new import_obsidian5.Notice(t("notice_uploading_cover", lang).replace("{name}", firstLocalImageFile.name));
+              try {
+                const uploadedThumbId = await uploadThumbToWeChat(this.app, firstLocalImageFile, accessToken);
+                if (uploadedThumbId) {
+                  thumbMediaId = uploadedThumbId;
+                  new import_obsidian5.Notice(t("notice_cover_success", lang));
+                }
+              } catch (e) {
+                new import_obsidian5.Notice(t("notice_cover_fallback_warning", lang));
+              }
             }
           }
-        }
-        if (!thumbMediaId) {
-          throw new Error("WeChat requires a cover image (thumb_media_id) to create draft. Please configure the 'Default Cover Media ID' in settings or include a local image in your note.");
-        }
-        new import_obsidian5.Notice(t("notice_syncing_draft", lang));
-        const title = this.lastTitle || "Untitled Note";
-        const digest = this.lastDigest || "";
-        const article = {
-          title,
-          author: "",
-          digest,
-          content: finalHtml,
-          content_source_url: "",
-          thumb_media_id: thumbMediaId,
-          need_open_comment: 0,
-          only_fans_can_comment: 0
-        };
-        const draftUrl = `https://api.weixin.qq.com/cgi-bin/draft/add?access_token=${accessToken}`;
-        const requestPayload = { articles: [article] };
-        const draftRes = await (0, import_obsidian5.requestUrl)({
-          url: draftUrl,
-          method: "POST",
-          contentType: "application/json",
-          body: JSON.stringify(requestPayload)
-        });
-        const draftData = JSON.parse(draftRes.text);
-        if (draftData.errcode) {
-          if (draftData.errcode === 40007 || draftData.errcode === 40009) {
-            throw new Error(`WeChat Draft Error: Invalid cover image (thumb_media_id). Please make sure you have set up a valid media ID or created an article with a cover first.`);
+          if (!thumbMediaId) {
+            throw new Error("WeChat requires a cover image (thumb_media_id) to create draft. Please configure the 'Default Cover Media ID' in settings or include a local image in your note.");
           }
-          throw new Error(`WeChat Sync Error: [${draftData.errcode}] ${draftData.errmsg}`);
+          new import_obsidian5.Notice(t("notice_syncing_draft", lang));
+          const title = this.lastTitle || "Untitled Note";
+          const digest = this.lastDigest || "";
+          const article = {
+            title,
+            author: "",
+            digest,
+            content: finalHtml,
+            content_source_url: "",
+            thumb_media_id: thumbMediaId,
+            need_open_comment: 0,
+            only_fans_can_comment: 0
+          };
+          const draftUrl = `https://api.weixin.qq.com/cgi-bin/draft/add?access_token=${accessToken}`;
+          const requestPayload = { articles: [article] };
+          const draftRes = await (0, import_obsidian5.requestUrl)({
+            url: draftUrl,
+            method: "POST",
+            contentType: "application/json",
+            body: JSON.stringify(requestPayload)
+          });
+          const draftData = JSON.parse(draftRes.text);
+          if (draftData.errcode) {
+            if (draftData.errcode === 40007 || draftData.errcode === 40009) {
+              throw new Error(`WeChat Draft Error: Invalid cover image (thumb_media_id). Please make sure you have set up a valid media ID or created an article with a cover first.`);
+            }
+            throw new Error(`WeChat Sync Error: [${draftData.errcode}] ${draftData.errmsg}`);
+          }
+          new import_obsidian5.Notice(t("notice_sync_success", lang));
+        } catch (err) {
+          console.error("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u53D1\u751F\u5F02\u5E38:", err);
+          const errMsg = getErrorMessage(err);
+          const ipMatch = errMsg.match(/invalid ip\s+([\d.]+)/i);
+          if (errMsg.includes("40164") && ipMatch) {
+            const detectedIp = ipMatch[1];
+            const modal = new IpWhitelistErrorModal(this.app, detectedIp, lang);
+            modal.open();
+          } else {
+            new import_obsidian5.Notice(`Sync failed: ${errMsg}`);
+          }
+        } finally {
+          syncBtn.disabled = false;
+          (0, import_obsidian5.setIcon)(syncBtn, "upload-cloud");
+          syncBtn.title = t("button_sync", lang);
         }
-        new import_obsidian5.Notice(t("notice_sync_success", lang));
-      } catch (err) {
-        console.error("\u3010\u5FAE\u4FE1\u540C\u6B65\u3011\u53D1\u751F\u5F02\u5E38:", err);
-        const errMsg = getErrorMessage(err);
-        const ipMatch = errMsg.match(/invalid ip\s+([\d.]+)/i);
-        if (errMsg.includes("40164") && ipMatch) {
-          const detectedIp = ipMatch[1];
-          const modal = new IpWhitelistErrorModal(this.app, detectedIp, lang);
-          modal.open();
-        } else {
-          new import_obsidian5.Notice(`Sync failed: ${errMsg}`);
-        }
-      } finally {
-        syncBtn.disabled = false;
-        (0, import_obsidian5.setIcon)(syncBtn, "upload-cloud");
-        syncBtn.title = t("button_sync", lang);
-      }
+      })();
     });
   }
   async onClose() {
@@ -54722,7 +54779,6 @@ var Md2WeChatSettingTab = class extends import_obsidian6.PluginSettingTab {
             void leaf.view.onOpen();
           }
         });
-        this.display();
       });
     });
     new import_obsidian6.Setting(containerEl).setName(t("settings_appid_name", lang)).setDesc(t("settings_appid_desc", lang)).addText((text) => text.setPlaceholder("Wx...").setValue(this.plugin.settings.appId).onChange(async (value) => {
@@ -54773,7 +54829,6 @@ var Md2WeChatSettingTab = class extends import_obsidian6.PluginSettingTab {
           (mediaId) => {
             this.plugin.settings.defaultThumbMediaId = mediaId;
             void this.plugin.saveSettings();
-            this.display();
           },
           (materials) => {
             this.plugin.settings.cachedMaterials = materials;

@@ -79,6 +79,96 @@ export const THEMES: Record<string, ThemeStyle> = {
 		td: "border: 1px solid #dddddd; padding: 8px 12px; color: #222222;",
 		pre: "background-color: #1a1a1a; padding: 12px 16px; border-radius: 6px; overflow-x: auto; margin: 1.5em 0; line-height: 1.6; color: #abb2bf; font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; tab-size: 4; -moz-tab-size: 4; -o-tab-size: 4;",
 		pre_code: "font-family: inherit; font-size: 13px; background-color: transparent; border: 0; padding: 0; color: inherit; line-height: inherit; word-wrap: normal;"
+	},
+	yfqm: {
+		name: "远方青木",
+		container: "padding: 0 8px; font-family: 'PingFang SC NEW',system-ui,-apple-system,BlinkMacSystemFont,'Helvetica Neue','Hiragino Sans GB','Microsoft YaHei UI','Microsoft YaHei',Arial,sans-serif; font-size: 17px; letter-spacing: 0.034em; color: rgba(0, 0, 0, 0.9); line-height: 1.6; text-align: justify;",
+		h1: "font-size: 22px; color: rgb(123, 12, 0); text-align: center; margin-bottom: 24px;",
+		h2: "font-size: 20px; padding-left: 10px; border-left: 4px solid rgb(123, 12, 0);",
+		h3: "font-size: 18px; border-bottom: 1px dashed rgba(123, 12, 0, 0.3); padding-bottom: 6px;",
+		h4: "font-size: 17px;",
+		h5: "font-size: 16px; color: rgba(0, 0, 0, 0.7);",
+		h6: "font-size: 16px; color: rgba(0, 0, 0, 0.5); font-weight: normal;",
+		p: 'margin-top: 0; margin-bottom: 24px; font-family: mp-quote, "PingFang SC", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", Arial, sans-serif;',
+		code: 'font-family: Consolas, Monaco, "Courier New", monospace; font-size: 15px; color: rgb(123, 12, 0); background-color: rgba(0, 0, 0, 0.04); padding: 2px 4px; border-radius: 4px; word-break: break-all;',
+		blockquote: "margin: 0 0 24px 0; padding: 16px; background-color: rgba(123, 12, 0, 0.05); border-left: 3px solid rgb(123, 12, 0); border-radius: 0 4px 4px 0;",
+		ul: "margin-top: 0; margin-bottom: 24px; padding-left: 24px;",
+		ol: "margin-top: 0; margin-bottom: 24px; padding-left: 24px;",
+		li: "margin-bottom: 8px; line-height: 1.6;",
+		strong: "color: rgb(123, 12, 0); font-weight: bold;",
+		link: "color: rgb(123, 12, 0); text-decoration: none; border-bottom: 1px solid rgba(123, 12, 0, 0.4);",
+		em: "font-style: italic; color: rgba(0, 0, 0, 0.7);",
+		del: "text-decoration: line-through; color: rgba(0, 0, 0, 0.4);",
+		hr: "margin: 32px 0; border: none; border-top: 1px solid rgba(123, 12, 0, 0.15);",
+		table: "width: 100%; margin-bottom: 24px; border-collapse: collapse; font-size: 15px;",
+		th: "word-break: break-all;",
+		td: "word-break: break-all;",
+		pre: "margin-top: 0; margin-bottom: 24px; padding: 16px; background-color: #f6f6f6; border-radius: 6px; overflow-x: auto;",
+		pre_code: "background-color: transparent; color: rgba(0, 0, 0, 0.8); font-size: 14px; padding: 0; border-radius: 0; white-space: pre;",
+	},
+	klx: {
+		name: "看理想",
+		container: "padding: 0 8px; font-family: 'PingFang SC NEW', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Hiragino Sans GB', 'Microsoft YaHei UI', 'Microsoft YaHei', Arial, sans-serif; font-size: 16px; font-style: normal; letter-spacing: .034em; color: rgba(0, 0, 0, 0.9); line-height: 1.6; text-align: justify;",
+		h1: "color: rgb(86, 124, 162); font-size: 20px; font-weight: bold; letter-spacing: 1px; line-height: 1.6em; text-align: center; margin-top: 20px; margin-bottom: 28.5px;",
+		h2: "color: rgb(86, 124, 162); font-size: 16px; font-weight: bold; letter-spacing: 0.5px; line-height: 1.75em; text-align: center; margin-bottom: 28.5px;",
+		h3: "color: rgba(0, 0, 0, 0.9); font-size: 16px; font-weight: bold; letter-spacing: 0.5px; line-height: 1.75em; text-align: left; margin-bottom: 20px; padding-left: 10px; border-left: 4px solid rgb(86, 124, 162);",
+		h4: "color: rgba(0, 0, 0, 0.9); font-size: 15px; font-weight: bold; letter-spacing: 0.5px; line-height: 1.75em; margin-bottom: 15px;",
+		h5: "font-weight: normal; font-size: 13px; color: #888888; text-align: center; letter-spacing: 0.5px; line-height: 1.75em; margin-top: 10px; margin-bottom: 20px;",
+		h6: "font-weight: normal; font-size: 12px; color: #888888; text-align: center; letter-spacing: 0.5px; line-height: 1.75em; margin-top: -28.5px; margin-bottom: 28.5px;",
+		p: "line-height: 1.75em; letter-spacing: 0.5px; font-family: 'Optima-Regular', 'PingFangTC-light'; font-size: 16px; font-weight: normal; margin-bottom: 28.5px; margin-top: 0;",
+		code: 'font-family: Consolas, Monaco, "Courier New", monospace; font-size: 14px; color: rgb(86, 124, 162); background-color: #f7f7f7; padding: 2px 6px; border-radius: 4px; word-break: break-all;',
+		blockquote: "margin: 0 0 28.5px 0; padding: 16px 20px; background-color: rgba(86, 124, 162, 0.05); border-left: 3px solid rgb(86, 124, 162); border-radius: 0 4px 4px 0;",
+		ul: "margin-top: 0; margin-bottom: 28.5px; padding-left: 32px; color: rgba(0, 0, 0, 0.9);",
+		ol: "margin-top: 0; margin-bottom: 28.5px; padding-left: 32px; color: rgba(0, 0, 0, 0.9);",
+		li: "font-family: 'Optima-Regular', 'PingFangTC-light'; font-size: 16px; line-height: 1.75em; letter-spacing: 0.5px; margin-bottom: 8px;",
+		strong: "font-weight: bold;",
+		link: "color: rgb(86, 124, 162); text-decoration: none; border-bottom: 1px solid rgba(86, 124, 162, 0.4); padding-bottom: 1px;",
+		em: "font-style: italic; color: rgb(86, 124, 162);",
+		del: "text-decoration: line-through; color: #888888;",
+		hr: "border: none; height: 12px; margin: 30px 0; background-image:\
+			radial-gradient(circle, #d9d9d9 4.5px, transparent 5px),\
+			radial-gradient(circle, #d9d9d9 4.5px, transparent 5px),\
+			linear-gradient(to right, #d9d9d9, #d9d9d9),\
+			linear-gradient(to right, #d9d9d9, #d9d9d9); background-size:\
+			12px 12px,\
+			12px 12px,\
+			calc(50% - 25px) 1px,\
+			calc(50% - 25px) 1px; background-position:\
+			calc(50% - 8px) center,\
+			calc(50% + 8px) center,\
+			left center,\
+			right center; background-repeat: no-repeat;",
+		table: "width: 100%; border-collapse: collapse; margin-bottom: 28.5px; font-size: 14px; color: rgba(0, 0, 0, 0.9);",
+		th: "font-weight: bold; background-color: rgba(86, 124, 162, 0.1); color: rgb(86, 124, 162);",
+		td: "border: 1px solid #d9d9d9; padding: 10px 12px; text-align: left; line-height: 1.6em;",
+		pre: "background-color: #f7f7f7; padding: 16px; border-radius: 6px; overflow-x: auto; margin-top: 0; margin-bottom: 28.5px; border: 1px solid #eeeeee;",
+		pre_code: "background-color: transparent; color: #333333; font-size: 13px; padding: 0; border-radius: 0; white-space: pre; line-height: 1.6em;",
+	},
+	dlts: {
+		name: "大浪淘沙",
+		container: "padding: 0 8px; font-family: '文鼎大颜楷','PingFang SC NEW',system-ui,-apple-system,BlinkMacSystemFont,'Helvetica Neue','Hiragino Sans GB','Microsoft YaHei UI','Microsoft YaHei',Arial,sans-serif; font-size: 16px; letter-spacing: 0.034em; color: rgba(0, 0, 0, 0.9); line-height: 1.6; text-align: justify;",
+		h1: "font-size: 18px; letter-spacing: 2px; line-height: 2em; text-align: center; margin-bottom: 24px; font-weight: bold; color: rgba(0, 0, 0, 0.95);",
+		h2: "font-size: 16px; letter-spacing: 2px; line-height: 2em; text-align: center; margin-bottom: 24px;",
+		h3: "font-size: 16px; letter-spacing: 2px; line-height: 2em; margin-bottom: 16px; font-weight: bold; color: rgba(0, 0, 0, 0.9);",
+		h4: "font-size: 15px; letter-spacing: 1.5px; line-height: 2em; margin-bottom: 16px; font-weight: bold; color: rgba(0, 0, 0, 0.8);",
+		h5: "font-size: 14px; letter-spacing: 1.5px; line-height: 1.8em; margin-bottom: 12px; font-weight: bold; color: rgba(0, 0, 0, 0.7);",
+		h6: "font-size: 14px; letter-spacing: 1.5px; line-height: 1.8em; margin-bottom: 12px; font-weight: normal; color: rgba(0, 0, 0, 0.55);",
+		p: "font-family: '文鼎大颜楷','PingFang SC NEW',system-ui,-apple-system,BlinkMacSystemFont,'Helvetica Neue','Hiragino Sans GB','Microsoft YaHei UI','Microsoft YaHei',Arial,sans-serif; font-size: 16px; letter-spacing: 2px; line-height: 2em; margin-bottom: 24px;",
+		code: "font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; background-color: rgba(0, 0, 0, 0.04); padding: 2px 6px; margin: 0 2px; border-radius: 4px; font-size: 14px; color: rgba(0, 0, 0, 0.8); letter-spacing: 0;",
+		blockquote: "-webkit-tap-highlight-color: rgba(0, 0, 0, 0); margin: 1em 0px; padding: 4px 0px 0px 10px; outline: 0px; border-left: 3px solid rgb(219, 219, 219); color: rgba(0, 0, 0, .55); font-size: 15px; text-indent: 0px; max-width: 100%; box-sizing: border-box !important; overflow-wrap: break-word !important; font-family: 'PingFang SC', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Hiragino Sans GB', 'Microsoft YaHei UI', 'Microsoft YaHei', Arial, sans-serif; font-style: normal; font-weight: 400; letter-spacing: 0.544px; orphans: 2; text-align: justify; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255);",
+		ul: "margin-top: 0; margin-bottom: 24px; padding-left: 28px; font-size: 16px; letter-spacing: 2px; line-height: 2em; color: rgba(0, 0, 0, 0.9);",
+		ol: "margin-top: 0; margin-bottom: 24px; padding-left: 28px; font-size: 16px; letter-spacing: 2px; line-height: 2em; color: rgba(0, 0, 0, 0.9);",
+		li: "margin-bottom: 8px;",
+		strong: "font-weight: bold; color: #000000;",
+		link: "color: #576b95; text-decoration: none; border-bottom: 1px solid rgba(87, 107, 149, 0.3);",
+		em: "font-style: italic; color: rgba(0, 0, 0, 0.7);",
+		del: "text-decoration: line-through; color: rgba(0, 0, 0, 0.4);",
+		hr: "border: none; border-top: 1px solid rgb(219, 219, 219); margin: 32px 0 24px 0;",
+		table: "width: 100%; border-collapse: collapse; margin-bottom: 24px; font-family: 'PingFang SC', system-ui, -apple-system, sans-serif; font-size: 14px; letter-spacing: 0.5px; line-height: 1.6;",
+		th: "background-color: rgb(249, 249, 249); font-weight: bold; color: rgba(0, 0, 0, 0.8);",
+		td: "border: 1px solid rgb(219, 219, 219); padding: 10px 8px; text-align: left;",
+		pre: "background-color: rgb(249, 249, 249); border: 1px solid rgb(219, 219, 219); border-radius: 4px; padding: 16px; margin-bottom: 24px; overflow-x: auto; -webkit-overflow-scrolling: touch;",
+		pre_code: "background-color: transparent; padding: 0; margin: 0; font-size: 13px; color: rgba(0, 0, 0, 0.8); letter-spacing: 0; line-height: 1.6;",
 	}
 };
 
