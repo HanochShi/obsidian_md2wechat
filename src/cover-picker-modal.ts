@@ -3,6 +3,28 @@ import { t } from './i18n';
 
 const PAGE_SIZE = 18;
 
+// WeChat API response types
+interface WeChatTokenResponse {
+	access_token: string;
+	expires_in: number;
+	errcode?: number;
+	errmsg?: string;
+}
+
+interface WeChatMaterialItem {
+	media_id: string;
+	name: string;
+	url: string;
+}
+
+interface WeChatMaterialResponse {
+	total_count: number;
+	item_count: number;
+	item: WeChatMaterialItem[];
+	errcode?: number;
+	errmsg?: string;
+}
+
 export class CoverPickerModal extends Modal {
 	private appId: string;
 	private appSecret: string;
@@ -62,23 +84,23 @@ export class CoverPickerModal extends Modal {
 
 		// Grid container
 		this.gridEl = this.scrollWrapper.createDiv({ cls: 'md2wechat-cover-picker-grid' });
-		this.gridEl.style.display = 'none';
+		this.gridEl.addClass('md2wechat-is-hidden');
 
 		// Load more link (inside scroll wrapper, after grid)
 		this.loadMoreEl = this.scrollWrapper.createDiv({ cls: 'md2wechat-cover-picker-load-more' });
 		this.loadMoreEl.setText(t('cover_picker_load_more', this.lang));
-		this.loadMoreEl.style.display = 'none';
+		this.loadMoreEl.addClass('md2wechat-is-hidden');
 		this.loadMoreEl.addEventListener('click', () => {
-			this.fetchNextPage();
+			void this.fetchNextPage();
 		});
 
 		// Status text (for "no more" etc.)
 		this.statusEl = this.scrollWrapper.createDiv({ cls: 'md2wechat-cover-picker-status' });
-		this.statusEl.style.display = 'none';
+		this.statusEl.addClass('md2wechat-is-hidden');
 
 		// Footer
 		this.footerEl = contentEl.createDiv({ cls: 'md2wechat-cover-picker-footer' });
-		this.footerEl.style.display = 'none';
+		this.footerEl.addClass('md2wechat-is-hidden');
 
 		const cancelBtn = this.footerEl.createEl('button', { cls: 'md2wechat-cover-picker-cancel-btn' });
 		cancelBtn.setText(t('cover_picker_cancel', this.lang));
@@ -93,7 +115,7 @@ export class CoverPickerModal extends Modal {
 		});
 
 		// Auto-load first page
-		this.fetchNextPage();
+		void this.fetchNextPage();
 	}
 
 	private async fetchNextPage() {
@@ -101,7 +123,7 @@ export class CoverPickerModal extends Modal {
 		this.isLoading = true;
 
 		if (this.offset === 0) {
-			this.loadingEl.style.display = 'block';
+			this.loadingEl.removeClass('md2wechat-is-hidden');
 		} else {
 			this.loadMoreEl.setText(t('cover_picker_loading', this.lang));
 			this.loadMoreEl.addClass('is-loading');
@@ -111,7 +133,7 @@ export class CoverPickerModal extends Modal {
 			// Get access token
 			const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`;
 			const tokenRes = await requestUrl({ url: tokenUrl, method: 'GET' });
-			const tokenData = JSON.parse(tokenRes.text);
+			const tokenData = JSON.parse(tokenRes.text) as WeChatTokenResponse;
 			if (tokenData.errcode) {
 				throw new Error(tokenData.errmsg);
 			}
@@ -129,13 +151,13 @@ export class CoverPickerModal extends Modal {
 					count: PAGE_SIZE
 				})
 			});
-			const matData = JSON.parse(matRes.text);
+			const matData = JSON.parse(matRes.text) as WeChatMaterialResponse;
 			if (matData.errcode) {
 				throw new Error(matData.errmsg);
 			}
 
 			const items = matData.item || [];
-			const newMaterials = items.map((item: any) => ({
+			const newMaterials = items.map((item) => ({
 				mediaId: item.media_id,
 				name: item.name,
 				url: item.url || ''
@@ -151,7 +173,7 @@ export class CoverPickerModal extends Modal {
 
 			// First page empty
 			if (this.allMaterials.length === 0) {
-				this.loadingEl.style.display = 'none';
+				this.loadingEl.addClass('md2wechat-is-hidden');
 				const empty = this.gridEl.parentElement?.createDiv({ cls: 'md2wechat-cover-picker-empty' });
 				if (empty) empty.setText(t('cover_picker_empty', this.lang));
 				return;
@@ -164,30 +186,30 @@ export class CoverPickerModal extends Modal {
 			this.renderItems(newMaterials);
 
 			// Show grid and footer
-			this.loadingEl.style.display = 'none';
-			this.gridEl.style.display = 'grid';
-			this.scrollWrapper.style.display = 'block';
-			this.footerEl.style.display = 'flex';
+			this.loadingEl.addClass('md2wechat-is-hidden');
+			this.gridEl.removeClass('md2wechat-is-hidden');
+			this.footerEl.removeClass('md2wechat-is-hidden');
 
 			// Update load more link
 			if (this.hasMore) {
-				this.loadMoreEl.style.display = 'block';
+				this.loadMoreEl.removeClass('md2wechat-is-hidden');
 				this.loadMoreEl.setText(t('cover_picker_load_more', this.lang));
 				this.loadMoreEl.removeClass('is-loading');
 			} else {
-				this.loadMoreEl.style.display = 'none';
-				this.statusEl.style.display = 'block';
+				this.loadMoreEl.addClass('md2wechat-is-hidden');
+				this.statusEl.removeClass('md2wechat-is-hidden');
 				this.statusEl.setText(t('cover_picker_no_more', this.lang));
 			}
 
-		} catch (err: any) {
+		} catch (err: unknown) {
 			console.error('Failed to fetch materials:', err);
-			this.loadingEl.style.display = 'none';
-			new Notice(t('cover_picker_fetch_error', this.lang) + ' ' + (err.message || ''));
+			this.loadingEl.addClass('md2wechat-is-hidden');
+			const errorMessage = err instanceof Error ? err.message : String(err);
+			new Notice(t('cover_picker_fetch_error', this.lang) + ' ' + errorMessage);
 			
 			// If we already have some items, just show footer
 			if (this.allMaterials.length > 0) {
-				this.footerEl.style.display = 'flex';
+				this.footerEl.removeClass('md2wechat-is-hidden');
 				this.loadMoreEl.setText(t('cover_picker_load_more', this.lang));
 				this.loadMoreEl.removeClass('is-loading');
 			}
@@ -214,7 +236,7 @@ export class CoverPickerModal extends Modal {
 					},
 				});
 				img.onerror = () => {
-					img.style.display = 'none';
+					img.addClass('md2wechat-is-hidden');
 					thumbWrap.addClass('is-broken');
 					const fallback = thumbWrap.createDiv({ cls: 'md2wechat-cover-picker-thumb-fallback' });
 					fallback.setText('🖼️');

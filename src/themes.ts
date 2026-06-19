@@ -1,4 +1,4 @@
-import { Notice } from 'obsidian';
+import { DataAdapter, Notice } from 'obsidian';
 import { ThemeStyle } from './types';
 
 export const THEMES: Record<string, ThemeStyle> = {
@@ -82,7 +82,7 @@ export const THEMES: Record<string, ThemeStyle> = {
 	}
 };
 
-export async function initThemeDirectory(adapter: any, folderPath: string, templateCss: string) {
+export async function initThemeDirectory(adapter: DataAdapter, folderPath: string, templateCss: string) {
 	try {
 		const exists = await adapter.exists(folderPath);
 		if (!exists) {
@@ -94,20 +94,18 @@ export async function initThemeDirectory(adapter: any, folderPath: string, templ
 	}
 }
 
-export async function writeThemeWithConflictCheck(adapter: any, folderPath: string, baseName: string, content: string) {
+export async function writeThemeWithConflictCheck(adapter: DataAdapter, folderPath: string, baseName: string, content: string) {
 	const normalizeContent = (str: string) => str.trim().replace(/\r\n/g, '\n');
 	const targetPath = `${folderPath}/${baseName}.css`;
 	
 	const fileExists = await adapter.exists(targetPath);
 	if (!fileExists) {
 		await adapter.write(targetPath, content);
-		console.log(`【微信同步】成功生成全新主题示例: ${targetPath}`);
 		return;
 	}
 
 	const existingContent = await adapter.read(targetPath);
 	if (normalizeContent(existingContent) === normalizeContent(content)) {
-		console.log(`【微信同步】示例主题 ${baseName}.css 内容未被修改，保持现状。`);
 		return;
 	}
 
@@ -118,13 +116,11 @@ export async function writeThemeWithConflictCheck(adapter: any, folderPath: stri
 		if (!candidateExists) {
 			await adapter.write(candidatePath, content);
 			new Notice(`检测到您自定义了默认示例，已自动将最新的全面标记模版保存为 "${baseName} (${index}).css"！`);
-			console.log(`【微信同步】检测到冲突，已将最新示例模版备份到: ${candidatePath}`);
 			return;
 		}
 		
 		const candidateContent = await adapter.read(candidatePath);
 		if (normalizeContent(candidateContent) === normalizeContent(content)) {
-			console.log(`【微信同步】最新的示例内容已经完美存在于: ${candidatePath}`);
 			return;
 		}
 		
@@ -132,7 +128,7 @@ export async function writeThemeWithConflictCheck(adapter: any, folderPath: stri
 	}
 }
 
-export async function loadCustomThemes(adapter: any, folderPath: string): Promise<Record<string, ThemeStyle>> {
+export async function loadCustomThemes(adapter: DataAdapter, folderPath: string): Promise<Record<string, ThemeStyle>> {
 	const customThemes: Record<string, ThemeStyle> = {};
 	try {
 		const exists = await adapter.exists(folderPath);

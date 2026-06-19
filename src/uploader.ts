@@ -1,5 +1,19 @@
 import { App, requestUrl, TFile } from 'obsidian';
 
+// WeChat API response types
+interface WeChatUploadImageResponse {
+	url: string;
+	errcode?: number;
+	errmsg?: string;
+}
+
+interface WeChatUploadMaterialResponse {
+	media_id: string;
+	url?: string;
+	errcode?: number;
+	errmsg?: string;
+}
+
 // Helper to construct multipart/form-data manually for requestUrl
 function createMultipartBody(filename: string, fileData: ArrayBuffer, contentType: string, boundary: string): ArrayBuffer {
 	const encoder = new TextEncoder();
@@ -52,7 +66,7 @@ export async function uploadImageToWeChat(app: App, file: TFile, accessToken: st
 		throw new Error(`WeChat image upload failed with status ${res.status}`);
 	}
 
-	const data = JSON.parse(res.text);
+	const data = JSON.parse(res.text) as WeChatUploadImageResponse;
 	if (data.errcode) {
 		throw new Error(`WeChat Upload Image Error: [${data.errcode}] ${data.errmsg}`);
 	}
@@ -89,7 +103,7 @@ export async function uploadThumbToWeChat(app: App, file: TFile, accessToken: st
 		throw new Error(`WeChat permanent image upload failed with status ${res.status}`);
 	}
 
-	const data = JSON.parse(res.text);
+	const data = JSON.parse(res.text) as WeChatUploadMaterialResponse;
 	if (data.errcode) {
 		throw new Error(`WeChat Upload Cover Error: [${data.errcode}] ${data.errmsg}`);
 	}

@@ -2,6 +2,7 @@ import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
 import Md2WeChatPlugin from './main';
 import { t } from './i18n';
 import { CoverPickerModal } from './cover-picker-modal';
+import { WeChatPreviewView } from './view';
 
 export class Md2WeChatSettingTab extends PluginSettingTab {
 	plugin: Md2WeChatPlugin;
@@ -31,18 +32,19 @@ export class Md2WeChatSettingTab extends PluginSettingTab {
 				dropdown.addOption('zh-TW', '繁體中文');
 				
 				dropdown.setValue(this.plugin.settings.lang);
-				dropdown.onChange(async (value: any) => {
-					this.plugin.settings.lang = value;
-					await this.plugin.saveSettings();
+				dropdown.onChange((value: string) => {
+					this.plugin.settings.lang = value as 'en' | 'zh-CN' | 'zh-TW';
+					void this.plugin.saveSettings();
 					
 					// Force active view update to refresh text if view exists
 					const activeViews = this.app.workspace.getLeavesOfType("wechat-preview-view");
 					activeViews.forEach(leaf => {
-						if (leaf.view && typeof (leaf.view as any).onOpen === 'function') {
-							(leaf.view as any).onOpen();
-						}
+					if (leaf.view instanceof WeChatPreviewView) {
+						void leaf.view.onOpen();
+					}
 					});
 					
+					// eslint-disable-next-line @typescript-eslint/no-deprecated
 					this.display(); // Redraw settings tab
 				});
 			});
@@ -51,7 +53,7 @@ export class Md2WeChatSettingTab extends PluginSettingTab {
 			.setName(t('settings_appid_name', lang))
 			.setDesc(t('settings_appid_desc', lang))
 			.addText(text => text
-				.setPlaceholder('wx...')
+				.setPlaceholder('Wx...')
 				.setValue(this.plugin.settings.appId)
 				.onChange(async (value) => {
 					this.plugin.settings.appId = value;
@@ -75,9 +77,9 @@ export class Md2WeChatSettingTab extends PluginSettingTab {
 			.setDesc(t('settings_theme_desc', lang));
 
 		styleSetting.addDropdown(dropdown => {
-			dropdown.addOption('elegant', 'Elegant Green (雅绿)');
-			dropdown.addOption('warm', 'Warm Gold (暖金)');
-			dropdown.addOption('minimal', 'Minimalist Black (极简)');
+			dropdown.addOption('elegant', 'Elegant green (雅绿)');
+			dropdown.addOption('warm', 'Warm gold (暖金)');
+			dropdown.addOption('minimal', 'Minimalist black (极简)');
 			
 			// Load custom themes too
 			Object.keys(this.plugin.customThemes).forEach(key => {
@@ -95,7 +97,7 @@ export class Md2WeChatSettingTab extends PluginSettingTab {
 			.setName(t('settings_folder_name', lang))
 			.setDesc(t('settings_folder_desc', lang))
 			.addText(text => text
-				.setPlaceholder('wechat-format-themes')
+				.setPlaceholder('Wechat-format-themes')
 				.setValue(this.plugin.settings.themeFolder)
 				.onChange(async (value) => {
 					this.plugin.settings.themeFolder = value.trim() || 'wechat-format-themes';
@@ -132,15 +134,16 @@ export class Md2WeChatSettingTab extends PluginSettingTab {
 						appSecret,
 						this.plugin.settings.defaultThumbMediaId,
 						lang,
-						async (mediaId: string) => {
+						(mediaId: string) => {
 							this.plugin.settings.defaultThumbMediaId = mediaId;
-							await this.plugin.saveSettings();
+							void this.plugin.saveSettings();
+							// eslint-disable-next-line @typescript-eslint/no-deprecated
 							this.display(); // Redraw to update preview
 						},
-						async (materials) => {
+						(materials: Array<{ mediaId: string; name: string; url: string }>) => {
 							// Sync cache from modal to plugin settings
 							this.plugin.settings.cachedMaterials = materials;
-							await this.plugin.saveSettings();
+							void this.plugin.saveSettings();
 						}
 					);
 					modal.open();
@@ -150,7 +153,7 @@ export class Md2WeChatSettingTab extends PluginSettingTab {
 		// Current cover preview (if cached)
 		if (this.plugin.settings.cachedMaterials && this.plugin.settings.cachedMaterials.length > 0) {
 			const currentCover = this.plugin.settings.cachedMaterials.find(
-				(m: any) => m.mediaId === this.plugin.settings.defaultThumbMediaId
+				(m) => m.mediaId === this.plugin.settings.defaultThumbMediaId
 			);
 			
 			if (currentCover && currentCover.url) {
@@ -162,7 +165,7 @@ export class Md2WeChatSettingTab extends PluginSettingTab {
 					attr: { src: currentCover.url, alt: currentCover.name }
 				});
 				previewImg.onerror = () => {
-					previewImg.style.display = 'none';
+					previewImg.addClass('md2wechat-is-hidden');
 				};
 			}
 		}

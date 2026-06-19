@@ -1,4 +1,4 @@
-import { Plugin, WorkspaceLeaf, addIcon } from 'obsidian';
+import { Plugin, WorkspaceLeaf, addIcon, DataAdapter } from 'obsidian';
 import { WECHAT_MP_ICON } from './icons';
 import { Md2WeChatSettings, ThemeStyle } from './types';
 import { Md2WeChatSettingTab } from './settings';
@@ -38,16 +38,16 @@ export default class Md2WeChatPlugin extends Plugin {
 		);
 
 		// Add Ribbon icon for preview
-		this.addRibbonIcon('wechat-mp', 'WeChat Format & Sync', () => {
-			this.activateView();
+		this.addRibbonIcon('wechat-mp', 'Wechat format & sync', () => {
+			void this.activateView();
 		});
 
 		// Add Command Palette Command
 		this.addCommand({
 			id: 'preview-wechat-format',
-			name: 'Open WeChat format preview and sync panel',
+			name: 'Open wechat format preview and sync panel',
 			callback: () => {
-				this.activateView();
+				void this.activateView();
 			}
 		});
 
@@ -55,7 +55,7 @@ export default class Md2WeChatPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, (await this.loadData()) as Partial<Md2WeChatSettings>);
 	}
 
 	async saveSettings() {
@@ -81,12 +81,12 @@ export default class Md2WeChatPlugin extends Plugin {
 		}
 
 		if (leaf) {
-			workspace.revealLeaf(leaf);
+			void workspace.revealLeaf(leaf);
 		}
 	}
 
 	async initThemeDirectory() {
-		const adapter = this.app.vault.adapter;
+		const adapter: DataAdapter = this.app.vault.adapter;
 		const folderPath = this.settings.themeFolder;
 		// Delegate to themes.ts logic by writing there or doing inline
 		const templateCss = `/* 

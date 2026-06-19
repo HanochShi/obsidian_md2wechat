@@ -39,16 +39,17 @@ export class IpWhitelistErrorModal extends Modal {
 		ipValue.setText(this.ipAddress);
 		const copyIpBtn = ipRow.createEl('button', { cls: 'md2wechat-error-modal-copy-btn', text: t('error_ip_whitelist_copy_ip', lang) });
 		copyIpBtn.addEventListener('click', () => {
-			navigator.clipboard.writeText(this.ipAddress).then(() => {
+			void navigator.clipboard.writeText(this.ipAddress).then(() => {
 				new Notice(t('error_ip_whitelist_ip_copied', lang));
 			}).catch(() => {
 				// Fallback copy
-				const textArea = document.createElement('textarea');
+				const textArea = activeDocument.createElement('textarea');
 				textArea.value = this.ipAddress;
-				document.body.appendChild(textArea);
+				activeDocument.body.appendChild(textArea);
 				textArea.select();
-				document.execCommand('copy');
-				document.body.removeChild(textArea);
+				// eslint-disable-next-line @typescript-eslint/no-deprecated
+				activeDocument.execCommand('copy');
+				activeDocument.body.removeChild(textArea);
 				new Notice(t('error_ip_whitelist_ip_copied', lang));
 			});
 		});
@@ -73,7 +74,7 @@ export class IpWhitelistErrorModal extends Modal {
 		const linkRow = container.createDiv({ cls: 'md2wechat-error-modal-link' });
 		linkRow.createSpan({ text: t('error_ip_whitelist_check_ip_prefix', lang) });
 		const link = linkRow.createEl('a', {
-			text: 'https://tool.lu/ip',
+			text: 'HTTPS://tool.lu/IP',
 			cls: 'md2wechat-error-modal-link-url',
 			attr: { href: 'https://tool.lu/ip', target: '_blank', rel: 'noopener' }
 		});

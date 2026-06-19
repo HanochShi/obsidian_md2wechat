@@ -1,4 +1,9 @@
 /* CSS styles for md2wechat preview */
+
+/* Generic utility: hide elements via class toggle instead of inline style */
+.md2wechat-is-hidden {
+    display: none !important;
+}
 .md2wechat-preview-container {
     display: flex;
     flex-direction: column;

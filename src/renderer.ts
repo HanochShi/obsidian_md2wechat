@@ -30,7 +30,7 @@ export function preprocessWeChatFootnotes(markdown: string): { markdown: string;
 	});
 
 	const inlineRefRegex = /\[\^([^\]]+)\](?!\s*:)/g;
-	processedMarkdown = processedMarkdown.replace(inlineRefRegex, (match, label) => {
+	processedMarkdown = processedMarkdown.replace(inlineRefRegex, (match: string, label: string) => {
 		const cleanLabel = label.trim();
 		const ref = refMap[cleanLabel];
 		if (ref) {
@@ -63,7 +63,7 @@ export function convertToWeChatHtml(markdownText: string, theme: ThemeStyle): st
 	// Preprocess 2: Convert Obsidian Wikilink-style image embeds ![[image.png]] or ![[image.png|500]] into standard HTML <img> tags
 	// We wrap them in a centered <p> tag so they inherit paragraph styling and margins naturally.
 	// Matches: ![[filename.ext]] or ![[filename.ext|width]] or ![[filename.ext|alt|width]]
-	preprocessedMarkdown = preprocessedMarkdown.replace(/!\[\[([^\]|]+)(?:\|([^\]]*))?\]\]/g, (match, pathStr, rawParams) => {
+	preprocessedMarkdown = preprocessedMarkdown.replace(/!\[\[([^\]|]+)(?:\|([^\]]*))?\]\]/g, (_match: string, pathStr: string, rawParams?: string) => {
 		const cleanPath = pathStr.trim();
 		let widthAttr = '';
 		
@@ -94,11 +94,11 @@ export function convertToWeChatHtml(markdownText: string, theme: ThemeStyle): st
 		return `<p style="text-align: center;"><img src="${href}" alt="${text}" title="${title || ''}" /></p>`;
 	};
 
-	let rawHtml = marked.parse(preparedMarkdown, { renderer, async: false }) as string;
+	let rawHtml = marked.parse(preparedMarkdown, { renderer, async: false });
 
 	// Squash all whitespace and physical newlines between list elements to prevent WeChat Official Account editor 
 	// from misinterpreting list whitespace formatting into empty, blank <li></li> elements (2n+1 Bug).
-	rawHtml = rawHtml.replace(/(<(?:ul|ol)[^>]*>)\s*([\s\S]*?)\s*(<\/(?:ul|ol)>)/gi, (match, open, content, close) => {
+	rawHtml = rawHtml.replace(/(<(?:ul|ol)[^>]*>)\s*([\s\S]*?)\s*(<\/(?:ul|ol)>)/gi, (_match: string, open: string, content: string, close: string) => {
 		const squashedContent = content.replace(/<\/li>\s*<li/gi, '</li><li');
 		return `${open}${squashedContent.trim()}${close}`;
 	});
@@ -197,36 +197,54 @@ export function convertToWeChatHtml(markdownText: string, theme: ThemeStyle): st
 
 	const allParagraphs = container.querySelectorAll('p');
 	allParagraphs.forEach(p => {
-		const html = p.innerHTML;
-		// Split multiple lines in all paragraphs using <br> into multiple sibling <p> tags for exact scroll matching.
-		// Sibling tags split from <br> inherit compact margins to visually look identical to raw <br> breaks.
-		if (html.includes('<br>')) {
-			const segments = html.split('<br>');
-			p.innerHTML = segments[0];
-			
-			// Adjust the first segment's margin-bottom to be compact since it has subsequent line-breaks
-			const existingStyle = p.getAttribute('style') || '';
-			p.setAttribute('style', `${existingStyle} margin-bottom: 0px !important;`);
+		// Check if this paragraph contains <br> elements
+		const hasBr = Array.from(p.childNodes).some(node => node.nodeName === 'BR');
+		if (!hasBr) return;
 
-			let currentSibling = p;
-			for (let idx = 1; idx < segments.length; idx++) {
-				const newP = p.ownerDocument.createElement('p');
-				newP.innerHTML = segments[idx];
-				
-				// Inherit theme.p styling
-				let baseStyle = theme.p || '';
-				
-				// Apply zero margins to simulate exact <br> break effect, except the last segment
-				if (idx < segments.length - 1) {
-					baseStyle = `${baseStyle} margin-top: 0px !important; margin-bottom: 0px !important;`;
-				} else {
-					baseStyle = `${baseStyle} margin-top: 0px !important;`;
-				}
-				
-				newP.setAttribute('style', baseStyle);
-				p.parentElement?.insertBefore(newP, currentSibling.nextSibling);
-				currentSibling = newP;
+		// Split child nodes into segments at <br> boundaries
+		const segments: Node[][] = [];
+		let current: Node[] = [];
+
+		Array.from(p.childNodes).forEach(node => {
+			if (node.nodeName === 'BR') {
+				segments.push(current);
+				current = [];
+			} else {
+				current.push(node);
 			}
+		});
+		segments.push(current); // last segment after final <br>
+
+		// Remove all children from the original paragraph
+		while (p.firstChild) {
+			p.removeChild(p.firstChild);
+		}
+
+		// Append first segment's nodes back to the original paragraph
+		segments[0].forEach(node => p.appendChild(node));
+
+		// Adjust the first segment's margin-bottom to be compact since it has subsequent line-breaks
+		const existingStyle = p.getAttribute('style') || '';
+		p.setAttribute('style', `${existingStyle} margin-bottom: 0px !important;`);
+
+		let currentSibling = p;
+		for (let idx = 1; idx < segments.length; idx++) {
+			const newP = p.ownerDocument.createElement('p');
+			segments[idx].forEach(node => newP.appendChild(node));
+
+			// Inherit theme.p styling
+			let baseStyle = theme.p || '';
+
+			// Apply zero margins to simulate exact <br> break effect, except the last segment
+			if (idx < segments.length - 1) {
+				baseStyle = `${baseStyle} margin-top: 0px !important; margin-bottom: 0px !important;`;
+			} else {
+				baseStyle = `${baseStyle} margin-top: 0px !important;`;
+			}
+
+			newP.setAttribute('style', baseStyle);
+			p.parentElement?.insertBefore(newP, currentSibling.nextSibling);
+			currentSibling = newP;
 		}
 	});
 

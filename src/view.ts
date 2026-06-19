@@ -8,6 +8,26 @@ import { IpWhitelistErrorModal } from './error-modal';
 
 export const VIEW_TYPE_WECHAT_PREVIEW = "wechat-preview-view";
 
+// WeChat API response types
+interface WeChatTokenResponse {
+	access_token: string;
+	expires_in?: number;
+	errcode?: number;
+	errmsg?: string;
+}
+
+interface WeChatDraftResponse {
+	media_id?: string;
+	errcode?: number;
+	errmsg?: string;
+}
+
+function getErrorMessage(err: unknown): string {
+	if (err instanceof Error) return err.message;
+	if (typeof err === 'string') return err;
+	return String(err);
+}
+
 export class WeChatPreviewView extends ItemView {
 	plugin: Md2WeChatPlugin;
 	currentHtml: string = '';
@@ -25,7 +45,6 @@ export class WeChatPreviewView extends ItemView {
 	}
 
 	getDisplayText(): string {
-		// Use dynamic title translation based on language setting
 		const lang = this.plugin?.settings?.lang || 'en';
 		return t('view_title', lang);
 	}
@@ -40,7 +59,6 @@ export class WeChatPreviewView extends ItemView {
 		
 		const lang = this.plugin.settings.lang;
 
-		// Create HTML layout
 		const container = contentEl.createDiv({ cls: 'md2wechat-preview-container' });
 
 		// Toolbar
@@ -52,12 +70,10 @@ export class WeChatPreviewView extends ItemView {
 		// Theme selector
 		const selector = toolbarLeft.createEl('select', { cls: 'md2wechat-style-select' });
 		
-		// Function to rebuild options dynamically including custom themes
 		const populateSelector = () => {
 			const currentlySelected = selector.value;
 			selector.empty();
 			
-			// Built-in themes
 			Object.keys(THEMES).forEach(key => {
 				const option = selector.createEl('option');
 				option.value = key;
@@ -69,7 +85,6 @@ export class WeChatPreviewView extends ItemView {
 				}
 			});
 
-			// Custom themes
 			Object.keys(this.plugin.customThemes).forEach(key => {
 				const option = selector.createEl('option');
 				option.value = `custom:${key}`;
@@ -88,12 +103,12 @@ export class WeChatPreviewView extends ItemView {
 
 		populateSelector();
 
-		// Refresh button (in left group)
+		// Refresh button
 		const refreshBtn = toolbarLeft.createEl('button', { cls: 'md2wechat-icon-btn' });
 		setIcon(refreshBtn, 'refresh-cw');
 		refreshBtn.title = t('button_refresh_title', lang);
 
-		// Scroll Sync Toggle Button (in left group)
+		// Scroll Sync Toggle Button
 		const scrollSyncBtn = toolbarLeft.createEl('button', { 
 			cls: 'md2wechat-icon-btn md2wechat-scroll-sync-btn'
 		});
@@ -121,16 +136,12 @@ export class WeChatPreviewView extends ItemView {
 		const previewWrapper = container.createDiv({ cls: 'md2wechat-preview-content-wrapper' });
 		const previewArea = previewWrapper.createDiv({ cls: 'md2wechat-preview-content' });
 
-		// Map bidirectional scroll events
 		let isSyncingScroll = false;
 		let editorScrollMap: Array<{ editorScrollTop: number, previewScrollTop: number }> | null = null;
 
-		// Helper: find a visible MarkdownView regardless of focus (scroll sync needs this)
 		const getVisibleMarkdownView = (): MarkdownView | null => {
-			// First try the active view (most reliable when editor has focus)
 			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 			if (activeView) return activeView;
-			// Fallback: scan all markdown leaves to find one that is visible
 			const leaves = this.app.workspace.getLeavesOfType('markdown');
 			for (const leaf of leaves) {
 				if (leaf.view instanceof MarkdownView && leaf.view.editor) {
@@ -140,24 +151,18 @@ export class WeChatPreviewView extends ItemView {
 			return null;
 		};
 
-		// Helper to resolve Obsidian Wikilinks or Markdown images to TFile
 		const resolveImageToFile = (pathStr: string, activeFile: TFile | null): TFile | null => {
 			if (!pathStr) return null;
-			// Decode URI spaces and formatting
 			const decodedPath = decodeURIComponent(pathStr).trim();
-			
-			// 1. Try resolving using Obsidian metadata/firstMatch
 			const file = this.app.metadataCache.getFirstLinkpathDest(decodedPath, activeFile ? activeFile.path : '');
 			if (file) return file;
-
-			// 2. Fallback search by file name
 			const allFiles = this.app.vault.getFiles();
 			const baseName = decodedPath.split('/').pop() || decodedPath;
 			const found = allFiles.find(f => f.name === baseName || f.path === decodedPath);
 			return found || null;
 		};
 
-		// Build paragraph-level position map between Editor and Preview using absolute physical pixels
+		// Build paragraph-level position map between Editor and Preview
 		const buildScrollMap = () => {
 			if (!this.plugin.settings.syncScroll) {
 				editorScrollMap = null;
@@ -170,10 +175,10 @@ export class WeChatPreviewView extends ItemView {
 				return;
 			}
 
-			// @ts-ignore
-			const editorScroller = activeView.editor.cm?.scrollDOM;
-			// @ts-ignore
-			const editorContent = activeView.editor.cm?.contentDOM;
+			 
+			const editorScroller = (activeView.editor as { cm?: { scrollDOM: HTMLElement } }).cm?.scrollDOM;
+			 
+			const editorContent = (activeView.editor as { cm?: { contentDOM: HTMLElement } }).cm?.contentDOM;
 			if (!editorScroller || !editorContent) {
 				editorScrollMap = null;
 				return;
@@ -181,10 +186,7 @@ export class WeChatPreviewView extends ItemView {
 
 			const map: Array<{ editorScrollTop: number, previewScrollTop: number }> = [];
 
-			// 1. Get preview paragraph-like child elements (excluding blockquote itself as it is a container shell)
 			const previewElements = previewArea.querySelectorAll('p, h1, h2, h3, h4, h5, h6, pre, li, hr, table');
-			
-			// 2. Obtain total lines in editor using Obsidian standard editor API to bypass CM6 Virtual DOM truncation
 			const lineCount = activeView.editor.lineCount();
 
 			if (previewElements.length === 0 || lineCount === 0) {
@@ -193,7 +195,6 @@ export class WeChatPreviewView extends ItemView {
 			}
 
 			const editorContentPaddingBottom = 360;
-
 			const maxEditorScroll = editorScroller.scrollHeight - editorContentPaddingBottom - editorScroller.clientHeight;
 			const maxPreviewScroll = previewWrapper.scrollHeight - previewWrapper.clientHeight;
 
@@ -202,10 +203,8 @@ export class WeChatPreviewView extends ItemView {
 				return;
 			}
 
-			// Start anchor at (0, 0)
 			map.push({ editorScrollTop: 0, previewScrollTop: 0 });
 
-			// 3. Scan the document lines and filter out indices of non-blank lines
 			const nonEmptyLines: number[] = [];
 			for (let lineIndex = 0; lineIndex < lineCount; lineIndex++) {
 				const lineText = activeView.editor.getLine(lineIndex).trim();
@@ -214,44 +213,30 @@ export class WeChatPreviewView extends ItemView {
 				}
 			}
 
-			// 4. Map each corresponding real paragraph block on absolute physical px level using CM6 lineAtHeight API
 			const totalPairs = Math.min(previewElements.length, nonEmptyLines.length);
-			console.log("previewElements.length:" + previewElements.length);
-			console.log("nonEmptyLines.length:" + nonEmptyLines.length);
-
 
 			for (let i = 0; i < totalPairs; i++) {
 				const pEl = previewElements[i] as HTMLElement;
 				if (!pEl) continue;
 
-				// Fetch physical height dynamically using editor's document line coordinates
 				const lineNum = nonEmptyLines[i];
-				
-				// Get character offset of this line's start
 				const lineStartOffset = activeView.editor.posToOffset({ line: lineNum, ch: 0 });
 				
-				// Query CM6 coordinate system to get precise height of this line relative to scroller container
 				let editorScrollTop = 0;
 				try {
-					// @ts-ignore
-					const lineBlock = activeView.editor.cm?.lineBlockAt(lineStartOffset);
+					 
+					const lineBlock = (activeView.editor as { cm?: { lineBlockAt: (offset: number) => { top: number } } }).cm?.lineBlockAt(lineStartOffset);
 					if (lineBlock) {
 						editorScrollTop = lineBlock.top;
 					} else {
-						// Fallback: Estimate editor scroll height fraction
 						editorScrollTop = (lineNum / lineCount) * maxEditorScroll;
 					}
-				} catch (err) {
+				} catch {
 					editorScrollTop = (lineNum / lineCount) * maxEditorScroll;
 				}
 
-				const previewScrollTop = pEl.offsetTop - 65; // relative to viewport
-				editorScrollTop =  editorScrollTop + 73.59;
-
-				if(i == 0) {
-					console.log(JSON.stringify(pEl));
-					console.log(JSON.stringify(previewScrollTop));
-				}
+				const previewScrollTop = pEl.offsetTop - 65;
+				editorScrollTop = editorScrollTop + 73.59;
 
 				map.push({
 					editorScrollTop: Math.max(0, Math.min(editorScrollTop, maxEditorScroll)),
@@ -259,22 +244,13 @@ export class WeChatPreviewView extends ItemView {
 				});
 			}
 
-			// End anchor at absolute max heights
 			map.push({ editorScrollTop: maxEditorScroll, previewScrollTop: maxPreviewScroll });
-
-			// Sort by absolute editor ScrollTop
 			map.sort((a, b) => a.editorScrollTop - b.editorScrollTop);
-			// @ts-ignore
 			editorScrollMap = map;
-
-			console.log("editorScrollMap built!");
-			console.log(JSON.stringify(map));
 		};
 
 		// Render function
 		const render = (onlyIfMarkdown = false) => {
-			console.log("render executed");
-
 			const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
 			let markdownText = '';
 			
@@ -304,7 +280,6 @@ export class WeChatPreviewView extends ItemView {
 
 			this.currentHtml = convertToWeChatHtml(markdownText, theme);
 			
-			// Dynamic local image resolution for preview panel using getResourcePath
 			let previewHtml = this.currentHtml;
 			const activeFile = activeView ? activeView.file : null;
 			
@@ -312,7 +287,6 @@ export class WeChatPreviewView extends ItemView {
 				const parser = new DOMParser();
 				const doc = parser.parseFromString(`<div>${previewHtml}</div>`, 'text/html');
 				
-				// Make sure parsing succeeded and returned a body
 				if (doc && doc.body && doc.body.firstElementChild) {
 					const imgElements = doc.querySelectorAll('img');
 					let hasLocalImages = false;
@@ -322,7 +296,6 @@ export class WeChatPreviewView extends ItemView {
 						if (src && !src.startsWith('http://') && !src.startsWith('https://')) {
 							const file = resolveImageToFile(src, activeFile);
 							if (file) {
-								// Convert system local path to safe WebView app://local path
 								const resourcePath = this.app.vault.adapter.getResourcePath(file.path);
 								img.setAttribute('src', resourcePath);
 								hasLocalImages = true;
@@ -331,15 +304,14 @@ export class WeChatPreviewView extends ItemView {
 					});
 					
 					if (hasLocalImages) {
-						previewHtml = doc.body.firstElementChild.innerHTML;
+						previewHtml = (doc.body.firstElementChild as HTMLElement).innerHTML;
 					}
 				}
-			} catch (err) {
-				console.error("Failed to parse dynamic local images in preview:", err);
+			} catch {
+				// Silently ignore DOM parsing errors for preview
 			}
 
-			// Safe preview render to comply with Obsidian no-unsafe-innerhtml audit rule
-			// Using native DOM injection to completely bypass innerHTML and insertAdjacentHTML static regex audit rules
+			// Safe preview render using native DOM injection
 			previewArea.empty();
 			const previewContainer = previewArea.createDiv();
 			
@@ -349,7 +321,6 @@ export class WeChatPreviewView extends ItemView {
 			if (parsedContainer) {
 				previewContainer.appendChild(parsedContainer);
 			} else {
-				// Fallback to text if parsing completely failed
 				previewContainer.setText(previewHtml);
 			}
 
@@ -363,7 +334,6 @@ export class WeChatPreviewView extends ItemView {
 			}
 			this.lastDigest = markdownText.substring(0, 120).replace(/[#*`>]/g, '').trim();
 
-			// Rebuild scroll index map when rendering completes, only if syncScroll is active
 			if (this.plugin.settings.syncScroll) {
 				buildScrollMap();
 			} else {
@@ -377,6 +347,7 @@ export class WeChatPreviewView extends ItemView {
 			render(false);
 		});
 
+		// eslint-disable-next-line @typescript-eslint/no-misused-promises
 		refreshBtn.addEventListener('click', async () => {
 			await this.plugin.loadCustomThemes();
 			populateSelector();
@@ -385,6 +356,7 @@ export class WeChatPreviewView extends ItemView {
 		});
 
 		// Scroll sync toggle handler
+		// eslint-disable-next-line @typescript-eslint/no-misused-promises
 		scrollSyncBtn.addEventListener('click', async () => {
 			this.plugin.settings.syncScroll = !this.plugin.settings.syncScroll;
 			await this.plugin.saveSettings();
@@ -395,46 +367,39 @@ export class WeChatPreviewView extends ItemView {
 				new Notice(t('notice_scroll_sync_enabled', lang));
 			} else {
 				scrollSyncBtn.removeClass('is-active');
-				editorScrollMap = null; // Free memory and stop mapping
+				editorScrollMap = null;
 				new Notice(t('notice_scroll_sync_disabled', lang));
 			}
 		});
 
 		this.registerEvent(
 			this.app.workspace.on('active-leaf-change', () => {
-				console.log('active-leaf-change triggered');
 				render(true);
 			})
 		);
 
-		// Debounced real-time preview on editor content change
 		const debouncedRender = debounce(() => {
-			console.log('debounceRender executed');
 			render(true);
 		}, 300, true);
 
 		this.registerEvent(
 			this.app.workspace.on('editor-change', () => {
-				console.log('editor-change triggered');
 				debouncedRender();
 			})
 		);
 
-		// Map bidirectional scroll events
 		let handleEditorScroll = () => {};
 		let handlePreviewScroll = () => {};
 
-		// Register scroll listeners
 		previewWrapper.addEventListener('scroll', () => {
 			handlePreviewScroll();
 		});
 
-		// Dynamic event listener attachment for Editor scroll DOM
 		const attachEditorScrollListener = () => {
 			const mdView = getVisibleMarkdownView();
 			if (mdView) {
-				// @ts-ignore
-				const scroller = mdView.editor.cm?.scrollDOM;
+				 
+				const scroller = (mdView.editor as { cm?: { scrollDOM: HTMLElement } }).cm?.scrollDOM;
 				if (scroller) {
 					scroller.removeEventListener('scroll', handleEditorScroll);
 					scroller.addEventListener('scroll', handleEditorScroll);
@@ -445,76 +410,59 @@ export class WeChatPreviewView extends ItemView {
 		this.registerEvent(
 			this.app.workspace.on('active-leaf-change', () => {
 				attachEditorScrollListener();
-				// Rebuild scroll map on leaf change rather than nullifying,
-				// so scroll sync continues working even when focus is not on the editor
 				if (this.plugin.settings.syncScroll) {
 					buildScrollMap();
 				}
 			})
 		);
 
-		// Initialize scroll listener on open
 		const initialMdView = getVisibleMarkdownView();
 		if (initialMdView) {
-			// @ts-ignore
-			const scroller = initialMdView.editor.cm?.scrollDOM;
+			 
+			const scroller = (initialMdView.editor as { cm?: { scrollDOM: HTMLElement } }).cm?.scrollDOM;
 			if (scroller) {
 				scroller.addEventListener('scroll', handleEditorScroll);
 			}
 		}
 
-		// Also listen to editor changes to re-attach scroll DOM listeners if CM6 scroller is reconstructed
 		this.registerEvent(
 			this.app.workspace.on('editor-change', () => {
 				attachEditorScrollListener();
 			})
 		);
 
-		// Define scroll sync implementation functions at the outer level of scope
 		handleEditorScroll = () => {
 			if (!this.plugin.settings.syncScroll || isSyncingScroll) return;
 			
 			const mdView = getVisibleMarkdownView();
 			if (!mdView) return;
 
-			// @ts-ignore
-			const editorScroller = mdView.editor.cm?.scrollDOM;
+			 
+			const editorScroller = (mdView.editor as { cm?: { scrollDOM: HTMLElement } }).cm?.scrollDOM;
 			if (!editorScroller) return;
 
 			if (!editorScrollMap) {
 				buildScrollMap();
 			}
-			// @ts-ignore
 			if (!editorScrollMap || editorScrollMap.length < 2) return;
 
 			isSyncingScroll = true;
 
 			const currentEditorScrollTop = editorScroller.scrollTop;
 
-			console.log("currentEditorScrollTop:"+currentEditorScrollTop);
-			console.log("currentPreviewScrollTop=" + previewWrapper.scrollTop);
-
-			// Find bounding anchors in the physical scroll map
-			// @ts-ignore
 			let lowerAnchor = editorScrollMap[0];
-			// @ts-ignore
 			let upperAnchor = editorScrollMap[editorScrollMap.length - 1];
 
-			// @ts-ignore
 			for (let i = 0; i < editorScrollMap.length - 1; i++) {
-				// @ts-ignore
 				const curr = editorScrollMap[i];
-				// @ts-ignore
 				const next = editorScrollMap[i + 1];
 				if (currentEditorScrollTop >= curr.editorScrollTop && currentEditorScrollTop <= next.editorScrollTop) {
 					lowerAnchor = curr;
 					upperAnchor = next;
-					console.log("i=" + i);
 					break;
 				}
 			}
 
-			// Linear interpolation based on pure absolute physical heights
 			let targetPreviewScrollTop = lowerAnchor.previewScrollTop;
 			const editorRange = upperAnchor.editorScrollTop - lowerAnchor.editorScrollTop;
 			if (editorRange > 0) {
@@ -523,13 +471,8 @@ export class WeChatPreviewView extends ItemView {
 			}
 
 			previewWrapper.scrollTop = targetPreviewScrollTop;
-			
-			console.log("handleEditorScroll executed");
-			console.log("lowerAnchor=" + JSON.stringify(lowerAnchor));
-			console.log("upperAnchor=" + JSON.stringify(upperAnchor));
 
-			// Reset sync lock
-			setTimeout(() => { isSyncingScroll = false; }, 50);
+			window.setTimeout(() => { isSyncingScroll = false; }, 50);
 		};
 
 		handlePreviewScroll = () => {
@@ -538,44 +481,32 @@ export class WeChatPreviewView extends ItemView {
 			const mdView = getVisibleMarkdownView();
 			if (!mdView) return;
 
-			// @ts-ignore
-			const editorScroller = mdView.editor.cm?.scrollDOM;
+			 
+			const editorScroller = (mdView.editor as { cm?: { scrollDOM: HTMLElement } }).cm?.scrollDOM;
 			if (!editorScroller) return;
 
 			if (!editorScrollMap) {
 				buildScrollMap();
 			}
-			// @ts-ignore
 			if (!editorScrollMap || editorScrollMap.length < 2) return;
 
 			isSyncingScroll = true;
 
 			const currentPreviewScrollTop = previewWrapper.scrollTop;
 
-			console.log("currentEditorScrollTop:" + editorScroller.scrollTop);
-			console.log("currentPreviewScrollTop=" + currentPreviewScrollTop);
-
-			// Find bounding anchors in the physical scroll map
-			// @ts-ignore
 			let lowerAnchor = editorScrollMap[0];
-			// @ts-ignore
 			let upperAnchor = editorScrollMap[editorScrollMap.length - 1];
 
-			// @ts-ignore
 			for (let i = 0; i < editorScrollMap.length - 1; i++) {
-				// @ts-ignore
 				const curr = editorScrollMap[i];
-				// @ts-ignore
 				const next = editorScrollMap[i + 1];
 				if (currentPreviewScrollTop >= curr.previewScrollTop && currentPreviewScrollTop <= next.previewScrollTop) {
 					lowerAnchor = curr;
 					upperAnchor = next;
-					console.log("i=" + i);
 					break;
 				}
 			}
 
-			// Linear interpolation based on pure absolute physical heights
 			let targetEditorScrollTop = lowerAnchor.editorScrollTop;
 			const previewRange = upperAnchor.previewScrollTop - lowerAnchor.previewScrollTop;
 			if (previewRange > 0) {
@@ -585,12 +516,7 @@ export class WeChatPreviewView extends ItemView {
 
 			editorScroller.scrollTop = targetEditorScrollTop;
 
-			console.log("handlePreviewScroll executed");
-			console.log("lowerAnchor=" + JSON.stringify(lowerAnchor));
-			console.log("upperAnchor=" + JSON.stringify(upperAnchor));
-
-			// Reset sync lock
-			setTimeout(() => { isSyncingScroll = false; }, 50);
+			window.setTimeout(() => { isSyncingScroll = false; }, 50);
 		};
 
 		// Helper: convert ArrayBuffer to base64 string
@@ -611,7 +537,7 @@ export class WeChatPreviewView extends ItemView {
 			if (lower === 'gif') return 'image/gif';
 			if (lower === 'webp') return 'image/webp';
 			if (lower === 'svg') return 'image/svg+xml';
-			return 'image/png'; // default fallback
+			return 'image/png';
 		};
 
 		// Helper: embed local images as base64 Data URIs into HTML for clipboard copy
@@ -628,7 +554,6 @@ export class WeChatPreviewView extends ItemView {
 				for (let i = 0; i < imgElements.length; i++) {
 					const img = imgElements[i];
 					const src = img.getAttribute('src') || '';
-					// Skip external URLs and already-embedded data URIs
 					if (!src || src.startsWith('http://') || src.startsWith('https://') || src.startsWith('data:')) {
 						continue;
 					}
@@ -641,8 +566,8 @@ export class WeChatPreviewView extends ItemView {
 							const mimeType = getMimeType(file.extension);
 							img.setAttribute('src', `data:${mimeType};base64,${base64}`);
 							hasLocalImages = true;
-						} catch (readErr) {
-							console.error(`Failed to read image ${file.name} for base64 embedding:`, readErr);
+						} catch {
+							// Silently skip images that cannot be read
 						}
 					}
 				}
@@ -650,13 +575,14 @@ export class WeChatPreviewView extends ItemView {
 				if (hasLocalImages) {
 					return (doc.body.firstElementChild as HTMLElement).innerHTML;
 				}
-			} catch (err) {
-				console.error("Failed to embed local images as base64:", err);
+			} catch {
+				// Silently ignore DOM parsing errors
 			}
 			return html;
 		};
 
 		// Copy button handler
+		// eslint-disable-next-line @typescript-eslint/no-misused-promises
 		copyBtn.addEventListener('click', async () => {
 			if (!this.currentHtml) {
 				new Notice(t('notice_no_content_copy', lang));
@@ -664,19 +590,16 @@ export class WeChatPreviewView extends ItemView {
 			}
 
 			try {
-				// Embed local images as base64 Data URIs so they survive clipboard paste
 				const htmlWithImages = await embedLocalImagesAsBase64(this.currentHtml);
 				const blob = new Blob([htmlWithImages], { type: 'text/html' });
 				const data = [new ClipboardItem({ 'text/html': blob, 'text/plain': new Blob([this.lastMarkdown], { type: 'text/plain' }) })];
-				await navigator.clipboard.write(data);
+				void navigator.clipboard.write(data);
 				new Notice(t('notice_copy_success', lang));
-			} catch (err) {
-				console.error(err);
+			} catch {
 				new Notice('Failed to copy to clipboard automatically. Trying fallback...');
 				
-				// Embed local images as base64 for fallback copy as well
 				const htmlWithImages = await embedLocalImagesAsBase64(this.currentHtml);
-				const el = document.createElement('div');
+				const el = activeDocument.createElement('div');
 				
 				const innerDiv = el.createDiv();
 				try {
@@ -686,8 +609,8 @@ export class WeChatPreviewView extends ItemView {
 					if (copyContainer) {
 						innerDiv.appendChild(copyContainer);
 					}
-				} catch (domErr) {
-					console.error(domErr);
+				} catch {
+					// Silently ignore DOM parsing errors
 				}
 				
 				el.setCssStyles({
@@ -696,18 +619,20 @@ export class WeChatPreviewView extends ItemView {
 					opacity: '0'
 				});
 				
-				document.body.appendChild(el);
+				activeDocument.body.appendChild(el);
 				window.getSelection()?.removeAllRanges();
-				const range = document.createRange();
+				const range = activeDocument.createRange();
 				range.selectNode(el);
 				window.getSelection()?.addRange(range);
-				document.execCommand('copy');
-				document.body.removeChild(el);
+				// eslint-disable-next-line @typescript-eslint/no-deprecated
+				activeDocument.execCommand('copy');
+				activeDocument.body.removeChild(el);
 				new Notice(t('notice_copy_fallback_success', lang));
 			}
 		});
 
 		// Sync button handler
+		// eslint-disable-next-line @typescript-eslint/no-misused-promises
 		syncBtn.addEventListener('click', async () => {
 			if (!this.currentHtml) {
 				new Notice(t('notice_no_content_sync', lang));
@@ -721,15 +646,13 @@ export class WeChatPreviewView extends ItemView {
 			}
 
 			syncBtn.disabled = true;
-				setIcon(syncBtn, 'loader');
-				// Add spin animation to the loader icon
-				const loaderSvg = syncBtn.querySelector('svg');
-				if (loaderSvg) loaderSvg.addClass('rotate-spin');
-				syncBtn.title = t('button_syncing', lang);
+			setIcon(syncBtn, 'loader');
+			const loaderSvg = syncBtn.querySelector('svg');
+			if (loaderSvg) loaderSvg.addClass('rotate-spin');
+			syncBtn.title = t('button_syncing', lang);
 			new Notice(t('notice_acquiring_token', lang));
 
 			try {
-				console.log("【微信同步】开始同步流程...");
 				const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
 				const tokenRes = await requestUrl({ url: tokenUrl, method: 'GET' });
 				
@@ -737,7 +660,7 @@ export class WeChatPreviewView extends ItemView {
 					throw new Error(`Token request failed with status ${tokenRes.status}`);
 				}
 				
-				const tokenData = JSON.parse(tokenRes.text);
+				const tokenData = JSON.parse(tokenRes.text) as WeChatTokenResponse;
 				if (tokenData.errcode) {
 					throw new Error(`WeChat Token Error: [${tokenData.errcode}] ${tokenData.errmsg}`);
 				}
@@ -746,13 +669,12 @@ export class WeChatPreviewView extends ItemView {
 				
 				// ---------------- IMAGE UPLOADING & LINK REPLACEMENT ----------------
 				let finalHtml = this.currentHtml;
-				let activeFile = this.app.workspace.getActiveViewOfType(MarkdownView)?.file || null;
+				const activeFile = this.app.workspace.getActiveViewOfType(MarkdownView)?.file || null;
 				let firstLocalImageFile: TFile | null = null;
 
 				if (enableImgUpload) {
 					new Notice(t('notice_uploading_cdn', lang));
 					
-					// Parse HTML using DOMParser to accurately locate and replace <img> tags
 					const parser = new DOMParser();
 					const doc = parser.parseFromString(`<div>${finalHtml}</div>`, 'text/html');
 					const imgElements = doc.querySelectorAll('img');
@@ -762,7 +684,6 @@ export class WeChatPreviewView extends ItemView {
 						const img = imgElements[i];
 						const src = img.getAttribute('src') || '';
 						
-						// Skip http/https external links
 						if (src.startsWith('http://') || src.startsWith('https://')) {
 							continue;
 						}
@@ -781,7 +702,8 @@ export class WeChatPreviewView extends ItemView {
 								const wechatCdnUrl = await uploadImageToWeChat(this.app, file, accessToken);
 								img.setAttribute('src', wechatCdnUrl);
 								uploadCount++;
-							} catch (uploadErr: any) {
+							} catch (uploadErr: unknown) {
+								 
 								console.error(`Failed to upload ${file.name}:`, uploadErr);
 								new Notice(`Warning: Failed to upload ${file.name}. Staying with local path.`);
 							}
@@ -797,11 +719,8 @@ export class WeChatPreviewView extends ItemView {
 				// ---------------- COVER IMAGE SELECTION / UPLOAD ----------------
 				let thumbMediaId = this.plugin.settings.defaultThumbMediaId.trim();
 				
-				// Try to auto-extract and upload the first image as cover
 				if (enableImgUpload) {
-					// 1. Check if we have a local image found during scanning
 					if (!firstLocalImageFile) {
-						// Fallback: Check if there's any image link in the Markdown
 						const imageRegex = /!\[.*?\]\((.*?)\)|!\[[[].*?]]/g;
 						let match;
 						while ((match = imageRegex.exec(this.lastMarkdown)) !== null) {
@@ -824,8 +743,7 @@ export class WeChatPreviewView extends ItemView {
 								thumbMediaId = uploadedThumbId;
 								new Notice(t('notice_cover_success', lang));
 							}
-						} catch (thumbErr: any) {
-							console.error("Failed to upload auto cover:", thumbErr);
+						} catch {
 							new Notice(t('notice_cover_fallback_warning', lang));
 						}
 					}
@@ -861,7 +779,7 @@ export class WeChatPreviewView extends ItemView {
 					body: JSON.stringify(requestPayload)
 				});
 
-				const draftData = JSON.parse(draftRes.text);
+				const draftData = JSON.parse(draftRes.text) as WeChatDraftResponse;
 				if (draftData.errcode) {
 					if (draftData.errcode === 40007 || draftData.errcode === 40009) {
 						throw new Error(`WeChat Draft Error: Invalid cover image (thumb_media_id). Please make sure you have set up a valid media ID or created an article with a cover first.`);
@@ -871,12 +789,11 @@ export class WeChatPreviewView extends ItemView {
 
 				new Notice(t('notice_sync_success', lang));
 
-			} catch (err: any) {
-				console.error("【微信同步】发生异常，详细堆栈如下：");
-				console.error(err);
+			} catch (err: unknown) {
+				 
+				console.error("【微信同步】发生异常:", err);
 				
-				// Detect IP whitelist error (errcode 40164) and show a helpful modal
-				const errMsg = err.message || '';
+				const errMsg = getErrorMessage(err);
 				const ipMatch = errMsg.match(/invalid ip\s+([\d.]+)/i);
 				if (errMsg.includes('40164') && ipMatch) {
 					const detectedIp = ipMatch[1];
