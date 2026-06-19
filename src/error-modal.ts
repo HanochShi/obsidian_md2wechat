@@ -39,19 +39,15 @@ export class IpWhitelistErrorModal extends Modal {
 		ipValue.setText(this.ipAddress);
 		const copyIpBtn = ipRow.createEl('button', { cls: 'md2wechat-error-modal-copy-btn', text: t('error_ip_whitelist_copy_ip', lang) });
 		copyIpBtn.addEventListener('click', () => {
-			void navigator.clipboard.writeText(this.ipAddress).then(() => {
-				new Notice(t('error_ip_whitelist_ip_copied', lang));
-			}).catch(() => {
-				// Fallback copy
-				const textArea = activeDocument.createElement('textarea');
-				textArea.value = this.ipAddress;
-				activeDocument.body.appendChild(textArea);
-				textArea.select();
-				// eslint-disable-next-line @typescript-eslint/no-deprecated
-				activeDocument.execCommand('copy');
-				activeDocument.body.removeChild(textArea);
-				new Notice(t('error_ip_whitelist_ip_copied', lang));
-			});
+			void (async () => {
+				try {
+					await navigator.clipboard.writeText(this.ipAddress);
+					new Notice(t('error_ip_whitelist_ip_copied', lang));
+				} catch {
+					// Modern clipboard API not available, show IP address for manual copy
+					new Notice(`IP Address: ${this.ipAddress} (Please copy manually)`);
+				}
+			})();
 		});
 
 		// Guide link - direct user to documentation for detailed setup steps

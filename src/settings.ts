@@ -43,9 +43,6 @@ export class Md2WeChatSettingTab extends PluginSettingTab {
 						void leaf.view.onOpen();
 					}
 					});
-					
-					// eslint-disable-next-line @typescript-eslint/no-deprecated
-					this.display(); // Redraw settings tab
 				});
 			});
 
@@ -137,8 +134,6 @@ export class Md2WeChatSettingTab extends PluginSettingTab {
 						(mediaId: string) => {
 							this.plugin.settings.defaultThumbMediaId = mediaId;
 							void this.plugin.saveSettings();
-							// eslint-disable-next-line @typescript-eslint/no-deprecated
-							this.display(); // Redraw to update preview
 						},
 						(materials: Array<{ mediaId: string; name: string; url: string }>) => {
 							// Sync cache from modal to plugin settings

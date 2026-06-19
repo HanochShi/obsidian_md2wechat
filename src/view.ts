@@ -347,29 +347,33 @@ export class WeChatPreviewView extends ItemView {
 			render(false);
 		});
 
-		// eslint-disable-next-line @typescript-eslint/no-misused-promises
-		refreshBtn.addEventListener('click', async () => {
-			await this.plugin.loadCustomThemes();
-			populateSelector();
-			render(false);
-			new Notice(t('notice_theme_refreshed', lang));
+		// Event listener with async handler - needed for theme loading and settings refresh
+		refreshBtn.addEventListener('click', () => {
+			void (async () => {
+				await this.plugin.loadCustomThemes();
+				populateSelector();
+				render(false);
+				new Notice(t('notice_theme_refreshed', lang));
+			})();
 		});
 
 		// Scroll sync toggle handler
-		// eslint-disable-next-line @typescript-eslint/no-misused-promises
-		scrollSyncBtn.addEventListener('click', async () => {
-			this.plugin.settings.syncScroll = !this.plugin.settings.syncScroll;
-			await this.plugin.saveSettings();
-			
-			if (this.plugin.settings.syncScroll) {
-				scrollSyncBtn.addClass('is-active');
-				buildScrollMap();
-				new Notice(t('notice_scroll_sync_enabled', lang));
-			} else {
-				scrollSyncBtn.removeClass('is-active');
-				editorScrollMap = null;
-				new Notice(t('notice_scroll_sync_disabled', lang));
-			}
+		// Event listener with async handler - needed for saving settings
+		scrollSyncBtn.addEventListener('click', () => {
+			void (async () => {
+				this.plugin.settings.syncScroll = !this.plugin.settings.syncScroll;
+				await this.plugin.saveSettings();
+				
+				if (this.plugin.settings.syncScroll) {
+					scrollSyncBtn.addClass('is-active');
+					buildScrollMap();
+					new Notice(t('notice_scroll_sync_enabled', lang));
+				} else {
+					scrollSyncBtn.removeClass('is-active');
+					editorScrollMap = null;
+					new Notice(t('notice_scroll_sync_disabled', lang));
+				}
+			})();
 		});
 
 		this.registerEvent(
@@ -582,231 +586,205 @@ export class WeChatPreviewView extends ItemView {
 		};
 
 		// Copy button handler
-		// eslint-disable-next-line @typescript-eslint/no-misused-promises
-		copyBtn.addEventListener('click', async () => {
-			if (!this.currentHtml) {
-				new Notice(t('notice_no_content_copy', lang));
-				return;
-			}
-
-			try {
-				const htmlWithImages = await embedLocalImagesAsBase64(this.currentHtml);
-				const blob = new Blob([htmlWithImages], { type: 'text/html' });
-				const data = [new ClipboardItem({ 'text/html': blob, 'text/plain': new Blob([this.lastMarkdown], { type: 'text/plain' }) })];
-				void navigator.clipboard.write(data);
-				new Notice(t('notice_copy_success', lang));
-			} catch {
-				new Notice('Failed to copy to clipboard automatically. Trying fallback...');
-				
-				const htmlWithImages = await embedLocalImagesAsBase64(this.currentHtml);
-				const el = activeDocument.createElement('div');
-				
-				const innerDiv = el.createDiv();
-				try {
-					const parserForCopy = new DOMParser();
-					const copyDoc = parserForCopy.parseFromString(`<div>${htmlWithImages}</div>`, 'text/html');
-					const copyContainer = copyDoc.body.firstElementChild;
-					if (copyContainer) {
-						innerDiv.appendChild(copyContainer);
-					}
-				} catch {
-					// Silently ignore DOM parsing errors
+		// Event listener with async handler - needed for image processing and clipboard operations
+		copyBtn.addEventListener('click', () => {
+			void (async () => {
+				if (!this.currentHtml) {
+					new Notice(t('notice_no_content_copy', lang));
+					return;
 				}
-				
-				el.setCssStyles({
-					position: 'fixed',
-					pointerEvents: 'none',
-					opacity: '0'
-				});
-				
-				activeDocument.body.appendChild(el);
-				window.getSelection()?.removeAllRanges();
-				const range = activeDocument.createRange();
-				range.selectNode(el);
-				window.getSelection()?.addRange(range);
-				// eslint-disable-next-line @typescript-eslint/no-deprecated
-				activeDocument.execCommand('copy');
-				activeDocument.body.removeChild(el);
-				new Notice(t('notice_copy_fallback_success', lang));
-			}
+
+				try {
+					const htmlWithImages = await embedLocalImagesAsBase64(this.currentHtml);
+					const blob = new Blob([htmlWithImages], { type: 'text/html' });
+					const data = [new ClipboardItem({ 'text/html': blob, 'text/plain': new Blob([this.lastMarkdown], { type: 'text/plain' }) })];
+					void navigator.clipboard.write(data);
+					new Notice(t('notice_copy_success', lang));
+				} catch {
+					// Modern clipboard API failed, show error message
+					new Notice('Copy failed. Please select and copy content manually.');
+				}
+			})();
 		});
 
 		// Sync button handler
-		// eslint-disable-next-line @typescript-eslint/no-misused-promises
-		syncBtn.addEventListener('click', async () => {
-			if (!this.currentHtml) {
-				new Notice(t('notice_no_content_sync', lang));
-				return;
-			}
-
-			const { appId, appSecret, enableImgUpload } = this.plugin.settings;
-			if (!appId || !appSecret) {
-				new Notice(t('notice_configure_app', lang));
-				return;
-			}
-
-			syncBtn.disabled = true;
-			setIcon(syncBtn, 'loader');
-			const loaderSvg = syncBtn.querySelector('svg');
-			if (loaderSvg) loaderSvg.addClass('rotate-spin');
-			syncBtn.title = t('button_syncing', lang);
-			new Notice(t('notice_acquiring_token', lang));
-
-			try {
-				const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
-				const tokenRes = await requestUrl({ url: tokenUrl, method: 'GET' });
-				
-				if (tokenRes.status !== 200) {
-					throw new Error(`Token request failed with status ${tokenRes.status}`);
-				}
-				
-				const tokenData = JSON.parse(tokenRes.text) as WeChatTokenResponse;
-				if (tokenData.errcode) {
-					throw new Error(`WeChat Token Error: [${tokenData.errcode}] ${tokenData.errmsg}`);
+		// Event listener with async handler - needed for API calls and image uploads
+		syncBtn.addEventListener('click', () => {
+			void (async () => {
+				if (!this.currentHtml) {
+					new Notice(t('notice_no_content_sync', lang));
+					return;
 				}
 
-				const accessToken = tokenData.access_token;
-				
-				// ---------------- IMAGE UPLOADING & LINK REPLACEMENT ----------------
-				let finalHtml = this.currentHtml;
-				const activeFile = this.app.workspace.getActiveViewOfType(MarkdownView)?.file || null;
-				let firstLocalImageFile: TFile | null = null;
+				const { appId, appSecret, enableImgUpload } = this.plugin.settings;
+				if (!appId || !appSecret) {
+					new Notice(t('notice_configure_app', lang));
+					return;
+				}
 
-				if (enableImgUpload) {
-					new Notice(t('notice_uploading_cdn', lang));
+				syncBtn.disabled = true;
+				setIcon(syncBtn, 'loader');
+				const loaderSvg = syncBtn.querySelector('svg');
+				if (loaderSvg) loaderSvg.addClass('rotate-spin');
+				syncBtn.title = t('button_syncing', lang);
+				new Notice(t('notice_acquiring_token', lang));
+
+				try {
+					const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
+					const tokenRes = await requestUrl({ url: tokenUrl, method: 'GET' });
 					
-					const parser = new DOMParser();
-					const doc = parser.parseFromString(`<div>${finalHtml}</div>`, 'text/html');
-					const imgElements = doc.querySelectorAll('img');
+					if (tokenRes.status !== 200) {
+						throw new Error(`Token request failed with status ${tokenRes.status}`);
+					}
 					
-					let uploadCount = 0;
-					for (let i = 0; i < imgElements.length; i++) {
-						const img = imgElements[i];
-						const src = img.getAttribute('src') || '';
+					const tokenData = JSON.parse(tokenRes.text) as WeChatTokenResponse;
+					if (tokenData.errcode) {
+						throw new Error(`WeChat Token Error: [${tokenData.errcode}] ${tokenData.errmsg}`);
+					}
+
+					const accessToken = tokenData.access_token;
+					
+					// ---------------- IMAGE UPLOADING & LINK REPLACEMENT ----------------
+					let finalHtml = this.currentHtml;
+					const activeFile = this.app.workspace.getActiveViewOfType(MarkdownView)?.file || null;
+					let firstLocalImageFile: TFile | null = null;
+
+					if (enableImgUpload) {
+						new Notice(t('notice_uploading_cdn', lang));
 						
-						if (src.startsWith('http://') || src.startsWith('https://')) {
-							continue;
-						}
-
-						const file = resolveImageToFile(src, activeFile);
-						if (file) {
-							if (!firstLocalImageFile) {
-								firstLocalImageFile = file;
+						const parser = new DOMParser();
+						const doc = parser.parseFromString(`<div>${finalHtml}</div>`, 'text/html');
+						const imgElements = doc.querySelectorAll('img');
+						
+						let uploadCount = 0;
+						for (let i = 0; i < imgElements.length; i++) {
+							const img = imgElements[i];
+							const src = img.getAttribute('src') || '';
+							
+							if (src.startsWith('http://') || src.startsWith('https://')) {
+								continue;
 							}
-							try {
-								new Notice(t('notice_uploading_inline_img', lang)
-									.replace('{current}', (i + 1).toString())
-									.replace('{total}', imgElements.length.toString())
-									.replace('{name}', file.name)
-								);
-								const wechatCdnUrl = await uploadImageToWeChat(this.app, file, accessToken);
-								img.setAttribute('src', wechatCdnUrl);
-								uploadCount++;
-							} catch (uploadErr: unknown) {
-								 
-								console.error(`Failed to upload ${file.name}:`, uploadErr);
-								new Notice(`Warning: Failed to upload ${file.name}. Staying with local path.`);
-							}
-						}
-					}
 
-					if (uploadCount > 0) {
-						new Notice(t('notice_upload_cdn_success', lang).replace('{count}', uploadCount.toString()));
-					}
-					finalHtml = (doc.body.firstElementChild as HTMLElement).innerHTML;
-				}
-
-				// ---------------- COVER IMAGE SELECTION / UPLOAD ----------------
-				let thumbMediaId = this.plugin.settings.defaultThumbMediaId.trim();
-				
-				if (enableImgUpload) {
-					if (!firstLocalImageFile) {
-						const imageRegex = /!\[.*?\]\((.*?)\)|!\[[[].*?]]/g;
-						let match;
-						while ((match = imageRegex.exec(this.lastMarkdown)) !== null) {
-							const imgPath = match[1] || match[2];
-							if (imgPath && !imgPath.startsWith('http://') && !imgPath.startsWith('https://')) {
-								const file = resolveImageToFile(imgPath, activeFile);
-								if (file) {
+							const file = resolveImageToFile(src, activeFile);
+							if (file) {
+								if (!firstLocalImageFile) {
 									firstLocalImageFile = file;
-									break;
+								}
+								try {
+									new Notice(t('notice_uploading_inline_img', lang)
+										.replace('{current}', (i + 1).toString())
+										.replace('{total}', imgElements.length.toString())
+										.replace('{name}', file.name)
+									);
+									const wechatCdnUrl = await uploadImageToWeChat(this.app, file, accessToken);
+									img.setAttribute('src', wechatCdnUrl);
+									uploadCount++;
+								} catch (uploadErr: unknown) {
+									 
+									console.error(`Failed to upload ${file.name}:`, uploadErr);
+									new Notice(`Warning: Failed to upload ${file.name}. Staying with local path.`);
 								}
 							}
 						}
+
+						if (uploadCount > 0) {
+							new Notice(t('notice_upload_cdn_success', lang).replace('{count}', uploadCount.toString()));
+						}
+						finalHtml = (doc.body.firstElementChild as HTMLElement).innerHTML;
 					}
 
-					if (firstLocalImageFile) {
-						new Notice(t('notice_uploading_cover', lang).replace('{name}', firstLocalImageFile.name));
-						try {
-							const uploadedThumbId = await uploadThumbToWeChat(this.app, firstLocalImageFile, accessToken);
-							if (uploadedThumbId) {
-								thumbMediaId = uploadedThumbId;
-								new Notice(t('notice_cover_success', lang));
+					// ---------------- COVER IMAGE SELECTION / UPLOAD ----------------
+					let thumbMediaId = this.plugin.settings.defaultThumbMediaId.trim();
+					
+					if (enableImgUpload) {
+						if (!firstLocalImageFile) {
+							const imageRegex = /!\[.*?\]\((.*?)\)|!\[[[].*?]]/g;
+							let match;
+							while ((match = imageRegex.exec(this.lastMarkdown)) !== null) {
+								const imgPath = match[1] || match[2];
+								if (imgPath && !imgPath.startsWith('http://') && !imgPath.startsWith('https://')) {
+									const file = resolveImageToFile(imgPath, activeFile);
+									if (file) {
+										firstLocalImageFile = file;
+										break;
+									}
+								}
 							}
-						} catch {
-							new Notice(t('notice_cover_fallback_warning', lang));
+						}
+
+						if (firstLocalImageFile) {
+							new Notice(t('notice_uploading_cover', lang).replace('{name}', firstLocalImageFile.name));
+							try {
+								const uploadedThumbId = await uploadThumbToWeChat(this.app, firstLocalImageFile, accessToken);
+								if (uploadedThumbId) {
+									thumbMediaId = uploadedThumbId;
+									new Notice(t('notice_cover_success', lang));
+								}
+							} catch {
+								new Notice(t('notice_cover_fallback_warning', lang));
+							}
 						}
 					}
-				}
 
-				if (!thumbMediaId) {
-					throw new Error("WeChat requires a cover image (thumb_media_id) to create draft. Please configure the 'Default Cover Media ID' in settings or include a local image in your note.");
-				}
-
-				new Notice(t('notice_syncing_draft', lang));
-
-				const title = this.lastTitle || 'Untitled Note';
-				const digest = this.lastDigest || '';
-
-				const article = {
-					title: title,
-					author: '',
-					digest: digest,
-					content: finalHtml,
-					content_source_url: '',
-					thumb_media_id: thumbMediaId,
-					need_open_comment: 0,
-					only_fans_can_comment: 0
-				};
-
-				const draftUrl = `https://api.weixin.qq.com/cgi-bin/draft/add?access_token=${accessToken}`;
-				const requestPayload = { articles: [article] };
-				
-				const draftRes = await requestUrl({
-					url: draftUrl,
-					method: 'POST',
-					contentType: 'application/json',
-					body: JSON.stringify(requestPayload)
-				});
-
-				const draftData = JSON.parse(draftRes.text) as WeChatDraftResponse;
-				if (draftData.errcode) {
-					if (draftData.errcode === 40007 || draftData.errcode === 40009) {
-						throw new Error(`WeChat Draft Error: Invalid cover image (thumb_media_id). Please make sure you have set up a valid media ID or created an article with a cover first.`);
+					if (!thumbMediaId) {
+						throw new Error("WeChat requires a cover image (thumb_media_id) to create draft. Please configure the 'Default Cover Media ID' in settings or include a local image in your note.");
 					}
-					throw new Error(`WeChat Sync Error: [${draftData.errcode}] ${draftData.errmsg}`);
-				}
 
-				new Notice(t('notice_sync_success', lang));
+					new Notice(t('notice_syncing_draft', lang));
 
-			} catch (err: unknown) {
-				 
-				console.error("【微信同步】发生异常:", err);
-				
-				const errMsg = getErrorMessage(err);
-				const ipMatch = errMsg.match(/invalid ip\s+([\d.]+)/i);
-				if (errMsg.includes('40164') && ipMatch) {
-					const detectedIp = ipMatch[1];
-					const modal = new IpWhitelistErrorModal(this.app, detectedIp, lang);
-					modal.open();
-				} else {
-					new Notice(`Sync failed: ${errMsg}`);
+					const title = this.lastTitle || 'Untitled Note';
+					const digest = this.lastDigest || '';
+
+					const article = {
+						title: title,
+						author: '',
+						digest: digest,
+						content: finalHtml,
+						content_source_url: '',
+						thumb_media_id: thumbMediaId,
+						need_open_comment: 0,
+						only_fans_can_comment: 0
+					};
+
+					const draftUrl = `https://api.weixin.qq.com/cgi-bin/draft/add?access_token=${accessToken}`;
+					const requestPayload = { articles: [article] };
+					
+					const draftRes = await requestUrl({
+						url: draftUrl,
+						method: 'POST',
+						contentType: 'application/json',
+						body: JSON.stringify(requestPayload)
+					});
+
+					const draftData = JSON.parse(draftRes.text) as WeChatDraftResponse;
+					if (draftData.errcode) {
+						if (draftData.errcode === 40007 || draftData.errcode === 40009) {
+							throw new Error(`WeChat Draft Error: Invalid cover image (thumb_media_id). Please make sure you have set up a valid media ID or created an article with a cover first.`);
+						}
+						throw new Error(`WeChat Sync Error: [${draftData.errcode}] ${draftData.errmsg}`);
+					}
+
+					new Notice(t('notice_sync_success', lang));
+
+				} catch (err: unknown) {
+					 
+					console.error("【微信同步】发生异常:", err);
+					
+					const errMsg = getErrorMessage(err);
+					const ipMatch = errMsg.match(/invalid ip\s+([\d.]+)/i);
+					if (errMsg.includes('40164') && ipMatch) {
+						const detectedIp = ipMatch[1];
+						const modal = new IpWhitelistErrorModal(this.app, detectedIp, lang);
+						modal.open();
+					} else {
+						new Notice(`Sync failed: ${errMsg}`);
+					}
+				} finally {
+					syncBtn.disabled = false;
+					setIcon(syncBtn, 'upload-cloud');
+					syncBtn.title = t('button_sync', lang);
 				}
-			} finally {
-				syncBtn.disabled = false;
-				setIcon(syncBtn, 'upload-cloud');
-				syncBtn.title = t('button_sync', lang);
-			}
+			})();
 		});
 	}
 
