@@ -84,3 +84,16 @@ jobs:
           label: last commit
           message: ${{ env.LAST_COMMIT }}
           color: '4b0'
+
+      # 更新release徽章
+      - name: Generate Release Badge
+        uses: Schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: d935d42d690b43d86400fd86e365fc52
+          filename: release.json
+          label: release
+          message: ${{ env.LATEST_TAG }}
+          color: blue
+          namedLogo: obsidian
+          logoColor: white
